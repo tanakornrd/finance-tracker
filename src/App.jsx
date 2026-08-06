@@ -219,11 +219,23 @@ export default function App() {
 
         /* "party" variant — one per budgeted category, staged inside BudgetMageCard.jsx
            opposite MageMascot, like an enemy encounter. Deliberately the SAME max box as
-           ".mage-img" (not its own smaller clamp()) — SlimeEnemy.jsx's 0.5 baseline scale only
-           reads as "half the mage's size" if both share the same reserved box to begin with. */
-        .slime-img-party { width: clamp(64px, 18vw, 100px); height: clamp(64px, 18vw, 100px); transform: scale(var(--slime-scale, 0.5)); transform-origin: center; }
+           ".budget-mage-mount .mage-img" below (not ".mage-img"'s own default size) —
+           SlimeEnemy.jsx's 0.5 baseline scale only reads as "half the mage's size" if both
+           share the same reserved box to begin with. Keep these two rules' width/height in sync
+           if either changes. */
+        .slime-img-party { width: clamp(90px, 22vw, 130px); height: clamp(90px, 22vw, 130px); transform: scale(var(--slime-scale, 0.5)); transform-origin: center; }
         @media (min-width: 1280px) {
-          .slime-img-party { width: 140px; height: 140px; }
+          .slime-img-party { width: 190px; height: 190px; }
+        }
+
+        /* BudgetMageCard.jsx's own MageMascot mount — bigger than MageMascot's default
+           ".mage-img" size (used as-is on TransactionDetail.jsx and, via its own further
+           override, SafeToSpendCard.jsx's ".scribe-mage-mount") via a descendant override
+           scoped to this mount specifically, same idiom as ".scribe-mage-mount .mage-img"
+           above. Sized to match ".slime-img-party" exactly — see that rule's own comment. */
+        .budget-mage-mount .mage-img { width: clamp(90px, 22vw, 130px); height: clamp(90px, 22vw, 130px); }
+        @media (min-width: 1280px) {
+          .budget-mage-mount .mage-img { width: 190px; height: 190px; }
         }
 
         /* CastleBackground.jsx ambient decoration — not gated by the mascotAnimationEnabled

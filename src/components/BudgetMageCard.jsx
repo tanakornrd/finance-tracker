@@ -49,11 +49,15 @@ export default function BudgetMageCard({ budgets, spentByCategory, categorySlime
   return (
     <div style={{ ...card, marginBottom: 18 }}>
       {budgets.length > 0 ? (
-        // A "vs" formation, not a centered unit like the empty-state below: the slime party on
-        // the left, the mage (and his own bubble, to HIS left — see MageMascot.jsx) on the
-        // right, so the whole row reads left-to-right as "enemies facing the hero" rather than
-        // two unrelated things sharing a card.
+        // A "vs" formation, not a centered unit like the empty-state below: the mage on the
+        // left, the slime party on the right, so the whole row reads left-to-right as "hero
+        // facing enemies". alignItems:flex-end keeps the slimes standing on a shared "ground"
+        // line with their HP bars; the mage overrides that with alignSelf:center below (his
+        // own div, right after this one) since he's sized independently of that ground line.
         <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 8, flexWrap: "wrap" }}>
+          <div className="budget-mage-mount" style={{ alignSelf: "center" }}>
+            <MageMascot message={insight.message} />
+          </div>
           <div style={{ display: "flex", alignItems: "flex-end" }}>
             {budgets.map((b, i) => {
               const spentCents = spentByCategory[b.category] || 0;
@@ -94,7 +98,6 @@ export default function BudgetMageCard({ budgets, spentByCategory, categorySlime
               );
             })}
           </div>
-          <MageMascot message={insight.message} />
         </div>
       ) : (
         <MageMascot message={insight.message} />
