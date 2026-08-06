@@ -118,7 +118,19 @@ export async function getSettings(supabase) {
       slimeCategoryCarryOver = {};
     }
   }
-  return { targetSavingsPct, allocationPlan, slimeCarryOverCents, slimeCategoryCarryOver, slimeLastSeenMonth };
+  // celebrated_goal_ids: one more key in this same table, added for PartyLevelUpOverlay.jsx
+  // (RPG party interactions, part 5) — a JSON array of goal-account ids whose "reached target"
+  // celebration has already been shown, so App.jsx knows not to show it again on the next load.
+  let celebratedGoalIds = [];
+  if (map.celebrated_goal_ids) {
+    try {
+      const parsed = JSON.parse(map.celebrated_goal_ids);
+      celebratedGoalIds = Array.isArray(parsed) ? parsed : [];
+    } catch {
+      celebratedGoalIds = [];
+    }
+  }
+  return { targetSavingsPct, allocationPlan, slimeCarryOverCents, slimeCategoryCarryOver, slimeLastSeenMonth, celebratedGoalIds };
 }
 
 // Bounded, low-churn data used across almost every page (account balances, budget caps,

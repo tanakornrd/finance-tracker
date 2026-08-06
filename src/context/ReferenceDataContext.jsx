@@ -14,7 +14,7 @@ export function ReferenceDataProvider({ children }) {
     budgets: [],
     recurringBills: [],
     recurringBillOccurrences: [],
-    settings: { targetSavingsPct: null, allocationPlan: null, slimeCarryOverCents: 0, slimeCategoryCarryOver: {}, slimeLastSeenMonth: null },
+    settings: { targetSavingsPct: null, allocationPlan: null, slimeCarryOverCents: 0, slimeCategoryCarryOver: {}, slimeLastSeenMonth: null, celebratedGoalIds: [] },
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);

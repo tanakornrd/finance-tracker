@@ -1,4 +1,4 @@
-import React, { Suspense, lazy } from "react";
+import React, { Suspense, lazy, useState } from "react";
 import { Routes, Route } from "react-router-dom";
 import BottomNav from "./components/BottomNav.jsx";
 import Sidebar from "./components/Sidebar.jsx";
@@ -6,7 +6,10 @@ import ThemeSwitcher from "./components/ThemeSwitcher.jsx";
 import LightningCornerDecoration from "./components/LightningCornerDecoration.jsx";
 import CastleBackground from "./components/CastleBackground.jsx";
 import SpeedsterMascot from "./components/mascot/SpeedsterMascot.jsx";
+import PartyLevelUpOverlay from "./components/mascot/PartyLevelUpOverlay.jsx";
 import { useAuth } from "./context/AuthContext.jsx";
+import { useReferenceData } from "./context/ReferenceDataContext.jsx";
+import { updateSettings } from "./api.js";
 import Login from "./routes/Login.jsx";
 
 // Route-level code splitting: each page's JS only downloads when the user actually
@@ -24,6 +27,32 @@ const ImportStatement = lazy(() => import("./routes/ImportStatement.jsx"));
 
 export default function App() {
   const { session, loading } = useAuth();
+  const { accounts, settings, refetch } = useReferenceData();
+  // Goal-completion celebration (RPG party interactions, part 5) — see
+  // PartyLevelUpOverlay.jsx's own header comment for why this lives here (App.jsx, above every
+  // route) rather than on any single page. null = nothing to celebrate right now.
+  const [levelUpGoalNames, setLevelUpGoalNames] = useState(null);
+
+  // Declared before the loading/session early returns below, same as the --app-vh effect —
+  // unconditional hook call on every render (rules of hooks). Harmless pre-login: `accounts` is
+  // still the ReferenceDataContext default ([]) at that point, so the length check below no-ops.
+  React.useEffect(() => {
+    if (!accounts || accounts.length === 0) return;
+    const celebrated = new Set(settings.celebratedGoalIds || []);
+    // "Reached" uses the exact same test Accounts.jsx's own "🎉 ถึงเป้าหมายแล้ว" badge does
+    // (balanceCents >= targetAmountCents) — this doesn't introduce a second definition of what
+    // counts as reaching a goal, just reacts to the same one Accounts.jsx already displays.
+    const newlyReached = accounts.filter(
+      (a) => a.isGoalAccount && a.status !== "trashed" && a.targetAmountCents > 0 && a.balanceCents >= a.targetAmountCents && !celebrated.has(a.id)
+    );
+    if (newlyReached.length === 0) return;
+    setLevelUpGoalNames(newlyReached.map((a) => a.name));
+    // Persisted immediately (not when the overlay closes) so a page refresh mid-celebration
+    // still won't show it again — celebratedGoalIds is the source of truth for "already shown",
+    // not whether the overlay happened to finish playing.
+    updateSettings({ celebratedGoalIds: [...celebrated, ...newlyReached.map((a) => a.id)] }).then(refetch);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [accounts, settings.celebratedGoalIds]);
 
   // Keeps a `--app-vh` CSS var on <html> in sync with the actual visible height, refreshed
   // on the visualViewport's own resize/scroll events (fires when the on-screen keyboard opens/
@@ -282,6 +311,38 @@ export default function App() {
           .budget-mage-mount .mage-img { width: 190px; height: 190px; }
         }
 
+        /* PartyLevelUpOverlay.jsx (RPG party interactions, part 5) — the "big" celebration,
+           deliberately more elaborate than any single mascot's click reaction: a pulsing radial
+           burst behind everything, the title text popping in with a bounce, and each of the 4
+           character sprites bouncing in one after another (staggered via each <img>'s own
+           inline animationDelay, set in the component). All three loop gently rather than
+           firing once — this overlay auto-dismisses on its own timer (App.jsx/the component
+           itself), so "loop while visible" reads better than a one-shot that would finish and
+           leave everything static for however long is left before the auto-close. */
+        .level-up-overlay { animation: levelUpFadeIn 0.25s ease-out; }
+        @keyframes levelUpFadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .level-up-burst {
+          background: radial-gradient(circle, rgba(255,215,94,0.35) 0%, rgba(255,215,94,0.1) 40%, transparent 70%);
+          animation: levelUpBurstPulse 1.8s ease-in-out infinite;
+        }
+        @keyframes levelUpBurstPulse {
+          0%, 100% { transform: scale(0.9); opacity: 0.7; }
+          50% { transform: scale(1.1); opacity: 1; }
+        }
+
+        .level-up-title { animation: levelUpTitlePop 1.2s ease-in-out infinite; }
+        @keyframes levelUpTitlePop {
+          0%, 100% { transform: scale(1) rotate(-1deg); }
+          50% { transform: scale(1.08) rotate(1deg); }
+        }
+
+        .level-up-char { animation: levelUpCharBounce 0.9s ease-in-out infinite; }
+        @keyframes levelUpCharBounce {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-14px); }
+        }
+
         /* CastleBackground.jsx ambient decoration — not gated by the mascotAnimationEnabled
            toggle (that's specifically the mascot on/off switch), but still respects
            prefers-reduced-motion below like every other animation here. */
@@ -308,6 +369,10 @@ export default function App() {
           .slime-idle { animation: none; }
           .slime-defeat { animation: none; }
           .slime-scan-ring { animation: none; opacity: 0; }
+          .level-up-overlay { animation: none; }
+          .level-up-burst { animation: none; }
+          .level-up-title { animation: none; }
+          .level-up-char { animation: none; }
           .castle-star-twinkle { animation: none; }
           .castle-torch-flicker { animation: none; }
           .castle-banner-sway { animation: none; }
@@ -466,6 +531,9 @@ export default function App() {
 
       <ThemeSwitcher />
       <BottomNav />
+      {levelUpGoalNames && (
+        <PartyLevelUpOverlay goalNames={levelUpGoalNames} onClose={() => setLevelUpGoalNames(null)} />
+      )}
     </div>
   );
 }

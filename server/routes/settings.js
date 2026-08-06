@@ -4,7 +4,7 @@ import { getSettings } from "../state.js";
 const router = Router();
 
 router.patch("/", async (req, res) => {
-  const { targetSavingsPct, allocationPlan, slimeCarryOverCents, slimeCategoryCarryOver, slimeLastSeenMonth } = req.body;
+  const { targetSavingsPct, allocationPlan, slimeCarryOverCents, slimeCategoryCarryOver, slimeLastSeenMonth, celebratedGoalIds } = req.body;
 
   if (targetSavingsPct !== undefined) {
     if (targetSavingsPct !== null && (typeof targetSavingsPct !== "number" || !Number.isFinite(targetSavingsPct) || targetSavingsPct < 0 || targetSavingsPct > 100)) {
@@ -92,6 +92,24 @@ router.patch("/", async (req, res) => {
       const { error } = await req.supabase
         .from("app_settings")
         .upsert({ user_id: req.userId, key: "slime_last_seen_month", value: slimeLastSeenMonth }, { onConflict: "user_id,key" });
+      if (error) return res.status(400).json({ error: error.message });
+    }
+  }
+
+  // PartyLevelUpOverlay.jsx's one settings key (RPG party interactions, part 5) — same
+  // app_settings table, no schema change. Written by App.jsx right after showing the
+  // celebration for a newly-reached goal, so it never repeats.
+  if (celebratedGoalIds !== undefined) {
+    if (celebratedGoalIds === null) {
+      const { error } = await req.supabase.from("app_settings").delete().eq("key", "celebrated_goal_ids");
+      if (error) return res.status(400).json({ error: error.message });
+    } else {
+      if (!Array.isArray(celebratedGoalIds) || celebratedGoalIds.some((id) => typeof id !== "string" || !id)) {
+        return res.status(400).json({ error: "celebratedGoalIds must be an array of non-empty account id strings, or null" });
+      }
+      const { error } = await req.supabase
+        .from("app_settings")
+        .upsert({ user_id: req.userId, key: "celebrated_goal_ids", value: JSON.stringify(celebratedGoalIds) }, { onConflict: "user_id,key" });
       if (error) return res.status(400).json({ error: error.message });
     }
   }
