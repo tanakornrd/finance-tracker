@@ -203,20 +203,18 @@ export default function App() {
         }
 
         /* SlimeEnemy.jsx's own <img> size — the one mascot in this app whose size is DATA-
-           driven (src/lib/slimeStatus.js), not just responsive. The clamp() here is the normal
-           per-breakpoint base (same idiom as every other mascot's own -img class); multiplying
-           it by var(--slime-scale) (set inline by the component itself, per-render, from the
-           current budget ratio) layers the data-driven part on top instead of replacing the
-           breakpoint-based part. */
-        .slime-img {
-          width: calc(clamp(48px, 14vw, 90px) * var(--slime-scale, 0.4));
-          height: calc(clamp(48px, 14vw, 90px) * var(--slime-scale, 0.4));
-        }
+           driven (src/lib/slimeStatus.js), not just responsive. width/height here are the
+           normal per-breakpoint MAXIMUM (same clamp()-per-breakpoint idiom as every other
+           mascot's own -img class) — the box is always laid out at that fixed max, so it never
+           grows into the page title next to it no matter the ratio. The data-driven part is a
+           transform:scale(var(--slime-scale)) shrinking DOWN from that reserved max, set
+           inline by the component per-render. (An earlier version tried multiplying the
+           clamp() itself via calc(clamp(...) * var(...)) for width/height directly — dropped
+           after testing showed it not reliably taking effect; plain transform:scale() has none
+           of that risk and also sidesteps any layout-overflow concern for free.) */
+        .slime-img { width: clamp(48px, 14vw, 90px); height: clamp(48px, 14vw, 90px); transform: scale(var(--slime-scale, 0.3)); transform-origin: center; }
         @media (min-width: 1280px) {
-          .slime-img {
-            width: calc(140px * var(--slime-scale, 0.4));
-            height: calc(140px * var(--slime-scale, 0.4));
-          }
+          .slime-img { width: 140px; height: 140px; }
         }
 
         /* CastleBackground.jsx ambient decoration — not gated by the mascotAnimationEnabled
