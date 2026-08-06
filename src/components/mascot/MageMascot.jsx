@@ -12,7 +12,12 @@ export default function MageMascot({ message }) {
   if (theme !== "arcade") return null;
 
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: 10 }} aria-hidden="true">
+    // justifyContent:"center" (not the full-width flex row this used to be) — BudgetMageCard.jsx
+    // is a plain card the width of the whole page, and with the bubble sized to its own content
+    // now (not flex:1 stretching to fill whatever's left), a left-anchored row would leave the
+    // mage+bubble pair stranded off in a huge empty card; centering keeps them as one compact,
+    // deliberately-placed unit regardless of card width.
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "center" }} aria-hidden="true">
       {message && <SpeechBubble text={message} />}
       <div
         className={mascotAnimationEnabled ? "mage-float" : undefined}
@@ -33,17 +38,22 @@ export default function MageMascot({ message }) {
 }
 
 // Same pixel-box visual language as WarriorMascot's SpeechBubble (hard-cornered, blocky drop
-// shadow, stepped-notch tail) but laid out in normal flow instead of position:absolute — this
-// bubble IS the card's main content (flex:1, takes whatever width is left after the mage's own
-// fixed size), not an overlay squeezed beside something else's numbers, so there's no need for
-// the clamp()/percentage-of-viewport sizing WarriorMascot's bubble needs.
+// shadow, stepped-notch tail) laid out in normal flow instead of position:absolute. First
+// version used flex:1, which stretched this to fill the entire rest of the card — a huge flat
+// box that read as an empty input field, not a speech bubble, with the tail barely reaching the
+// mage. Sized to its own content now (flex: "0 1 auto", maxWidth as a cap for unusually long
+// messages) so it hugs the text and stays visually anchored right next to him instead.
 function SpeechBubble({ text }) {
   return (
     <div
       style={{
         position: "relative", // containing block for the tail below, same trick as WarriorMascot
-        flex: 1,
-        minWidth: 0,
+        flex: "0 1 auto",
+        maxWidth: "min(320px, 60vw)",
+        wordBreak: "break-word",
+        // 6, not the previous flex `gap: 10` on the parent — matches WarriorMascot's own
+        // marginRight:6, close enough that the 7px tail below all but touches the mage.
+        marginRight: 6,
         background: "#F5F3FF",
         color: "#1A1030",
         border: "3px solid #1A1030",
