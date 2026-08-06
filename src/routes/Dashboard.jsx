@@ -388,7 +388,17 @@ export default function Dashboard() {
         <div className="warrior-mount">
           <WarriorMascot message={weeklyInsight.message} hasEntryToday={hasEntryToday} />
         </div>
-        <div style={{ padding: "20px 22px", position: "relative", zIndex: 1 }}>
+        {/* pointerEvents:"none" — this div is plain display text, nothing inside it is ever
+            clickable, but its own box (a block spanning the full card width) sat ABOVE
+            WarriorMascot's button in the stacking order (zIndex:1 here vs the mount's zIndex:0)
+            and was silently swallowing every real click aimed at the warrior wherever the two
+            boxes overlapped, even in the empty space to the right of the text where nothing was
+            visibly there to intercept it — WarriorMascot's onClick fired fine when triggered
+            programmatically (bypassing hit-testing), never from an actual pointer click, which
+            is what gave it away. Removing this div from hit-testing entirely lets clicks in that
+            dead space fall through to the warrior beneath it; it doesn't change anything visual
+            (paint order/z-index is untouched) since nothing inside it needs to be interactive. */}
+        <div style={{ padding: "20px 22px", position: "relative", zIndex: 1, pointerEvents: "none" }}>
           <div style={{ fontSize: 12, color: colors.inkMuted, marginBottom: 4 }}>ความมั่งคั่งสุทธิ (สินทรัพย์ − หนี้สิน)</div>
           <div className="num" style={{ fontSize: 34, fontWeight: 600, color: colors.ink, marginBottom: 4 }}>{centsToDisplay(netWorthCents)}</div>
           <div style={{ fontSize: 12, color: colors.inkMuted, marginBottom: 16 }}>
