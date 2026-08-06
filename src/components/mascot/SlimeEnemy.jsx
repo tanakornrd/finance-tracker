@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useTheme } from "../../context/ThemeContext.jsx";
 
 // Enemy mascot for the "arcade" theme — the overall (page-header) slime in Budgets.jsx, and
@@ -11,8 +11,19 @@ import { useTheme } from "../../context/ThemeContext.jsx";
 // asked for — and shrinks/grows within that reserved box via transform:scale(), driven by a CSS
 // custom property (--slime-scale) set inline here. The box itself never changes size, so it can
 // never grow into surrounding content no matter the ratio.
-export default function SlimeEnemy({ ratio, defeated, variant = "lg", tint }) {
+//
+// onClick: optional (RPG party interactions, part 3) — only Budgets.jsx's page-header ("lg")
+// instance passes one, opening the SlimeScanModal breakdown. When present this renders as a
+// real <button> and a click plays a one-shot "scan" ring pulse before/alongside the modal
+// opening (called in the same handler, not delayed). The "party" slimes in BudgetMageCard.jsx
+// never pass onClick, so they stay the plain non-interactive <div> exactly as before — no risk
+// of the pointer-events bug WarriorMascot/MageMascot hit (see Dashboard.jsx's fix comment): this
+// div was ALWAYS pointer-events:none before, only switching to "auto" now when onClick exists,
+// and only Budgets.jsx's page-header slime sits in plain flex flow next to plain text (not
+// absolutely stacked over another box), so there's nothing for it to be swallowed by.
+export default function SlimeEnemy({ ratio, defeated, variant = "lg", tint, onClick }) {
   const { theme, mascotAnimationEnabled } = useTheme();
+  const [scanning, setScanning] = useState(false);
   if (theme !== "arcade") return null;
   // null ratio means "no budget set for this (or, overall, any) category" — nothing to size
   // against, so there's nothing to show, UNLESS a defeat animation is actively playing (the
@@ -31,12 +42,17 @@ export default function SlimeEnemy({ ratio, defeated, variant = "lg", tint }) {
 
   const imgClass = variant === "party" ? "slime-img-party" : "slime-img";
 
-  return (
-    <div
-      className={defeated ? "slime-defeat" : mascotAnimationEnabled ? "slime-idle" : undefined}
-      style={{ "--slime-scale": scale, pointerEvents: "none", display: "inline-block" }}
-      aria-hidden="true"
-    >
+  function handleClick() {
+    if (mascotAnimationEnabled) {
+      // Same re-trigger-on-rapid-clicks trick as every other mascot's click handler.
+      setScanning(false);
+      requestAnimationFrame(() => setScanning(true));
+    }
+    onClick();
+  }
+
+  const content = (
+    <>
       <img
         src={new URL("../../assets/enemy-slime.png", import.meta.url).href}
         alt=""
@@ -46,6 +62,31 @@ export default function SlimeEnemy({ ratio, defeated, variant = "lg", tint }) {
         // different tint so the party reads as a group of distinct enemies, not clones.
         style={{ display: "block", imageRendering: "pixelated", filter: tint || undefined }}
       />
+      {scanning && <div className="slime-scan-ring" onAnimationEnd={() => setScanning(false)} />}
+    </>
+  );
+
+  const wrapperClass = [defeated ? "slime-defeat" : mascotAnimationEnabled ? "slime-idle" : undefined, onClick ? "slime-clickable" : undefined]
+    .filter(Boolean)
+    .join(" ") || undefined;
+
+  if (onClick) {
+    return (
+      <button
+        type="button"
+        onClick={handleClick}
+        aria-label="สไลม์ กดเพื่อสแกนดูรายละเอียดงบประมาณ"
+        className={wrapperClass}
+        style={{ "--slime-scale": scale, display: "inline-block", position: "relative", background: "none", border: "none", padding: 0, cursor: "pointer" }}
+      >
+        {content}
+      </button>
+    );
+  }
+
+  return (
+    <div className={wrapperClass} style={{ "--slime-scale": scale, pointerEvents: "none", display: "inline-block", position: "relative" }} aria-hidden="true">
+      {content}
     </div>
   );
 }

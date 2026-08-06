@@ -8,6 +8,7 @@ import { EXPENSE_CATS } from "../../shared/categories.js";
 import { card, sectionHead, textBtn } from "../components/sharedStyles.js";
 import AddBudgetSheet from "../components/AddBudgetSheet.jsx";
 import BudgetMageCard from "../components/BudgetMageCard.jsx";
+import SlimeScanModal from "../components/SlimeScanModal.jsx";
 import SlimeEnemy from "../components/mascot/SlimeEnemy.jsx";
 import { resolveMonthTransition, computeSlimeRatio, computeCategorySlimeRatios } from "../lib/slimeStatus.js";
 import { useTheme } from "../context/ThemeContext.jsx";
@@ -26,6 +27,7 @@ export default function Budgets() {
   const { theme } = useTheme();
   const { budgets, loading: refLoading, refetch, settings } = useReferenceData();
   const [showAdd, setShowAdd] = useState(false);
+  const [showScan, setShowScan] = useState(false);
   const [err, setErr] = useState("");
   const [monthTx, setMonthTx] = useState([]);
   const [txLoading, setTxLoading] = useState(true);
@@ -137,7 +139,7 @@ export default function Budgets() {
         {/* Plain document flow, not stacked over anything — so there's no risk of it ever
             covering a number, unlike the other mascots' absolutely-positioned card mounts,
             which needed that care specifically because they DO sit on top of a card's content. */}
-        <SlimeEnemy ratio={slimeRatio} defeated={slimeJustDefeated} />
+        <SlimeEnemy ratio={slimeRatio} defeated={slimeJustDefeated} onClick={() => setShowScan(true)} />
       </div>
       <div style={{ fontSize: 12, color: "var(--color-inkMuted)", margin: "0 2px 18px", lineHeight: 1.6 }}>
         ตั้งวงเงินใช้จ่ายสูงสุดต่อเดือนแยกตามหมวดหมู่ แล้วระบบจะคำนวณให้ว่าใช้ไปแล้วเท่าไหร่
@@ -212,6 +214,12 @@ export default function Budgets() {
         open={showAdd}
         onClose={() => setShowAdd(false)}
         onSaved={async () => { await refetch(); setShowAdd(false); }}
+      />
+      <SlimeScanModal
+        open={showScan}
+        onClose={() => setShowScan(false)}
+        budgets={budgets}
+        spentByCategory={spentByCategory}
       />
     </div>
   );

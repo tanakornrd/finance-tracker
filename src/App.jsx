@@ -230,6 +230,22 @@ export default function App() {
           100% { transform: scale(0, 0) rotate(20deg); opacity: 0; }
         }
 
+        /* SlimeEnemy.jsx's click "scan" reaction (RPG party interactions, part 3 — only
+           Budgets.jsx's page-header slime is ever clickable). A one-shot expanding ring —
+           reads as a targeting reticle scanning the enemy, not a value change, so it doesn't
+           need to touch the sprite's own transform (that's still whatever slime-idle/
+           slime-defeat is doing). SlimeScanModal itself opens in the same click handler, not
+           after this finishes, so it adds no latency. */
+        .slime-scan-ring {
+          position: absolute; inset: -6px; border-radius: 50%;
+          border: 2px solid #4CD4FF; pointer-events: none;
+          animation: slimeScanPulse 0.5s ease-out;
+        }
+        @keyframes slimeScanPulse {
+          0% { transform: scale(0.6); opacity: 1; }
+          100% { transform: scale(1.35); opacity: 0; }
+        }
+
         /* SlimeEnemy.jsx's own <img> size — the one mascot in this app whose size is DATA-
            driven (src/lib/slimeStatus.js), not just responsive. width/height here are the
            normal per-breakpoint MAXIMUM (same clamp()-per-breakpoint idiom as every other
@@ -291,6 +307,7 @@ export default function App() {
           .archer-fire { animation: none; }
           .slime-idle { animation: none; }
           .slime-defeat { animation: none; }
+          .slime-scan-ring { animation: none; opacity: 0; }
           .castle-star-twinkle { animation: none; }
           .castle-torch-flicker { animation: none; }
           .castle-banner-sway { animation: none; }
