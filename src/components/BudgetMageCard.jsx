@@ -57,7 +57,12 @@ export default function BudgetMageCard({ budgets, spentByCategory, categorySlime
         // earlier version did; per feedback the slimes need to sit level with him instead, and
         // flex-end naturally guarantees that for every item in the row without needing per-item
         // overrides or manual pixel math).
-        <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "center", gap: 40, flexWrap: "wrap", transform: "translateX(-16px)" }}>
+        // translateX(-40px), not the earlier -16px — the speech bubble to the mage's own left
+        // (MageMascot.jsx) adds real width INSIDE his flex item that justifyContent:"center"
+        // counts toward the row's total, but that width doesn't read as part of the "mage +
+        // slime party" pair visually, so true flex-centering skewed the pair right of the
+        // box's actual center. -40px was tuned by eye against that bubble's typical width.
+        <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "center", gap: 40, flexWrap: "wrap", transform: "translateX(-40px)" }}>
           <div className="budget-mage-mount">
             <MageMascot message={insight.message} />
           </div>
