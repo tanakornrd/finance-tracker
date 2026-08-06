@@ -40,7 +40,8 @@ export default function AddBudgetSheet({ open, onClose, onSaved }) {
             {EXPENSE_CATS.map((c) => <option key={c.name} value={c.name}>{c.icon} {c.name}</option>)}
           </select>
           <label style={label}>วงเงินต่อเดือน (บาท)</label>
-          <input type="number" inputMode="decimal" step="0.01" min="0" required autoFocus
+          {/* No autoFocus (removed) — see Dashboard.jsx's amount input for why. */}
+          <input type="number" inputMode="decimal" step="0.01" min="0" required
             value={form.monthlyLimit} onChange={(e) => setForm({ ...form, monthlyLimit: e.target.value })}
             placeholder="0.00" style={input} />
           {err && <div style={{ color: "var(--color-danger)", fontSize: 12, marginTop: 8 }}>{err}</div>}

@@ -27,13 +27,14 @@ export default function WarriorMascot({ message }) {
       <img
         src={new URL("../../assets/mascot-warrior.png", import.meta.url).href}
         alt=""
-        // clamp(), not a fixed 130px — this sits right next to the net-worth card's own number
-        // on narrow mobile widths (the app's actual target width, ~480px, not just desktop),
-        // and at fixed size it was wide enough there to cover that number and the row below it.
-        // Scaling down with the viewport (while still landing on the full 130px at desktop
-        // widths, where there's room) keeps it clear of both regardless of screen size, instead
-        // of needing a separate mobile-specific breakpoint rule.
-        style={{ display: "block", imageRendering: "pixelated", width: "clamp(64px, 16vw, 130px)", height: "clamp(64px, 16vw, 130px)" }}
+        // Sizing itself now lives in the ".warrior-img" CSS class (App.jsx), not inline here —
+        // it genuinely differs by breakpoint (small clamp() badge next to the number on desktop
+        // vs. filling the whole card as a faint background on mobile — see Dashboard.jsx's
+        // ".warrior-mount" mount comment), and only an external stylesheet rule can be
+        // overridden by a media query; an inline style always wins over one regardless of
+        // specificity.
+        className="warrior-img"
+        style={{ display: "block", imageRendering: "pixelated" }}
       />
     </div>
   );

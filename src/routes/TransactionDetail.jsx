@@ -203,7 +203,8 @@ function EditTransactionSheet({ tx, accounts, onClose, onSaved }) {
         </div>
         <form onSubmit={handleSubmit}>
           <label style={label}>จำนวนเงิน (บาท)</label>
-          <input type="number" inputMode="decimal" step="0.01" min="0" required autoFocus
+          {/* No autoFocus (removed) — see Dashboard.jsx's amount input for why. */}
+          <input type="number" inputMode="decimal" step="0.01" min="0" required
             value={amount} onChange={(e) => setAmount(e.target.value)} style={input} />
 
           {!isTransfer && (

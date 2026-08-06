@@ -115,7 +115,28 @@ export default function App() {
            number. */
         .warrior-mount { position: absolute; top: 42%; transform: translateY(-50%); right: 4px; z-index: 6; }
         @media (max-width: 560px) {
-          .warrior-mount { top: -60px; transform: none; }
+          /* Mobile no longer floats the warrior above the card (that made it small and easy to
+             miss). Instead: inset:0 makes this box match the net-worth card's own box exactly
+             (the position:relative wrapper around the card in Dashboard.jsx has no other sized
+             child, so its box == the card's box) — a background element centered inside the
+             card. opacity 0.2 keeps it decorative rather than competing with the real numbers,
+             and z-index:0 (below the card's own zIndex:1 — see Dashboard.jsx's styles.passbook)
+             puts it behind that text instead of on top of it. Desktop's original side-gap
+             placement above is untouched. */
+          .warrior-mount { inset: 0; transform: none; opacity: 0.2; z-index: 0; display: flex; align-items: center; justify-content: center; }
+        }
+
+        /* WarriorMascot.jsx's own <img> size: desktop keeps the original clamp() (small guard
+           in the card's side gap, unchanged). Mobile fills its container (which, per the
+           ".warrior-mount" mobile rule above, now IS the card's own box) via width/height:100%;
+           object-fit:contain keeps the art's own aspect ratio so it can never overflow the card
+           regardless of the exact PNG dimensions. Kept as a class (not inline on the <img>)
+           specifically so this media query can win — an inline style always beats an external
+           stylesheet rule of any specificity unless that rule uses !important, which the rest of
+           this file deliberately avoids. */
+        .warrior-img { width: clamp(64px, 16vw, 130px); height: clamp(64px, 16vw, 130px); }
+        @media (max-width: 560px) {
+          .warrior-img { width: 100%; height: 100%; object-fit: contain; }
         }
 
         /* --- Desktop shell (added 2026-08-06) ---

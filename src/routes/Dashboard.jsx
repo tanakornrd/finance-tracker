@@ -600,7 +600,11 @@ export default function Dashboard() {
             </div>
             <form onSubmit={submitTx}>
               <label style={label}>จำนวนเงิน (บาท)</label>
-              <input type="number" inputMode="decimal" step="0.01" min="0" required autoFocus
+              {/* No autoFocus (removed) — auto-focusing this pops the mobile keyboard open the
+                  instant the sheet opens, before the user has seen the form or chosen to type,
+                  which is what triggered the keyboard-jank layout bug. Now the keyboard only
+                  opens once the user deliberately taps the field. */}
+              <input type="number" inputMode="decimal" step="0.01" min="0" required
                 value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })}
                 placeholder="0.00" style={input} />
               {frequentAmounts.length > 0 && (
@@ -780,6 +784,12 @@ const styles = {
     background: colors.white,
     borderRadius: 14, marginBottom: 22, position: "relative", overflow: "hidden",
     border: `1px solid ${colors.border}`, boxShadow: "0 4px 16px rgba(15,42,92,0.08)",
+    // zIndex:1 (paired with WarriorMascot's own z-index, set lower on mobile in
+    // ".warrior-mount" — see App.jsx) — on mobile the mascot now sits centered *inside* this
+    // card's own box as a faint background image (see that CSS comment for why), so this card's
+    // real content (the net-worth number, income/expense/transfer row) needs an explicit
+    // z-index to guarantee it paints above the mascot rather than relying on DOM-order luck.
+    zIndex: 1,
   },
   perforation: { height: 6, width: "100%", backgroundImage: `radial-gradient(circle, ${colors.primarySoft} 2.5px, transparent 2.6px)`, backgroundSize: "14px 6px", backgroundPosition: "top" },
   accCard: { background: colors.white, border: `1px solid ${colors.border}`, borderRadius: 12, padding: "12px 16px", minWidth: 110, flexShrink: 0, boxShadow: "0 1px 3px rgba(15,42,92,0.05)" },

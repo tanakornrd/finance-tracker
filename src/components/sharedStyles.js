@@ -73,10 +73,27 @@ export const kindBtn = { flex: 1, padding: "10px 4px", borderRadius: 10, border:
 export const kindActiveInc = { background: colors.primaryTint, color: colors.primary, borderColor: colors.primary };
 export const kindActiveExp = { background: colors.dangerTint, color: colors.danger, borderColor: colors.danger };
 
-export const overlay = { position: "fixed", inset: 0, background: "rgba(15,42,92,0.35)", display: "flex", alignItems: "flex-end", justifyContent: "center", zIndex: 50 };
-export const sheet = { width: "100%", maxWidth: 480, background: colors.white, borderTopLeftRadius: 20, borderTopRightRadius: 20, border: `1px solid ${colors.border}`, borderBottom: "none", padding: "20px 20px 28px", maxHeight: "85vh", overflowY: "auto" };
+// height: "100dvh" (not left implicit via `inset:0` alone) is the fix for every bottom-sheet
+// modal in the app (this file is the one place every one of them gets `overlay`/`sheet` from —
+// see the file header comment). `inset:0` on a `position:fixed` element sizes it to the
+// *layout* viewport, which on iOS Safari does NOT shrink when the on-screen keyboard opens —
+// only the *visual* viewport does. That mismatch is what let `sheet` below (bottom-anchored via
+// `alignItems:"flex-end"`) get positioned past the bottom of what's actually visible once the
+// keyboard is up, taking its submit button with it (see submitBtn below + each modal's amount
+// input losing autoFocus, same root cause). `100dvh` (dynamic viewport height) tracks the
+// visual viewport instead, so the overlay — and everything bottom-anchored inside it — resizes
+// with the keyboard instead of being covered by it.
+export const overlay = { position: "fixed", inset: 0, height: "100dvh", background: "rgba(15,42,92,0.35)", display: "flex", alignItems: "flex-end", justifyContent: "center", zIndex: 50 };
+// maxHeight: 85dvh (not 85vh), same reasoning as `overlay` above — keeps the sheet from ever
+// claiming more height than is actually visible above the keyboard. paddingBottom adds
+// env(safe-area-inset-bottom) on top of the original 28px so the submit button clears the home-
+// indicator area on notched iPhones when the keyboard is closed, same as before this fix.
+export const sheet = { width: "100%", maxWidth: 480, background: colors.white, borderTopLeftRadius: 20, borderTopRightRadius: 20, border: `1px solid ${colors.border}`, borderBottom: "none", padding: "20px 20px calc(28px + env(safe-area-inset-bottom))", maxHeight: "85dvh", overflowY: "auto" };
 export const sheetHead = { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 };
 export const iconBtn = { background: "none", border: "none", padding: 4 };
 export const label = { display: "block", fontSize: 12, color: colors.inkMuted, margin: "12px 0 6px" };
-export const input = { width: "100%", padding: "11px 12px", borderRadius: 10, border: `1px solid ${colors.border}`, background: colors.inputBg, color: colors.ink, fontSize: 14 };
+// fontSize: 16 (was 14) — below 16px, iOS Safari auto-zooms the whole page on focus of any text
+// input, which is its own layout-jank bug distinct from the keyboard-height issue above. 16px is
+// the documented threshold where iOS stops doing that.
+export const input = { width: "100%", padding: "11px 12px", borderRadius: 10, border: `1px solid ${colors.border}`, background: colors.inputBg, color: colors.ink, fontSize: 16 };
 export const submitBtn = { width: "100%", marginTop: 20, padding: "13px 0", borderRadius: 10, border: "none", background: colors.primary, color: colors.white, fontWeight: 700, fontSize: 14 };
