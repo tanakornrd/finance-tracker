@@ -217,11 +217,14 @@ export default function App() {
           .slime-img { width: 140px; height: 140px; }
         }
 
-        /* Compact variant — one per budget row (Budgets.jsx), next to that category's own
-           progress bar. Fixed size, not viewport-responsive like ".slime-img" above: it's a
-           small inline indicator next to text, not a page-level flourish, so it doesn't need
-           its own breakpoint scaling. */
-        .slime-img-compact { width: 22px; height: 22px; transform: scale(var(--slime-scale, 0.3)); transform-origin: center; vertical-align: -6px; }
+        /* "party" variant — one per budgeted category, staged inside BudgetMageCard.jsx
+           opposite MageMascot, like an enemy encounter. Deliberately the SAME max box as
+           ".mage-img" (not its own smaller clamp()) — SlimeEnemy.jsx's 0.5 baseline scale only
+           reads as "half the mage's size" if both share the same reserved box to begin with. */
+        .slime-img-party { width: clamp(64px, 18vw, 100px); height: clamp(64px, 18vw, 100px); transform: scale(var(--slime-scale, 0.5)); transform-origin: center; }
+        @media (min-width: 1280px) {
+          .slime-img-party { width: 140px; height: 140px; }
+        }
 
         /* CastleBackground.jsx ambient decoration — not gated by the mascotAnimationEnabled
            toggle (that's specifically the mascot on/off switch), but still respects

@@ -30,9 +30,9 @@ export default function Budgets() {
   const [monthTx, setMonthTx] = useState([]);
   const [txLoading, setTxLoading] = useState(true);
   const [slimeJustDefeated, setSlimeJustDefeated] = useState(false);
-  // Categories whose per-row slime just got defeated (see resolveMonthTransition's
-  // defeatedCategories) — a Set, not a single bool like slimeJustDefeated, since more than one
-  // category can resolve at once.
+  // Categories whose slime (in BudgetMageCard's party) just got defeated (see
+  // resolveMonthTransition's defeatedCategories) — a Set, not a single bool like
+  // slimeJustDefeated, since more than one category can resolve at once.
   const [defeatedCategories, setDefeatedCategories] = useState(new Set());
 
   // Only this month's expenses are needed to show spent-vs-limit, not the full history.
@@ -144,7 +144,12 @@ export default function Budgets() {
         เทียบกับวงเงินที่ตั้งไว้ ช่วยให้คุมค่าใช้จ่ายแต่ละหมวดไม่ให้บานปลาย
       </div>
 
-      <BudgetMageCard budgets={budgets} spentByCategory={spentByCategory} />
+      <BudgetMageCard
+        budgets={budgets}
+        spentByCategory={spentByCategory}
+        categorySlimeRatios={categorySlimeRatios}
+        defeatedCategories={defeatedCategories}
+      />
 
       <div style={sectionHead} className="section-head">
         <span>ตั้งวงเงิน</span>
@@ -173,7 +178,6 @@ export default function Budgets() {
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 13, marginBottom: 4 }}>
                   <span style={{ color: "var(--color-ink)", display: "inline-flex", alignItems: "center", gap: 6 }}>
                     <CategoryIcon theme={theme} name={b.category} fallback={icon} size={16} /> {b.category}
-                    <SlimeEnemy compact ratio={categorySlimeRatios[b.category] ?? null} defeated={defeatedCategories.has(b.category)} />
                   </span>
                   <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                     <span className="num" style={{ color }}>

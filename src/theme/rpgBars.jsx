@@ -37,9 +37,11 @@ function RpgBar({ theme, pct, color, trackColor, label, height = 6 }) {
 
 // งบประมาณคงเหลือต่อหมวด — HP ที่ลดลงตามสัดส่วนที่ใช้ไป: caller passes pct = % ใช้ไปแล้ว, this
 // flips it to % ที่เหลือ so the bar drains like actual HP as spending eats into the budget.
-export function HpBar({ theme, spentPct, color, trackColor }) {
+// label defaults to "HP" (every existing call site relies on that default unchanged) — overridable
+// so BudgetMageCard.jsx's slime party can show each category's own name under its bar instead.
+export function HpBar({ theme, spentPct, color, trackColor, label = "HP" }) {
   const remainingPct = 100 - Math.max(0, Math.min(100, spentPct));
-  return <RpgBar theme={theme} pct={remainingPct} color={color} trackColor={trackColor} label="HP" />;
+  return <RpgBar theme={theme} pct={remainingPct} color={color} trackColor={trackColor} label={label} />;
 }
 
 // ความคืบหน้าการผ่อนชำระหนี้เดือนนี้ — เติมขึ้นเมื่อจ่ายตรงเวลา/ครบตามยอดที่ตั้งไว้
