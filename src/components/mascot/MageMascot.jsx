@@ -18,7 +18,17 @@ const SCRIBE_MESSAGES = [
 //     random SCRIBE_MESSAGES line, mirroring ArcherMascot's firing/CHEER_MESSAGES pattern.
 // A component never gets both props at once in practice (one caller per mode), but `firing`
 // takes priority over `message` if it somehow did, since it's the more specific, momentary state.
-export default function MageMascot({ message, firing }) {
+//
+// floatingBubble: BudgetMageCard.jsx only. Normally the bubble sits in flex flow to the mage's
+// left (marginRight, see SpeechBubble below), which is exactly what makes justifyContent:
+// "center" below treat "mage + bubble" as the thing to center — fine for every OTHER caller
+// (SafeToSpendCard.jsx, TransactionDetail.jsx), where that combined pair is genuinely what
+// should be centered/positioned. BudgetMageCard.jsx centers a "mage + slime party" pair instead
+// — the bubble's own (message-length-dependent, so not even a fixed width) space pulls that
+// centering off to one side for no reason a viewer would expect. floatingBubble takes the
+// bubble out of flex flow (position:absolute) so it no longer counts toward that centering at
+// all, without changing anything for the callers that still want it counted.
+export default function MageMascot({ message, firing, floatingBubble }) {
   const { theme, mascotAnimationEnabled } = useTheme();
   const [firedMessage, setFiredMessage] = useState(null);
 
@@ -49,8 +59,8 @@ export default function MageMascot({ message, firing }) {
     // deliberately-placed unit regardless of card width. Callers that mount this inside their
     // own absolutely-positioned corner (SafeToSpendCard.jsx, same idiom as WarriorMascot) get a
     // small, self-contained unit either way since the row only ever takes its content's width.
-    <div style={{ display: "flex", alignItems: "center", justifyContent: "center" }} aria-hidden="true">
-      {shownMessage && <SpeechBubble text={shownMessage} />}
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", position: floatingBubble ? "relative" : undefined }} aria-hidden="true">
+      {shownMessage && <SpeechBubble text={shownMessage} floating={floatingBubble} />}
       <div className={animClass} style={{ position: "relative", flexShrink: 0, pointerEvents: "none" }}>
         {/* The magic orb glow — a plain CSS radial gradient positioned over roughly where the
             orb sits in mascot-mage.png (right of center, upper-middle), not a separate art
@@ -80,17 +90,17 @@ export default function MageMascot({ message, firing }) {
 // box that read as an empty input field, not a speech bubble, with the tail barely reaching the
 // mage. Sized to its own content now (flex: "0 1 auto", maxWidth as a cap for unusually long
 // messages) so it hugs the text and stays visually anchored right next to him instead.
-function SpeechBubble({ text }) {
+function SpeechBubble({ text, floating }) {
   return (
     <div
       style={{
-        position: "relative", // containing block for the tail below, same trick as WarriorMascot
-        flex: "0 1 auto",
+        // floating: position:absolute, pinned to the mage wrapper's left edge (right:100% of
+        // that relative-positioned wrapper — see MageMascot's own root div above) instead of a
+        // normal flex child with marginRight — see MageMascot's floatingBubble comment for why.
+        position: floating ? "absolute" : "relative", // "relative" still needed either way: containing block for the tail below
+        ...(floating ? { right: "100%", top: "50%", transform: "translateY(-50%)", marginRight: 0 } : { flex: "0 1 auto", marginRight: 6 }),
         maxWidth: "min(320px, 60vw)",
         wordBreak: "break-word",
-        // 6, not the previous flex `gap: 10` on the parent — matches WarriorMascot's own
-        // marginRight:6, close enough that the 7px tail below all but touches the mage.
-        marginRight: 6,
         background: "#F5F3FF",
         color: "#1A1030",
         border: "3px solid #1A1030",

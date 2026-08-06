@@ -50,21 +50,21 @@ export default function BudgetMageCard({ budgets, spentByCategory, categorySlime
     <div style={{ ...card, marginBottom: 18 }}>
       {budgets.length > 0 ? (
         // A "vs" formation, not a centered unit like the empty-state below: the mage on the
-        // left, the slime party close beside him. translateX(-16px) on the whole row nudges
-        // both groups slightly left of dead-center (per feedback — centered read as too far
-        // right). alignItems:flex-end anchors the mage and every slime column to the same
-        // bottom "ground" line — the mage no longer overrides this with alignSelf:center (an
-        // earlier version did; per feedback the slimes need to sit level with him instead, and
-        // flex-end naturally guarantees that for every item in the row without needing per-item
-        // overrides or manual pixel math).
-        // translateX(-40px), not the earlier -16px — the speech bubble to the mage's own left
-        // (MageMascot.jsx) adds real width INSIDE his flex item that justifyContent:"center"
-        // counts toward the row's total, but that width doesn't read as part of the "mage +
-        // slime party" pair visually, so true flex-centering skewed the pair right of the
-        // box's actual center. -40px was tuned by eye against that bubble's typical width.
-        <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "center", gap: 40, flexWrap: "wrap", transform: "translateX(-40px)" }}>
+        // left, the slime party close beside him. alignItems:flex-end anchors the mage and
+        // every slime column to the same bottom "ground" line — the mage no longer overrides
+        // this with alignSelf:center (an earlier version did; per feedback the slimes need to
+        // sit level with him instead, and flex-end naturally guarantees that for every item in
+        // the row without needing per-item overrides or manual pixel math).
+        //
+        // No manual translateX offset here (two earlier attempts, -16px then -40px, both tried
+        // to eyeball-compensate for the bubble's width and neither actually fixed it — the
+        // bubble's width also isn't fixed, it depends on the message text). floatingBubble on
+        // MageMascot below is the real fix: it takes the bubble out of flex flow entirely so
+        // justifyContent:"center" only ever centers "mage + slime party" — see that prop's own
+        // comment in MageMascot.jsx.
+        <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "center", gap: 40, flexWrap: "wrap" }}>
           <div className="budget-mage-mount">
-            <MageMascot message={insight.message} />
+            <MageMascot message={insight.message} floatingBubble />
           </div>
           {/* marginBottom (not marginTop) here — see below: the party's own translateY(10px)
               nudges it down slightly past the mage's exact baseline, matching what was actually
