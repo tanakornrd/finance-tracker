@@ -84,10 +84,14 @@ function unwrap({ data, error }) {
   return data || [];
 }
 
-// key/value settings (savings-rate target, spend/save/invest allocation plan), one row per
-// key per user (see supabase/schema.sql's app_settings, unique(user_id, key)) — parsed here
-// into the shapes the client actually wants. Unset keys default to null so the UI can show its
-// own "not configured yet" state.
+// key/value settings (savings-rate target, spend/save/invest allocation plan, SlimeEnemy's
+// month-to-month budget state), one row per key per user (see supabase/schema.sql's
+// app_settings, unique(user_id, key)) — parsed here into the shapes the client actually wants.
+// Unset keys default to null so the UI can show its own "not configured yet" state.
+//
+// slime_carry_over_cents / slime_last_seen_month are two more keys in this same existing
+// table, added for the arcade theme's SlimeEnemy mascot (src/lib/slimeStatus.js) — no schema
+// change, app_settings already stores arbitrary key/value pairs per user.
 export async function getSettings(supabase) {
   const rows = unwrap(await supabase.from("app_settings").select("key, value"));
   const map = Object.fromEntries(rows.map((r) => [r.key, r.value]));
@@ -100,7 +104,9 @@ export async function getSettings(supabase) {
       allocationPlan = null;
     }
   }
-  return { targetSavingsPct, allocationPlan };
+  const slimeCarryOverCents = map.slime_carry_over_cents != null ? Number(map.slime_carry_over_cents) : 0;
+  const slimeLastSeenMonth = map.slime_last_seen_month || null;
+  return { targetSavingsPct, allocationPlan, slimeCarryOverCents, slimeLastSeenMonth };
 }
 
 // Bounded, low-churn data used across almost every page (account balances, budget caps,

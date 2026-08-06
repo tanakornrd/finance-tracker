@@ -1,13 +1,15 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Trash2, PieChart } from "lucide-react";
 import { useReferenceData } from "../context/ReferenceDataContext.jsx";
-import { deleteBudget, fetchTransactions } from "../api.js";
+import { deleteBudget, fetchTransactions, updateSettings } from "../api.js";
 import { centsToDisplay } from "../../shared/money.js";
 import { toISODate } from "../../shared/dates.js";
 import { EXPENSE_CATS } from "../../shared/categories.js";
 import { card, sectionHead, textBtn } from "../components/sharedStyles.js";
 import AddBudgetSheet from "../components/AddBudgetSheet.jsx";
 import BudgetMageCard from "../components/BudgetMageCard.jsx";
+import SlimeEnemy from "../components/mascot/SlimeEnemy.jsx";
+import { resolveMonthTransition, computeSlimeRatio } from "../lib/slimeStatus.js";
 import { useTheme } from "../context/ThemeContext.jsx";
 import { CategoryIcon } from "../theme/arcadeIcons.jsx";
 import { HpBar } from "../theme/rpgBars.jsx";
@@ -22,11 +24,12 @@ function monthKey(d) { return `${d.getFullYear()}-${String(d.getMonth() + 1).pad
 
 export default function Budgets() {
   const { theme } = useTheme();
-  const { budgets, loading: refLoading, refetch } = useReferenceData();
+  const { budgets, loading: refLoading, refetch, settings } = useReferenceData();
   const [showAdd, setShowAdd] = useState(false);
   const [err, setErr] = useState("");
   const [monthTx, setMonthTx] = useState([]);
   const [txLoading, setTxLoading] = useState(true);
+  const [slimeJustDefeated, setSlimeJustDefeated] = useState(false);
 
   // Only this month's expenses are needed to show spent-vs-limit, not the full history.
   useEffect(() => {
@@ -37,6 +40,49 @@ export default function Budgets() {
     fetchTransactions({ from, to }).then(setMonthTx).finally(() => setTxLoading(false));
   }, []);
 
+  // SlimeEnemy's month-transition check (src/lib/slimeStatus.js) — runs once per app load,
+  // and does nothing (skips straight past resolveMonthTransition's early-out) on every load
+  // after the first one in a given month. Depends on settings.slimeLastSeenMonth specifically
+  // (not the whole `settings` object or `budgets`) so it doesn't re-fire on every unrelated
+  // reference-data refetch — only when the stored month actually changes, which happens at
+  // most once per real month boundary.
+  useEffect(() => {
+    if (refLoading) return;
+    const now = new Date();
+    const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+    if (settings.slimeLastSeenMonth === currentMonth) return;
+
+    (async () => {
+      let prevMonthTransactions = [];
+      // Only worth fetching last month's data when there's an actual prior check to compare
+      // against and budgets to compare it with — resolveMonthTransition's own early-out covers
+      // the "nothing to resolve" cases, but skipping the fetch here avoids a pointless request.
+      if (settings.slimeLastSeenMonth && budgets.length > 0) {
+        const prevDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+        const from = toISODate(new Date(prevDate.getFullYear(), prevDate.getMonth(), 1));
+        const to = toISODate(new Date(prevDate.getFullYear(), prevDate.getMonth() + 1, 0));
+        prevMonthTransactions = await fetchTransactions({ from, to });
+      }
+      const result = resolveMonthTransition({
+        today: now,
+        budgets,
+        prevMonthTransactions,
+        storedLastSeenMonth: settings.slimeLastSeenMonth,
+        storedCarryOverCents: settings.slimeCarryOverCents || 0,
+      });
+      if (!result.changed) return;
+      await updateSettings({ slimeCarryOverCents: result.carryOverCents, slimeLastSeenMonth: result.newLastSeenMonth });
+      await refetch();
+      if (result.defeated) {
+        setSlimeJustDefeated(true);
+        // 1.6s — matches the ".slime-defeat" CSS animation's own run time (App.jsx) plus a
+        // small buffer, same idiom as every other mascot's firing-animation timer.
+        setTimeout(() => setSlimeJustDefeated(false), 1600);
+      }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [refLoading, settings.slimeLastSeenMonth]);
+
   const spentByCategory = useMemo(() => {
     const mKey = monthKey(new Date());
     const map = {};
@@ -46,6 +92,11 @@ export default function Budgets() {
     }
     return map;
   }, [monthTx]);
+
+  const slimeRatio = useMemo(
+    () => computeSlimeRatio({ budgets, thisMonthTransactions: monthTx, today: new Date(), carryOverCents: settings.slimeCarryOverCents || 0 }),
+    [budgets, monthTx, settings.slimeCarryOverCents]
+  );
 
   async function handleDelete(budget) {
     try {
@@ -62,7 +113,13 @@ export default function Budgets() {
 
   return (
     <div>
-      <div className="page-title" style={{ fontSize: 22, fontWeight: 700, color: "var(--color-ink)", margin: "0 2px 6px" }}>งบประมาณ</div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", margin: "0 2px 6px" }}>
+        <div className="page-title" style={{ fontSize: 22, fontWeight: 700, color: "var(--color-ink)" }}>งบประมาณ</div>
+        {/* Plain document flow, not stacked over anything — so there's no risk of it ever
+            covering a number, unlike the other mascots' absolutely-positioned card mounts,
+            which needed that care specifically because they DO sit on top of a card's content. */}
+        <SlimeEnemy ratio={slimeRatio} defeated={slimeJustDefeated} />
+      </div>
       <div style={{ fontSize: 12, color: "var(--color-inkMuted)", margin: "0 2px 18px", lineHeight: 1.6 }}>
         ตั้งวงเงินใช้จ่ายสูงสุดต่อเดือนแยกตามหมวดหมู่ แล้วระบบจะคำนวณให้ว่าใช้ไปแล้วเท่าไหร่
         เทียบกับวงเงินที่ตั้งไว้ ช่วยให้คุมค่าใช้จ่ายแต่ละหมวดไม่ให้บานปลาย

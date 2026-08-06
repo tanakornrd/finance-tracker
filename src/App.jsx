@@ -185,6 +185,40 @@ export default function App() {
           .scribe-mage-mount .mage-img { width: 160px; height: 160px; }
         }
 
+        /* SlimeEnemy.jsx (Budgets.jsx): idle is a squish-wobble (fitting for a slime) instead
+           of the other mascots' bob/float — a one-shot "poof" plays instead when "defeated" is
+           true (React swaps the className, same idiom as archer-fire/mage-cast), scaling down
+           to nothing while spinning slightly, then the component just stops rendering once its
+           parent flips "defeated" back off (Budgets.jsx). */
+        .slime-idle { animation: slimeWobble 1.8s ease-in-out infinite; }
+        @keyframes slimeWobble {
+          0%, 100% { transform: scale(1, 1); }
+          50% { transform: scale(1.08, 0.9); }
+        }
+        .slime-defeat { animation: slimeDefeat 1.4s ease-out forwards; }
+        @keyframes slimeDefeat {
+          0% { transform: scale(1, 1) rotate(0deg); opacity: 1; }
+          40% { transform: scale(1.3, 0.6) rotate(-8deg); opacity: 1; }
+          100% { transform: scale(0, 0) rotate(20deg); opacity: 0; }
+        }
+
+        /* SlimeEnemy.jsx's own <img> size — the one mascot in this app whose size is DATA-
+           driven (src/lib/slimeStatus.js), not just responsive. The clamp() here is the normal
+           per-breakpoint base (same idiom as every other mascot's own -img class); multiplying
+           it by var(--slime-scale) (set inline by the component itself, per-render, from the
+           current budget ratio) layers the data-driven part on top instead of replacing the
+           breakpoint-based part. */
+        .slime-img {
+          width: calc(clamp(48px, 14vw, 90px) * var(--slime-scale, 0.4));
+          height: calc(clamp(48px, 14vw, 90px) * var(--slime-scale, 0.4));
+        }
+        @media (min-width: 1280px) {
+          .slime-img {
+            width: calc(140px * var(--slime-scale, 0.4));
+            height: calc(140px * var(--slime-scale, 0.4));
+          }
+        }
+
         /* CastleBackground.jsx ambient decoration — not gated by the mascotAnimationEnabled
            toggle (that's specifically the mascot on/off switch), but still respects
            prefers-reduced-motion below like every other animation here. */
@@ -206,6 +240,8 @@ export default function App() {
           .mage-orb-glow.firing { animation: none; }
           .archer-idle { animation: none; }
           .archer-fire { animation: none; }
+          .slime-idle { animation: none; }
+          .slime-defeat { animation: none; }
           .castle-star-twinkle { animation: none; }
           .castle-torch-flicker { animation: none; }
           .castle-banner-sway { animation: none; }
