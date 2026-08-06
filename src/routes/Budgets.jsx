@@ -7,6 +7,7 @@ import { toISODate } from "../../shared/dates.js";
 import { EXPENSE_CATS } from "../../shared/categories.js";
 import { card, sectionHead, textBtn } from "../components/sharedStyles.js";
 import AddBudgetSheet from "../components/AddBudgetSheet.jsx";
+import BudgetMageCard from "../components/BudgetMageCard.jsx";
 import { useTheme } from "../context/ThemeContext.jsx";
 import { CategoryIcon } from "../theme/arcadeIcons.jsx";
 import { HpBar } from "../theme/rpgBars.jsx";
@@ -66,6 +67,8 @@ export default function Budgets() {
         ตั้งวงเงินใช้จ่ายสูงสุดต่อเดือนแยกตามหมวดหมู่ แล้วระบบจะคำนวณให้ว่าใช้ไปแล้วเท่าไหร่
         เทียบกับวงเงินที่ตั้งไว้ ช่วยให้คุมค่าใช้จ่ายแต่ละหมวดไม่ให้บานปลาย
       </div>
+
+      <BudgetMageCard budgets={budgets} spentByCategory={spentByCategory} />
 
       <div style={sectionHead} className="section-head">
         <span>ตั้งวงเงิน</span>

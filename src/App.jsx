@@ -103,6 +103,21 @@ export default function App() {
         .warrior-guard { animation: warriorBob 2.4s ease-in-out infinite; }
         @keyframes warriorBob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
 
+        /* MageMascot.jsx (mounted inside BudgetMageCard.jsx): a gentle float instead of the
+           warrior's bob — reads as a spellcaster hovering rather than a guard shifting weight,
+           same "idle but alive, not static" purpose. */
+        .mage-float { animation: mageFloat 3s ease-in-out infinite; }
+        @keyframes mageFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+
+        /* MageMascot.jsx's own <img> size — see ".warrior-img" above for why this is a class,
+           not an inline style: only a stylesheet rule can be overridden by a media query. This
+           card is self-contained (BudgetMageCard.jsx), so unlike the warrior it never has to
+           stay clear of someone else's numbers — just enough room to grow a bit on desktop. */
+        .mage-img { width: clamp(64px, 18vw, 100px); height: clamp(64px, 18vw, 100px); }
+        @media (min-width: 1280px) {
+          .mage-img { width: 140px; height: 140px; }
+        }
+
         /* CastleBackground.jsx ambient decoration — not gated by the mascotAnimationEnabled
            toggle (that's specifically the mascot on/off switch), but still respects
            prefers-reduced-motion below like every other animation here. */
@@ -119,6 +134,7 @@ export default function App() {
           .mascot-dash { animation: none; }
           .runner-leg-back, .runner-leg-front, .runner-arm-front, .runner-arm-back { animation: none; }
           .warrior-guard { animation: none; }
+          .mage-float { animation: none; }
           .castle-star-twinkle { animation: none; }
           .castle-torch-flicker { animation: none; }
           .castle-banner-sway { animation: none; }
