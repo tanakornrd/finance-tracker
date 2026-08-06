@@ -50,11 +50,14 @@ export default function BudgetMageCard({ budgets, spentByCategory, categorySlime
     <div style={{ ...card, marginBottom: 18 }}>
       {budgets.length > 0 ? (
         // A "vs" formation, not a centered unit like the empty-state below: the mage on the
-        // left, the slime party on the right, so the whole row reads left-to-right as "hero
-        // facing enemies". alignItems:flex-end keeps the slimes standing on a shared "ground"
-        // line with their HP bars; the mage overrides that with alignSelf:center below (his
-        // own div, right after this one) since he's sized independently of that ground line.
-        <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 8, flexWrap: "wrap" }}>
+        // left, the slime party close beside him (justifyContent:"center", not "space-between"
+        // — the party used to sit pinned to the card's far right edge, too far from the mage to
+        // read as facing off against him) so the two groups read as one confrontation in the
+        // middle of the card rather than two things stranded at opposite corners.
+        // alignItems:flex-end keeps the slimes standing on a shared "ground" line with their HP
+        // bars; the mage overrides that with alignSelf:center below (his own div, right after
+        // this one) since he's sized independently of that ground line.
+        <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "center", gap: 40, flexWrap: "wrap" }}>
           <div className="budget-mage-mount" style={{ alignSelf: "center" }}>
             <MageMascot message={insight.message} />
           </div>
