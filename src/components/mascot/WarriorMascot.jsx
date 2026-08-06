@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useTheme } from "../../context/ThemeContext.jsx";
 
 // Pixel-art warrior guard for the "arcade" theme — mounted inside Dashboard.jsx next to the net-
@@ -13,17 +13,59 @@ import { useTheme } from "../../context/ThemeContext.jsx";
 // art is a 3/4 lunge pose already leading with its sword to the left (shield trailing on the
 // right), so it's left-facing as-is — no flip here. If it ever reads as facing the wrong way on
 // screen, flip it back on by adding `transform: "scaleX(-1)"` to the <img> style below.
-export default function WarriorMascot({ message }) {
+//
+// Clickable (RPG party interactions, part 1) — `message` (weeklyInsight, from Dashboard.jsx)
+// stays the normal persistent bubble text; a click plays a one-shot sword-slash animation and
+// swaps the bubble to a reminder/praise line for ~1.5s (picked from `hasEntryToday`, also from
+// Dashboard.jsx — its own separate "does today have an entry" check, same idea as
+// NoEntryTodayBanner.jsx's own independent fetch), then reverts to `message` on its own.
+export default function WarriorMascot({ message, hasEntryToday }) {
   const { theme, mascotAnimationEnabled } = useTheme();
+  const [slashing, setSlashing] = useState(false);
+  const [clickMessage, setClickMessage] = useState(null);
+
+  useEffect(() => {
+    if (!clickMessage) return undefined;
+    const t = setTimeout(() => setClickMessage(null), 1500);
+    return () => clearTimeout(t);
+  }, [clickMessage]);
+
   if (theme !== "arcade") return null;
 
+  function handleClick() {
+    setClickMessage(hasEntryToday ? "เก่งมาก! วันนี้จดแล้ว" : "อย่าลืมจดรายรับรายจ่ายวันนี้นะ!");
+    if (mascotAnimationEnabled) {
+      // Re-triggers even on rapid repeat clicks: force a reflow between removing and re-adding
+      // the class, same one-shot-animation-replay trick ArcherMascot/MageMascot don't need
+      // (their firing prop is controlled by a parent's own timer, which naturally already
+      // toggles the class off before back on — this one is self-triggered by the same click
+      // handler each time, so without this it could re-click while still "slashing" and never
+      // see the class change at all).
+      setSlashing(false);
+      requestAnimationFrame(() => setSlashing(true));
+    }
+  }
+
+  const shownMessage = clickMessage || message;
+
   return (
-    <div
-      className={mascotAnimationEnabled ? "warrior-guard" : undefined}
-      style={{ position: "relative", display: "flex", alignItems: "center", pointerEvents: "none", zIndex: 5 }}
-      aria-hidden="true"
+    <button
+      type="button"
+      onClick={handleClick}
+      onAnimationEnd={() => setSlashing(false)}
+      aria-label="อัศวินยาม กดเพื่อดูสถานะการบันทึกวันนี้"
+      className={slashing ? "warrior-slash" : mascotAnimationEnabled ? "warrior-guard" : undefined}
+      // Was a plain aria-hidden <div> with pointerEvents:"none" — now a real, focusable,
+      // keyboard-activatable button (native <button> gets Enter/Space activation for free), so
+      // both the "decorative, not interactive" attributes are gone and the wrapping button
+      // needs its own reset styles (no default button chrome) instead of just position/flex.
+      style={{
+        position: "relative", display: "flex", alignItems: "center",
+        background: "none", border: "none", padding: 0, cursor: "pointer",
+        zIndex: 5,
+      }}
     >
-      {message && <SpeechBubble text={message} />}
+      {shownMessage && <SpeechBubble text={shownMessage} />}
       <img
         src={new URL("../../assets/mascot-warrior.png", import.meta.url).href}
         alt=""
@@ -34,7 +76,7 @@ export default function WarriorMascot({ message }) {
         className="warrior-img"
         style={{ display: "block", imageRendering: "pixelated" }}
       />
-    </div>
+    </button>
   );
 }
 
@@ -90,6 +132,7 @@ function SpeechBubble({ text }) {
         fontSize: "clamp(10px, 2.6vw, 12px)",
         lineHeight: 1.4,
         fontFamily: "'IBM Plex Sans Thai', sans-serif",
+        textAlign: "left",
       }}
     >
       {text}

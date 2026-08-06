@@ -103,6 +103,20 @@ export default function App() {
         .warrior-guard { animation: warriorBob 2.4s ease-in-out infinite; }
         @keyframes warriorBob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
 
+        /* WarriorMascot.jsx's click reaction (RPG party interactions, part 1) — a one-shot
+           (not looping) sword-slash lunge, same idiom as ArcherMascot's archer-fire/MageMascot's
+           mage-cast: React swaps the className from warrior-guard to warrior-slash and back
+           (WarriorMascot.jsx itself resets it via onAnimationEnd here, since the click that
+           triggers it is self-contained rather than driven by a parent's own save-success
+           timer), so this only ever plays once per click. */
+        .warrior-slash { animation: warriorSlash 0.5s ease-out; }
+        @keyframes warriorSlash {
+          0% { transform: translateX(0) rotate(0deg); }
+          35% { transform: translateX(-8px) rotate(-12deg); }
+          65% { transform: translateX(4px) rotate(8deg); }
+          100% { transform: translateX(0) rotate(0deg); }
+        }
+
         /* MageMascot.jsx (mounted inside BudgetMageCard.jsx): a gentle float instead of the
            warrior's bob — reads as a spellcaster hovering rather than a guard shifting weight,
            same "idle but alive, not static" purpose. */
@@ -254,6 +268,7 @@ export default function App() {
           .mascot-dash { animation: none; }
           .runner-leg-back, .runner-leg-front, .runner-arm-front, .runner-arm-back { animation: none; }
           .warrior-guard { animation: none; }
+          .warrior-slash { animation: none; }
           .mage-float { animation: none; }
           .mage-cast { animation: none; }
           .mage-orb-glow.firing { animation: none; }

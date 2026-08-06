@@ -118,6 +118,22 @@ export default function Dashboard() {
   // only on the next full page load.
   const [entrySavedSignal, setEntrySavedSignal] = useState(0);
 
+  // WarriorMascot's click message (part 1 of the RPG party interactions) — whether *today*
+  // specifically has an entry, same check NoEntryTodayBanner.jsx already does independently
+  // (own small fetch, not reused from that component, for the same reason its own comment
+  // gives: it has to reflect today regardless of which month rangeTx/monthTx is currently
+  // scoped to, which can be a past or future month once the user pages the calendar away from
+  // now). null = still checking; WarriorMascot treats that as "not today" until it resolves.
+  const [hasEntryToday, setHasEntryToday] = useState(null);
+  useEffect(() => {
+    let cancelled = false;
+    const today = toISODate(new Date());
+    fetchTransactions({ from: today, to: today })
+      .then((rows) => { if (!cancelled) setHasEntryToday(rows.length > 0); })
+      .catch(() => { if (!cancelled) setHasEntryToday(null); });
+    return () => { cancelled = true; };
+  }, [entrySavedSignal]);
+
   const loading = refLoading || txLoading;
 
   const monthTx = useMemo(
@@ -370,7 +386,7 @@ export default function Dashboard() {
             regardless of z-index. See ".warrior-mount"/".warrior-img" in App.jsx for the actual
             per-breakpoint size/position. */}
         <div className="warrior-mount">
-          <WarriorMascot message={weeklyInsight.message} />
+          <WarriorMascot message={weeklyInsight.message} hasEntryToday={hasEntryToday} />
         </div>
         <div style={{ padding: "20px 22px", position: "relative", zIndex: 1 }}>
           <div style={{ fontSize: 12, color: colors.inkMuted, marginBottom: 4 }}>ความมั่งคั่งสุทธิ (สินทรัพย์ − หนี้สิน)</div>
