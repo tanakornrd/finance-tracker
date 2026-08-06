@@ -70,12 +70,12 @@ export default function App() {
         .runner-leg-front, .runner-arm-back { animation: legSwingA 0.3s ease-in-out infinite reverse; }
         @keyframes legSwingA { 0%, 100% { transform: rotate(-22deg); } 50% { transform: rotate(22deg); } }
 
-        /* KnightMascot.jsx (mounted inside Dashboard.jsx, next to the net-worth card — not
+        /* WarriorMascot.jsx (mounted inside Dashboard.jsx, next to the net-worth card — not
            globally here anymore): a slow, subtle standing-guard bob rather than a run cycle —
-           the knight stands still rather than crossing the screen, so "idle" should read as
+           the warrior stands still rather than crossing the screen, so "idle" should read as
            alert-but-still rather than static. */
-        .knight-guard { animation: knightBob 2.4s ease-in-out infinite; }
-        @keyframes knightBob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+        .warrior-guard { animation: warriorBob 2.4s ease-in-out infinite; }
+        @keyframes warriorBob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
 
         /* CastleBackground.jsx ambient decoration — not gated by the mascotAnimationEnabled
            toggle (that's specifically the mascot on/off switch), but still respects
@@ -92,18 +92,18 @@ export default function App() {
         @media (prefers-reduced-motion: reduce) {
           .mascot-dash { animation: none; }
           .runner-leg-back, .runner-leg-front, .runner-arm-front, .runner-arm-back { animation: none; }
-          .knight-guard { animation: none; }
+          .warrior-guard { animation: none; }
           .castle-star-twinkle { animation: none; }
           .castle-torch-flicker { animation: none; }
           .castle-banner-sway { animation: none; }
         }
 
-        /* KnightMascot.jsx's speech bubble sits beside the net-worth card's own number, which
+        /* WarriorMascot.jsx's speech bubble sits beside the net-worth card's own number, which
            can render arbitrarily wide — below ~560px there isn't reliable room for both next to
            each other no matter how far the bubble itself is shrunk (see its own comment). The
-           knight stays visible at every width; only the bubble text drops out on narrow phones. */
+           warrior stays visible at every width; only the bubble text drops out on narrow phones. */
         @media (max-width: 560px) {
-          .knight-speech-bubble { display: none; }
+          .warrior-speech-bubble { display: none; }
         }
 
         /* Dashboard.jsx's net-worth card mascot mount. Two genuinely different positions, not
@@ -113,9 +113,9 @@ export default function App() {
            so the safe spot there is above the card entirely, in the blank margin between it and
            the month-nav row — overlapping only the card's own decorative top edge, never a
            number. */
-        .knight-mount { position: absolute; top: 42%; transform: translateY(-50%); right: 4px; z-index: 6; }
+        .warrior-mount { position: absolute; top: 42%; transform: translateY(-50%); right: 4px; z-index: 6; }
         @media (max-width: 560px) {
-          .knight-mount { top: -60px; transform: none; }
+          .warrior-mount { top: -60px; transform: none; }
         }
 
         /* --- Desktop shell (added 2026-08-06) ---

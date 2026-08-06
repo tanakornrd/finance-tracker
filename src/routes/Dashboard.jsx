@@ -20,7 +20,7 @@ import RecommendationsCard from "../components/RecommendationsCard.jsx";
 import WeeklyInsightCard from "../components/WeeklyInsightCard.jsx";
 import MonthPickerSheet from "../components/MonthPickerSheet.jsx";
 import NoEntryTodayBanner from "../components/NoEntryTodayBanner.jsx";
-import KnightMascot from "../components/mascot/KnightMascot.jsx";
+import WarriorMascot from "../components/mascot/WarriorMascot.jsx";
 import { computeWeeklyInsight } from "../lib/weeklyInsight.js";
 import {
   colors, iconChip, card, sectionHead, textBtn, txRow, txIcon, navBtn,
@@ -266,7 +266,7 @@ export default function Dashboard() {
   const frequentAccounts = frequentAccountIds.map((id) => expenseTargetAccounts.find((a) => a.id === id)).filter(Boolean);
   const frequentAmounts = mostFrequentAmounts(last30, 5);
 
-  // Knight mascot's speech bubble (arcade theme only) — reuses the same rolling-7-days-vs-
+  // Warrior mascot's speech bubble (arcade theme only) — reuses the same rolling-7-days-vs-
   // previous-7-days category comparison WeeklyInsightCard.jsx already computes for the other
   // two mascot themes, off last30Tx (30 days comfortably covers the 14 it needs) instead of a
   // separate fetch.
@@ -348,7 +348,7 @@ export default function Dashboard() {
       </div>
 
       {/* position:relative here (not on styles.passbook itself, which has overflow:hidden for
-          its own perforation-strip clipping) so KnightMascot + its speech bubble can hang
+          its own perforation-strip clipping) so WarriorMascot + its speech bubble can hang
           outside the card's own top edge without being clipped by that overflow:hidden. */}
       <div style={{ position: "relative" }}>
         <div style={styles.passbook}>
@@ -381,13 +381,13 @@ export default function Dashboard() {
           </div>
         </div>
         </div>
-        {/* Positioning lives in the ".knight-mount" CSS class (App.jsx), not inline here — it
+        {/* Positioning lives in the ".warrior-mount" CSS class (App.jsx), not inline here — it
             needs a genuinely different position on narrow mobile (above the card, clear of
             every number) vs. desktop (in the gap between the top figure and the income/expense/
             transfer row), and inline styles can't be overridden by a media query, only by
             another inline style, so a class is the only way to let CSS pick per breakpoint. */}
-        <div className="knight-mount">
-          <KnightMascot message={weeklyInsight.message} />
+        <div className="warrior-mount">
+          <WarriorMascot message={weeklyInsight.message} />
         </div>
       </div>
 

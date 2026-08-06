@@ -11,7 +11,7 @@ import { useTheme } from "../context/ThemeContext.jsx";
 //  1. Night sky gradient, full height (the page can scroll for thousands of px — this is the
 //     one layer that's fine being that tall, everything else below is a fixed decorative cluster
 //     near the top so it's guaranteed visible without scrolling, same reasoning as the torches/
-//     KnightMascot.jsx already use).
+//     WarriorMascot.jsx already use).
 //  2. Star field + moon.
 //  3. Far castle skyline (dim, small) — the "distant" layer for depth.
 //  4. Near brick wall texture (brighter than the first pass) — the "close" layer.
@@ -103,7 +103,7 @@ export default function CastleBackground() {
       {/* 5. Architecture details on the near wall — all clustered near the top so they're
           guaranteed visible without scrolling (the container itself can be thousands of px
           tall on a long page; a `bottom: ...` anchor here would be invisible until scrolled all
-          the way down, the same bug KnightMascot.jsx's positioning hit earlier). */}
+          the way down, the same bug WarriorMascot.jsx's positioning hit earlier). */}
       {/* Kept above ~top:70 and outside the ~35%-65% horizontal band on purpose — the month-nav
           row ("< ส.ค. 2569 >") sits right in that box, so anything placed there reads as
           colliding with real UI rather than as background art. */}
