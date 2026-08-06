@@ -11,7 +11,7 @@ import { card, overlay, sheet, sheetHead, iconBtn, label, input, submitBtn, colo
 import ModalPortal from "../components/ModalPortal.jsx";
 import { useTheme } from "../context/ThemeContext.jsx";
 import { CategoryIcon } from "../theme/arcadeIcons.jsx";
-import ArcherMascot from "../components/mascot/ArcherMascot.jsx";
+import MageMascot from "../components/mascot/MageMascot.jsx";
 
 const row = { display: "flex", justifyContent: "space-between", padding: "10px 0", borderBottom: "1px solid var(--color-divider)" };
 const rowLabel = { fontSize: 13, color: "var(--color-inkMuted)" };
@@ -29,9 +29,10 @@ export default function TransactionDetail() {
   const [txLoading, setTxLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
-  // Same purpose as Dashboard.jsx's own archerFiring — see ArcherMascot.jsx for why this has to
-  // live on the page, not inside the edit sheet.
-  const [archerFiring, setArcherFiring] = useState(false);
+  // Same purpose as Dashboard.jsx's own mageFiring (MageMascot.jsx's `firing` mode) — set true
+  // right after the edit sheet's save succeeds. Lives here, not inside the sheet, because the
+  // sheet unmounts (onClose) the instant that happens.
+  const [mageFiring, setMageFiring] = useState(false);
 
   function reload() {
     setTxLoading(true);
@@ -75,7 +76,7 @@ export default function TransactionDetail() {
         </button>
       </div>
 
-      <ArcherMascot firing={archerFiring} />
+      <MageMascot firing={mageFiring} />
 
       <div style={{ ...card, textAlign: "center", marginBottom: 16 }}>
         <div style={{ fontSize: 32, marginBottom: 8, display: "flex", justifyContent: "center" }}>
@@ -155,8 +156,8 @@ export default function TransactionDetail() {
           onSaved={async () => {
             setShowEdit(false);
             await Promise.all([reload(), refetchReference()]);
-            setArcherFiring(true);
-            setTimeout(() => setArcherFiring(false), 1500);
+            setMageFiring(true);
+            setTimeout(() => setMageFiring(false), 1500);
           }}
         />
       )}

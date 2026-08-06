@@ -4,12 +4,16 @@ import { centsToDisplay } from "../../shared/money.js";
 import { daysInMonth } from "../../shared/dates.js";
 import { card } from "./sharedStyles.js";
 import AddBudgetSheet from "./AddBudgetSheet.jsx";
+import MageMascot from "./mascot/MageMascot.jsx";
 
 const ctaBtn = { padding: "9px 16px", borderRadius: 10, border: "none", background: "var(--color-primary)", color: "var(--color-white)", fontWeight: 700, fontSize: 13 };
 
 // expenseCentsSoFar: the viewed month's expense total, computed by Dashboard.jsx.
 // Only valid to display when isCurrentMonth is true, which is exactly when this card renders its number.
-export default function SafeToSpendCard({ isCurrentMonth, expenseCentsSoFar }) {
+// mageFiring: Dashboard.jsx's own reactive-save flag — see MageMascot.jsx's `firing` mode.
+// Passed through even on the isCurrentMonth===false early return below would be pointless (that
+// state hides the whole card), so it's only actually used in the main render path.
+export default function SafeToSpendCard({ isCurrentMonth, expenseCentsSoFar, mageFiring }) {
   const { budgets, refetch } = useReferenceData();
   const [showSheet, setShowSheet] = useState(false);
 
@@ -59,8 +63,17 @@ export default function SafeToSpendCard({ isCurrentMonth, expenseCentsSoFar }) {
   }
 
   return (
-    <div style={{ ...card, marginBottom: 16 }}>
-      {body}
+    <div style={{ ...card, marginBottom: 16, position: "relative", overflow: "hidden" }} className="safe-to-spend-card">
+      {/* zIndex:1 so this text reliably paints above the mage mount below regardless of DOM
+          order — same safety-net idiom as Dashboard.jsx's net-worth numbers over WarriorMascot. */}
+      <div style={{ position: "relative", zIndex: 1 }}>{body}</div>
+      {/* MageMascot mount — arcade-only (MageMascot itself renders null off-theme, so this div
+          is harmless dead weight on every other theme, same as WarriorMascot's own mount).
+          Positioned like WarriorMascot's corner mount on the net-worth card: absolute, clear of
+          the left-aligned text above. */}
+      <div className="scribe-mage-mount">
+        <MageMascot firing={mageFiring} />
+      </div>
       <AddBudgetSheet
         open={showSheet}
         onClose={() => setShowSheet(false)}

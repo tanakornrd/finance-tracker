@@ -109,6 +109,38 @@ export default function App() {
         .mage-float { animation: mageFloat 3s ease-in-out infinite; }
         @keyframes mageFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
 
+        /* MageMascot.jsx's reactive "firing" mode (Dashboard.jsx / TransactionDetail.jsx, via
+           the "firing" prop) — a one-shot (not looping) cast animation, same idiom as
+           ArcherMascot's archer-fire: React swaps the className from mage-float to mage-cast
+           and back, so this only ever plays once per save. */
+        .mage-cast { animation: mageCast 0.7s ease-out; }
+        @keyframes mageCast {
+          0% { transform: translateY(0) rotate(0deg); }
+          30% { transform: translateY(-6px) rotate(-6deg); }
+          60% { transform: translateY(2px) rotate(4deg); }
+          100% { transform: translateY(0) rotate(0deg); }
+        }
+
+        /* The magic orb glow (MageMascot.jsx's ".mage-orb-glow" div, not part of the art itself
+           — see that component's comment) — a faint static glow while idle, and on firing
+           ".firing" plays a spin-and-pulse so the orb visibly reacts too, not just the staff
+           swing above. Percentages/position are tuned to roughly where the orb sits in
+           mascot-mage.png (right of center, upper-middle). */
+        .mage-orb-glow {
+          position: absolute; left: 72%; top: 46%; width: 34%; height: 34%;
+          transform: translate(-50%, -50%);
+          border-radius: 50%;
+          background: radial-gradient(circle, rgba(255,190,80,0.85) 0%, rgba(255,120,20,0.45) 45%, transparent 75%);
+          opacity: 0.5;
+          pointer-events: none;
+        }
+        .mage-orb-glow.firing { animation: mageOrbPulse 0.8s ease-out; }
+        @keyframes mageOrbPulse {
+          0% { transform: translate(-50%, -50%) scale(0.8) rotate(0deg); opacity: 0.5; }
+          40% { transform: translate(-50%, -50%) scale(1.5) rotate(150deg); opacity: 1; }
+          100% { transform: translate(-50%, -50%) scale(1) rotate(300deg); opacity: 0.5; }
+        }
+
         /* ArcherMascot.jsx: idle bob while waiting (same idiom as the warrior/mage), plus a
            one-shot (not infinite) recoil-and-release animation that plays once when a save
            succeeds — a quick lean back then snap forward, reading as "just fired an arrow"
@@ -141,6 +173,18 @@ export default function App() {
           .archer-img { width: 90px; height: 90px; }
         }
 
+        /* SafeToSpendCard.jsx's own MageMascot mount ("ใช้ได้อีกวันนี้" card, Dashboard.jsx) —
+           position mirrors WarriorMascot's corner mount on the net-worth card (absolute,
+           vertically centered, clear of this card's own left-aligned text). Sized bigger than
+           the budget page's mage via a descendant override of ".mage-img" scoped to this mount
+           specifically — NOT a change to ".mage-img" itself, which stays exactly as-is for
+           BudgetMageCard.jsx (kept where it was, unchanged, per instruction). */
+        .scribe-mage-mount { position: absolute; top: 50%; right: 8px; transform: translateY(-50%); z-index: 0; }
+        .scribe-mage-mount .mage-img { width: clamp(72px, 20vw, 120px); height: clamp(72px, 20vw, 120px); }
+        @media (min-width: 1280px) {
+          .scribe-mage-mount .mage-img { width: 160px; height: 160px; }
+        }
+
         /* CastleBackground.jsx ambient decoration — not gated by the mascotAnimationEnabled
            toggle (that's specifically the mascot on/off switch), but still respects
            prefers-reduced-motion below like every other animation here. */
@@ -158,6 +202,8 @@ export default function App() {
           .runner-leg-back, .runner-leg-front, .runner-arm-front, .runner-arm-back { animation: none; }
           .warrior-guard { animation: none; }
           .mage-float { animation: none; }
+          .mage-cast { animation: none; }
+          .mage-orb-glow.firing { animation: none; }
           .archer-idle { animation: none; }
           .archer-fire { animation: none; }
           .castle-star-twinkle { animation: none; }

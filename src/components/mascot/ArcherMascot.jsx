@@ -11,13 +11,13 @@ const CHEER_MESSAGES = [
   "ธนูดอกนี้บันทึกเรียบร้อย!",
 ];
 
-// Pixel-art archer for the "arcade" theme — mounted inline (not in a dedicated card like
-// MageMascot, and not inside the amount-entry modal itself) near the top of Dashboard.jsx and
-// TransactionDetail.jsx. It has to live on the underlying PAGE, not inside the modal: both
-// pages close their form the instant a save succeeds (setShowForm(false) runs in the very same
-// handler as the save), so anything mounted inside the modal would unmount before anyone could
-// see it react. The parent page is responsible for turning `firing` on right after its own save
-// succeeds and back off ~1.5s later — this component only renders the idle/firing states.
+// Pixel-art archer for the "arcade" theme — mounted inline near the top of Transactions.jsx
+// (the "รายการ" tab's transaction list) as a standing idle presence while browsing, no reactive
+// duty of its own. The `firing`/CHEER_MESSAGES machinery below was originally exercised from
+// Dashboard.jsx/TransactionDetail.jsx on a successful save; that reactive role moved to
+// MageMascot's own `firing` mode instead (see that component), leaving this one purely idle in
+// its current home — but `firing` is kept here rather than stripped out, since the component is
+// otherwise unchanged and there's no reason a future spot for the archer couldn't reuse it.
 export default function ArcherMascot({ firing }) {
   const { theme, mascotAnimationEnabled } = useTheme();
   const [message, setMessage] = useState(null);

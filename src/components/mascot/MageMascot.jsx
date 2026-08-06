@@ -1,28 +1,65 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useTheme } from "../../context/ThemeContext.jsx";
 
-// Pixel-art mage advisor for the "arcade" theme — mounted inside BudgetMageCard.jsx, a small
-// self-contained card BudgetMageCard.jsx owns entirely (unlike WarriorMascot.jsx, which has to
-// share Dashboard's pre-existing net-worth card and so leans on absolute positioning + clamp()
-// tricks to avoid covering that card's own numbers). Because this component's parent card exists
-// only to hold it, the bubble+mage layout here is plain flow (a flex row), not absolute — simpler,
-// and there's no risk of covering unrelated content since there isn't any in this card.
-export default function MageMascot({ message }) {
+// Picked once per successful save, same reasoning as ArcherMascot's own CHEER_MESSAGES — a
+// stable message for the whole firing window instead of re-rolling on every re-render.
+const SCRIBE_MESSAGES = [
+  "จดไว้แล้ว! ✨",
+  "บันทึกลงบัญชีเวทย์แล้วนะ",
+  "เวทมนตร์จารึกเรียบร้อย!",
+  "จดครบทุกตัวเลขแล้ว",
+];
+
+// Pixel-art mage — two different jobs depending on which prop the caller passes in:
+//   - `message`: static advice text (BudgetMageCard.jsx passes the computed budget insight).
+//     Idle float only, no firing animation.
+//   - `firing`: reactive mode (Dashboard.jsx / TransactionDetail.jsx) — plays a one-shot
+//     "cast a spell" animation (staff swing + the magic orb pulsing/spinning) and shows a
+//     random SCRIBE_MESSAGES line, mirroring ArcherMascot's firing/CHEER_MESSAGES pattern.
+// A component never gets both props at once in practice (one caller per mode), but `firing`
+// takes priority over `message` if it somehow did, since it's the more specific, momentary state.
+export default function MageMascot({ message, firing }) {
   const { theme, mascotAnimationEnabled } = useTheme();
+  const [firedMessage, setFiredMessage] = useState(null);
+
+  useEffect(() => {
+    if (firing) {
+      setFiredMessage(SCRIBE_MESSAGES[Math.floor(Math.random() * SCRIBE_MESSAGES.length)]);
+    } else if (firedMessage) {
+      // Delayed, not instant — see ArcherMascot's identical comment: lets the message stay up
+      // through the tail end of the cast animation instead of vanishing mid-pose.
+      const t = setTimeout(() => setFiredMessage(null), 300);
+      return () => clearTimeout(t);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [firing]);
+
   if (theme !== "arcade") return null;
+
+  // firedMessage covers both the firing window and its 300ms grace period; message (the static
+  // budget-insight prop) is the fallback once neither applies.
+  const shownMessage = firedMessage || message;
+  const animClass = firing ? "mage-cast" : mascotAnimationEnabled ? "mage-float" : undefined;
 
   return (
     // justifyContent:"center" (not the full-width flex row this used to be) — BudgetMageCard.jsx
     // is a plain card the width of the whole page, and with the bubble sized to its own content
     // now (not flex:1 stretching to fill whatever's left), a left-anchored row would leave the
     // mage+bubble pair stranded off in a huge empty card; centering keeps them as one compact,
-    // deliberately-placed unit regardless of card width.
+    // deliberately-placed unit regardless of card width. Callers that mount this inside their
+    // own absolutely-positioned corner (SafeToSpendCard.jsx, same idiom as WarriorMascot) get a
+    // small, self-contained unit either way since the row only ever takes its content's width.
     <div style={{ display: "flex", alignItems: "center", justifyContent: "center" }} aria-hidden="true">
-      {message && <SpeechBubble text={message} />}
-      <div
-        className={mascotAnimationEnabled ? "mage-float" : undefined}
-        style={{ flexShrink: 0, pointerEvents: "none" }}
-      >
+      {shownMessage && <SpeechBubble text={shownMessage} />}
+      <div className={animClass} style={{ position: "relative", flexShrink: 0, pointerEvents: "none" }}>
+        {/* The magic orb glow — a plain CSS radial gradient positioned over roughly where the
+            orb sits in mascot-mage.png (right of center, upper-middle), not a separate art
+            asset. Percentages are of this wrapper's own box, which is sized to the <img> below
+            (flex shrink-to-fit), so they track the image's clamp()/breakpoint sizing for free.
+            Idle: a faint, static glow. Firing: ".mage-orb-glow.firing" below spins/pulses it —
+            the "the magic circle moves too" effect, distinct from the staff-swing on the image
+            itself, which is flat art and can't animate on its own. */}
+        <div className={`mage-orb-glow${firing ? " firing" : ""}`} />
         <img
           src={new URL("../../assets/mascot-mage.png", import.meta.url).href}
           alt=""

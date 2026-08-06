@@ -11,6 +11,7 @@ import { describeTransfer } from "../lib/transferLabel.js";
 import { card, sectionHead, txRow, txIcon } from "../components/sharedStyles.js";
 import { useTheme } from "../context/ThemeContext.jsx";
 import { CategoryIcon } from "../theme/arcadeIcons.jsx";
+import ArcherMascot from "../components/mascot/ArcherMascot.jsx";
 
 function monthKey(d) { return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`; }
 
@@ -128,6 +129,11 @@ export default function Transactions() {
   return (
     <div>
       <div className="page-title" style={{ fontSize: 22, fontWeight: 700, color: "var(--color-ink)", marginBottom: 18 }}>รายการทั้งหมด</div>
+
+      {/* Idle only (no `firing` prop) — this page has no save action of its own to react to,
+          just a standing presence while browsing the list, unlike the reactive MageMascot now
+          on Dashboard.jsx/TransactionDetail.jsx. */}
+      <ArcherMascot />
 
       <div style={{ position: "relative", marginBottom: 10 }}>
         <Search size={16} color="var(--color-inkMuted)" style={{ position: "absolute", left: 12, top: 12 }} />
