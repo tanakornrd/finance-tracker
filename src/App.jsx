@@ -145,16 +145,21 @@ export default function App() {
         .warrior-mount { position: absolute; top: 42%; transform: translateY(-50%); right: 4px; z-index: 0; }
 
         /* WarriorMascot.jsx's own <img> size: clamp() shrinks it with the viewport so it stays
-           clear of the number on narrow phones, landing on 130px once there's room (~810px+).
-           Desktop doubles that (see the min-width:1280px override below) — that's bigger than
-           this card's own height, which is why ".passbook-card" below switches overflow to
-           visible at that same breakpoint, letting the mascot stand taller than the card instead
-           of being clipped to it. Kept as a class (not inline on the <img>) so the desktop media
-           query can win — an inline style always beats an external stylesheet rule of any
-           specificity unless that rule uses !important, which this file deliberately avoids. */
-        .warrior-img { width: clamp(56px, 16vw, 130px); height: clamp(56px, 16vw, 130px); }
+           clear of the number on narrow phones, but with a 90px floor (not smaller — a too-tiny
+           guard reads as an accident, not a mascot) and landing on 140px once there's a bit more
+           room. Desktop is bigger still (see the min-width:1280px override below) — that's
+           taller than this card's own height, which is why ".passbook-card" below switches
+           overflow to visible at that same breakpoint, letting the mascot stand taller than the
+           card instead of being clipped to it. Kept as a class (not inline on the <img>) so the
+           desktop media query can win — an inline style always beats an external stylesheet rule
+           of any specificity unless that rule uses !important, which this file deliberately
+           avoids. */
+        .warrior-img { width: clamp(90px, 26vw, 140px); height: clamp(90px, 26vw, 140px); }
         @media (min-width: 1280px) {
-          .warrior-img { width: 260px; height: 260px; }
+          /* 200px, not the 260px tried first — that was tall enough to reach up into the speech
+             bubble/label text above it on real desktop widths. 200px is still a clear step up
+             from the pre-enlargement 130px without covering anything. */
+          .warrior-img { width: 200px; height: 200px; }
         }
 
         /* Base: clips the card's own perforation strip + (at mobile widths) the mascot to its

@@ -70,7 +70,10 @@ function SpeechBubble({ text }) {
         top: "28%",
         right: "100%",
         transform: "translateY(-50%)",
-        marginRight: 12,
+        // 6, not the previous 12 — moves the bubble right up against the warrior (its own 7px
+        // tail below now just about touches his head) so it reads as him actually speaking,
+        // rather than a caption floating apart from him.
+        marginRight: 6,
         // Same reasoning as the warrior's own clamp() above: this used to be a fixed 200px,
         // which combined with the (also-fixed) warrior was wide enough to spill into the net-
         // worth number's own space on a ~480px-wide mobile screen — the app's real target
