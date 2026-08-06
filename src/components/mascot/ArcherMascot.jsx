@@ -12,15 +12,20 @@ const CHEER_MESSAGES = [
 ];
 
 // Pixel-art archer for the "arcade" theme — mounted inline near the top of Transactions.jsx
-// (the "รายการ" tab's transaction list) as a standing idle presence while browsing, no reactive
-// duty of its own. The `firing`/CHEER_MESSAGES machinery below was originally exercised from
-// Dashboard.jsx/TransactionDetail.jsx on a successful save; that reactive role moved to
-// MageMascot's own `firing` mode instead (see that component), leaving this one purely idle in
-// its current home — but `firing` is kept here rather than stripped out, since the component is
-// otherwise unchanged and there's no reason a future spot for the archer couldn't reuse it.
-export default function ArcherMascot({ firing }) {
+// (the "รายการ" tab's transaction list). The `firing`/CHEER_MESSAGES machinery below was
+// originally exercised from Dashboard.jsx/TransactionDetail.jsx on a successful save; that
+// reactive role moved to MageMascot's own `firing` mode instead (see that component) — kept
+// here rather than stripped out since nothing else needed to change to keep it working.
+//
+// onClick: optional (RPG party interactions, part 4) — Transactions.jsx's own instance passes
+// one, opening StreakQuestModal. When present the archer renders as a real <button>; a click
+// reuses the same one-shot "fire" animation `firing` plays (a real archer click-reaction and a
+// successful-save reaction reading as basically the same gesture — "he just did something"),
+// and calls onClick in the same handler, no delay before the modal opens.
+export default function ArcherMascot({ firing, onClick }) {
   const { theme, mascotAnimationEnabled } = useTheme();
   const [message, setMessage] = useState(null);
+  const [clicked, setClicked] = useState(false);
 
   useEffect(() => {
     if (firing) {
@@ -36,16 +41,20 @@ export default function ArcherMascot({ firing }) {
 
   if (theme !== "arcade") return null;
 
-  return (
-    // justifyContent left-anchored (no `justify-content: flex-end` here) — this sits at the
-    // opposite side of the page from Dashboard's month-badge / TransactionDetail's "แก้ไข"
-    // button, which both already occupy the right side of their own header row, so anchoring
-    // the archer left avoids stacking two things in the same corner.
-    <div style={{ display: "flex", alignItems: "center", marginBottom: 12 }} aria-hidden="true">
-      <div
-        className={firing ? "archer-fire" : mascotAnimationEnabled ? "archer-idle" : undefined}
-        style={{ flexShrink: 0, pointerEvents: "none" }}
-      >
+  function handleClick() {
+    if (mascotAnimationEnabled) {
+      // Same re-trigger-on-rapid-clicks trick as every other mascot's click handler.
+      setClicked(false);
+      requestAnimationFrame(() => setClicked(true));
+    }
+    onClick();
+  }
+
+  const animClass = firing || clicked ? "archer-fire" : mascotAnimationEnabled ? "archer-idle" : undefined;
+
+  const content = (
+    <>
+      <div className={animClass} style={{ flexShrink: 0, pointerEvents: "none" }} onAnimationEnd={() => setClicked(false)}>
         <img
           src={new URL("../../assets/mascot-archer.png", import.meta.url).href}
           alt=""
@@ -58,6 +67,31 @@ export default function ArcherMascot({ firing }) {
         />
       </div>
       {message && <SpeechBubble text={message} />}
+    </>
+  );
+
+  // justifyContent left-anchored (no `justify-content: flex-end` here) — this sits at the
+  // opposite side of the page from Dashboard's month-badge / TransactionDetail's "แก้ไข"
+  // button, which both already occupy the right side of their own header row, so anchoring
+  // the archer left avoids stacking two things in the same corner.
+  const rootStyle = { display: "flex", alignItems: "center", marginBottom: 12 };
+
+  if (onClick) {
+    return (
+      <button
+        type="button"
+        onClick={handleClick}
+        aria-label="นักธนู กดเพื่อดูสถิติความสม่ำเสมอ"
+        style={{ ...rootStyle, background: "none", border: "none", padding: 0, cursor: "pointer" }}
+      >
+        {content}
+      </button>
+    );
+  }
+
+  return (
+    <div style={rootStyle} aria-hidden="true">
+      {content}
     </div>
   );
 }

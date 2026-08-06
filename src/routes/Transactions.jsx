@@ -12,6 +12,8 @@ import { card, sectionHead, txRow, txIcon } from "../components/sharedStyles.js"
 import { useTheme } from "../context/ThemeContext.jsx";
 import { CategoryIcon } from "../theme/arcadeIcons.jsx";
 import ArcherMascot from "../components/mascot/ArcherMascot.jsx";
+import StreakQuestModal from "../components/StreakQuestModal.jsx";
+import { computeStreak } from "../lib/streak.js";
 
 function monthKey(d) { return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`; }
 
@@ -83,12 +85,19 @@ export default function Transactions() {
   const [monthFilter, setMonthFilter] = useState(null); // null = all months
   const [showMonthPicker, setShowMonthPicker] = useState(false);
   const [groupTab, setGroupTab] = useState("all");
+  const [showStreak, setShowStreak] = useState(false);
 
   // This page searches/exports across full history, so unlike every other route it does need
   // everything — but only once the user actually navigates here, not preloaded at app start.
   useEffect(() => {
     fetchTransactions().then(setTransactions).finally(() => setTxLoading(false));
   }, []);
+
+  // Archer's click target (RPG party interactions, part 4) — reuses this page's own already-
+  // fetched full transaction history (no extra request; see src/lib/streak.js for why no
+  // separate table is needed either) rather than the STREAK_WINDOW_DAYS-scoped fetch the
+  // original plan described, since this page already has everything.
+  const streak = useMemo(() => computeStreak(transactions), [transactions]);
 
   const filtered = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
@@ -130,10 +139,11 @@ export default function Transactions() {
     <div>
       <div className="page-title" style={{ fontSize: 22, fontWeight: 700, color: "var(--color-ink)", marginBottom: 18 }}>รายการทั้งหมด</div>
 
-      {/* Idle only (no `firing` prop) — this page has no save action of its own to react to,
-          just a standing presence while browsing the list, unlike the reactive MageMascot now
-          on Dashboard.jsx/TransactionDetail.jsx. */}
-      <ArcherMascot />
+      {/* No `firing` prop (this page has no save action to react to, unlike MageMascot on
+          Dashboard.jsx/TransactionDetail.jsx) but is clickable via onClick — opens
+          StreakQuestModal (RPG party interactions, part 4), reusing the same "fire" animation
+          as ArcherMascot's own firing mode. */}
+      <ArcherMascot onClick={() => setShowStreak(true)} />
 
       <div style={{ position: "relative", marginBottom: 10 }}>
         <Search size={16} color="var(--color-inkMuted)" style={{ position: "absolute", left: 12, top: 12 }} />
@@ -215,6 +225,12 @@ export default function Transactions() {
         onSelectMonth={(y, m) => { setMonthFilter(new Date(y, m, 1)); setShowMonthPicker(false); }}
         showAllOption
         onSelectAll={() => { setMonthFilter(null); setShowMonthPicker(false); }}
+      />
+      <StreakQuestModal
+        open={showStreak}
+        onClose={() => setShowStreak(false)}
+        streakDays={streak.days}
+        streakCapped={streak.capped}
       />
     </div>
   );
