@@ -1,0 +1,13 @@
+node_modules
+dist
+# Whole data/ directory, not just data/*.db — it also holds backups in subfolders
+# (data/pre-phase-*/, data/pre-supabase-migration/) that a bare "data/*.db" glob wouldn't catch,
+# since gitignore's "*" doesn't cross a "/". None of this belongs in git either way: it's local
+# SQLite state and its backups, superseded by Supabase but deliberately kept on disk as the
+# read-only pre-migration reference — see server/db.js's comment.
+data/
+.DS_Store
+.env
+.env.local
+# Claude Code's local tool-permission allowlist — personal to this machine, not project config.
+.claude/settings.local.json
