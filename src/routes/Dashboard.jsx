@@ -348,18 +348,16 @@ export default function Dashboard() {
         </button>
       </div>
 
-      <div style={styles.passbook}>
+      <div style={styles.passbook} className="passbook-card">
         <div style={styles.perforation} />
-        {/* WarriorMascot mount — a child of the card now, not a sibling floating over it. It
-            used to be a sibling specifically so it (and its speech bubble) could hang outside
-            the card's own top edge, past this card's own overflow:hidden. Neither breakpoint's
-            position needs that escape anymore (desktop sits in the internal gap below; mobile
-            now sits centered *inside* the card as a faint background — see ".warrior-mount" in
-            App.jsx), so nesting it here instead fixes a real bug the old sibling structure had:
-            this card's own background is opaque, so a mascot painted *behind the whole card* on
-            mobile was invisible no matter its z-index — it needs to be behind the card's own
-            NUMBERS, which only works if it's inside the same box, painted after the card's
-            background but before (z-index below) the numbers content div right below it. */}
+        {/* WarriorMascot mount — a child of the card (not a sibling floating over it), so it
+            reads as standing genuinely *inside* the card's frame next to the numbers, at full
+            opacity, rather than a decorative background layer. Being a child here (instead of a
+            sibling positioned on top) is also what makes the numbers content div below reliably
+            paint above it via z-index — two separate sibling boxes can't do that when the top
+            one (the card) has its own opaque background, which fully hides whatever's behind it
+            regardless of z-index. See ".warrior-mount"/".warrior-img" in App.jsx for the actual
+            per-breakpoint size/position. */}
         <div className="warrior-mount">
           <WarriorMascot message={weeklyInsight.message} />
         </div>
@@ -787,8 +785,13 @@ const styles = {
   monthNav: { display: "flex", alignItems: "center", justifyContent: "center", gap: 14, marginBottom: 16 },
   passbook: {
     background: colors.white,
-    borderRadius: 14, marginBottom: 22, position: "relative", overflow: "hidden",
+    borderRadius: 14, marginBottom: 22, position: "relative",
     border: `1px solid ${colors.border}`, boxShadow: "0 4px 16px rgba(15,42,92,0.08)",
+    // overflow moved to the ".passbook-card" CSS class (App.jsx), not inline here — desktop
+    // now needs "visible" (so the enlarged WarriorMascot can stand taller than the card without
+    // getting clipped), mobile still needs "hidden" (clips the perforation strip + mascot to
+    // the card's rounded corners) — only a stylesheet class can differ by breakpoint; an inline
+    // value here would always win over a media query.
   },
   perforation: { height: 6, width: "100%", backgroundImage: `radial-gradient(circle, ${colors.primarySoft} 2.5px, transparent 2.6px)`, backgroundSize: "14px 6px", backgroundPosition: "top" },
   accCard: { background: colors.white, border: `1px solid ${colors.border}`, borderRadius: 12, padding: "12px 16px", minWidth: 110, flexShrink: 0, boxShadow: "0 1px 3px rgba(15,42,92,0.05)" },

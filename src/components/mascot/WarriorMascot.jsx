@@ -27,12 +27,10 @@ export default function WarriorMascot({ message }) {
       <img
         src={new URL("../../assets/mascot-warrior.png", import.meta.url).href}
         alt=""
-        // Sizing itself now lives in the ".warrior-img" CSS class (App.jsx), not inline here —
-        // it genuinely differs by breakpoint (small clamp() badge next to the number on desktop
-        // vs. filling the whole card as a faint background on mobile — see Dashboard.jsx's
-        // ".warrior-mount" mount comment), and only an external stylesheet rule can be
-        // overridden by a media query; an inline style always wins over one regardless of
-        // specificity.
+        // Sizing itself lives in the ".warrior-img" CSS class (App.jsx), not inline here — it's
+        // a clamp() that shrinks with the viewport on mobile then doubles in size again past the
+        // desktop breakpoint, and only an external stylesheet rule can be overridden by a media
+        // query; an inline style always wins over one regardless of specificity.
         className="warrior-img"
         style={{ display: "block", imageRendering: "pixelated" }}
       />
@@ -40,10 +38,11 @@ export default function WarriorMascot({ message }) {
   );
 }
 
-// Pixel-styled speech bubble — hard-edged border + blocky drop shadow (no border-radius, no
-// blur) to match the theme's 8-bit look, same idiom CastleBackground.jsx's props use. The
-// message text itself stays on the app's normal readable font, not the pixel one — this is a
-// real sentence about the user's own spending someone has to actually read, not a short label.
+// Pixel-styled speech bubble — a genuine hard-cornered box (border-radius:0), hard-edged
+// border + blocky drop shadow (0 blur) to match the theme's 8-bit look, same idiom
+// CastleBackground.jsx's props use. The message text itself stays on the app's normal readable
+// font, not the pixel one — this is a real sentence about the user's own spending someone has
+// to actually read, not a short label.
 function SpeechBubble({ text }) {
   return (
     <div
@@ -81,7 +80,9 @@ function SpeechBubble({ text }) {
         color: "#1A1030",
         border: "3px solid #1A1030",
         boxShadow: "4px 4px 0 rgba(0,0,0,0.35)",
-        borderRadius: 4,
+        // 0, not the previous 4px — a rounded corner on an otherwise hard-edged pixel box read
+        // as inconsistent; a true 8-bit text-box look wants square corners throughout.
+        borderRadius: 0,
         padding: "8px 10px",
         fontSize: "clamp(10px, 2.6vw, 12px)",
         lineHeight: 1.4,

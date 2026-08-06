@@ -132,37 +132,39 @@ export default function App() {
           .warrior-speech-bubble { display: none; }
         }
 
-        /* Dashboard.jsx's net-worth card mascot mount. Two genuinely different positions, not
-           just a scaled-down version of one: desktop has enough vertical room in the card to sit
-           in the gap between the top net-worth figure and the income/expense/transfer row below
-           it (both clear of any text); mobile's card is too short for that gap to exist at all,
-           so the safe spot there is above the card entirely, in the blank margin between it and
-           the month-nav row — overlapping only the card's own decorative top edge, never a
-           number. */
-        .warrior-mount { position: absolute; top: 42%; transform: translateY(-50%); right: 4px; z-index: 6; }
-        @media (max-width: 560px) {
-          /* Mobile no longer floats the warrior above the card (that made it small and easy to
-             miss). This mount is now a CHILD of the card itself (Dashboard.jsx), sandwiched
-             between the card's own background and its numbers content div — inset:0 makes this
-             box match the card's own content box exactly, so it reads as a background element
-             centered inside the card. opacity 0.2 keeps it decorative rather than competing
-             with the real numbers, and z-index:0 (below the numbers content div's own
-             zIndex:1 — see Dashboard.jsx) puts it behind that text instead of on top of it.
-             Desktop's original side-gap placement above is untouched. */
-          .warrior-mount { inset: 0; transform: none; opacity: 0.2; z-index: 0; display: flex; align-items: center; justify-content: center; }
+        /* Dashboard.jsx's net-worth card mascot mount: standing beside the net-worth number,
+           full opacity, at every width — not a background layer. right:4px + top:42%
+           (translateY(-50%) to center on that point) lands it in the blank space to the right
+           of the number at both breakpoints, since the card's text content is identical (same
+           DOM/CSS) at every width, just narrower. z-index:0 is deliberately BELOW the numbers
+           content div's own zIndex:1 (Dashboard.jsx) as a safety net — the net-worth figure can
+           render arbitrarily wide (an unbounded real balance, not a fixed-width label), so on a
+           narrow phone with a long number it's possible for the two to overlap; z-index makes
+           sure the number wins that overlap and stays fully readable rather than the mascot
+           covering digits. */
+        .warrior-mount { position: absolute; top: 42%; transform: translateY(-50%); right: 4px; z-index: 0; }
+
+        /* WarriorMascot.jsx's own <img> size: clamp() shrinks it with the viewport so it stays
+           clear of the number on narrow phones, landing on 130px once there's room (~810px+).
+           Desktop doubles that (see the min-width:1280px override below) — that's bigger than
+           this card's own height, which is why ".passbook-card" below switches overflow to
+           visible at that same breakpoint, letting the mascot stand taller than the card instead
+           of being clipped to it. Kept as a class (not inline on the <img>) so the desktop media
+           query can win — an inline style always beats an external stylesheet rule of any
+           specificity unless that rule uses !important, which this file deliberately avoids. */
+        .warrior-img { width: clamp(56px, 16vw, 130px); height: clamp(56px, 16vw, 130px); }
+        @media (min-width: 1280px) {
+          .warrior-img { width: 260px; height: 260px; }
         }
 
-        /* WarriorMascot.jsx's own <img> size: desktop keeps the original clamp() (small guard
-           in the card's side gap, unchanged). Mobile fills its container (which, per the
-           ".warrior-mount" mobile rule above, now IS the card's own box) via width/height:100%;
-           object-fit:contain keeps the art's own aspect ratio so it can never overflow the card
-           regardless of the exact PNG dimensions. Kept as a class (not inline on the <img>)
-           specifically so this media query can win — an inline style always beats an external
-           stylesheet rule of any specificity unless that rule uses !important, which the rest of
-           this file deliberately avoids. */
-        .warrior-img { width: clamp(64px, 16vw, 130px); height: clamp(64px, 16vw, 130px); }
-        @media (max-width: 560px) {
-          .warrior-img { width: 100%; height: 100%; object-fit: contain; }
+        /* Base: clips the card's own perforation strip + (at mobile widths) the mascot to its
+           rounded corners, same as before this mascot ever existed. Desktop switches to visible
+           specifically so the now much taller mascot (see ".warrior-img" above) can stand above/
+           below the card's own edge instead of being cut off — nothing else in this card relies
+           on the clip at that width. */
+        .passbook-card { overflow: hidden; }
+        @media (min-width: 1280px) {
+          .passbook-card { overflow: visible; }
         }
 
         /* --- Desktop shell (added 2026-08-06) ---
