@@ -1,17 +1,23 @@
 import React, { useState } from "react";
-import { Palette } from "lucide-react";
+import { Palette, LogOut } from "lucide-react";
 import { useTheme } from "../context/ThemeContext.jsx";
+import { useAuth } from "../context/AuthContext.jsx";
 
-// Fixed bottom-left, mirroring Dashboard's own bottom-right "+" FAB (same `bottom`, same
-// centered-container math) — that corner is empty on every route, unlike the top corners
-// which every page already uses for its title/month badge. Mobile-only (<1280px): at desktop
-// widths this whole floating control is hidden (see App.jsx's ".theme-switcher-fab" CSS rule)
-// in favor of ThemeMenuList rendered directly inside Sidebar.jsx.
+// Fixed bottom-left — that corner is empty on every route, unlike the top corners which every
+// page already uses for its title/month badge. Mobile-only (<1280px): at desktop widths this
+// whole floating control is hidden (see App.jsx's ".theme-switcher-fab" CSS rule) in favor of
+// ThemeMenuList rendered directly inside Sidebar.jsx.
+//
+// Anchored with a plain `left: 18px` (matching ".app-container"'s own horizontal padding —
+// App.jsx) instead of the previous "center of viewport, then shift left by half the assumed
+// 480px container width" calc: that math only kept the button on-screen when the viewport was
+// wider than ~464px, which most real phones aren't, so the button rendered partly or fully off
+// the left edge (unclickable) on an actual phone despite looking fine in a wide desktop
+// browser. A fixed-pixel offset from the real screen edge has no such assumption to break.
 const fabStyle = {
   position: "fixed",
   bottom: 84,
-  left: "50%",
-  transform: "translateX(calc(-240px + 8px))",
+  left: 18,
   width: 44,
   height: 44,
   borderRadius: "50%",
@@ -28,8 +34,7 @@ const fabStyle = {
 const menuStyle = {
   position: "fixed",
   bottom: 136,
-  left: "50%",
-  transform: "translateX(calc(-240px + 8px))",
+  left: 18,
   background: "var(--color-white)",
   border: "1px solid var(--color-border)",
   borderRadius: 12,
@@ -61,6 +66,7 @@ const toggleRowStyle = { ...itemStyle, justifyContent: "space-between", cursor: 
 // into a floating popover (mobile, below) or straight into Sidebar.jsx's flow (desktop) as-is.
 export function ThemeMenuList({ onSelect }) {
   const { theme, setTheme, themes, mascotAnimationEnabled, setMascotAnimationEnabled } = useTheme();
+  const { signOut } = useAuth();
   return (
     <>
       {themes.map((t) => (
@@ -87,6 +93,24 @@ export function ThemeMenuList({ onSelect }) {
           onChange={(e) => setMascotAnimationEnabled(e.target.checked)}
         />
       </label>
+      <div style={dividerStyle} />
+      {/* Lives here (not a standalone floating button) so it's automatically positioned safely
+          on every breakpoint the same way the theme list already is — mobile popover, desktop
+          Sidebar — instead of being one more independently-floating fixed element that could
+          collide with a page's own top-corner content (which is what happened when this was a
+          separate always-visible button fixed to the top-right corner). */}
+      <button
+        type="button"
+        className="theme-menu-item"
+        style={{ ...itemStyle, color: "var(--color-danger)" }}
+        onClick={() => {
+          signOut();
+          onSelect?.();
+        }}
+      >
+        <LogOut size={14} />
+        <span>ออกจากระบบ</span>
+      </button>
     </>
   );
 }

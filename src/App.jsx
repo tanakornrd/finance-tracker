@@ -221,36 +221,8 @@ export default function App() {
         </Suspense>
       </div>
 
-      <SignOutButton />
       <ThemeSwitcher />
       <BottomNav />
     </div>
-  );
-}
-
-// Minimal, deliberately unobtrusive — this app has exactly one user per login, so "which
-// account am I on" only matters as a quick way to switch/test, not a feature to design around.
-function SignOutButton() {
-  const { signOut } = useAuth();
-  return (
-    <button
-      type="button"
-      onClick={() => signOut()}
-      title="ออกจากระบบ"
-      style={{
-        position: "fixed",
-        top: 12,
-        right: 12,
-        zIndex: 20,
-        padding: "6px 10px",
-        borderRadius: 8,
-        border: "1px solid var(--color-border)",
-        background: "var(--color-white)",
-        color: "var(--color-inkMuted)",
-        fontSize: 11,
-      }}
-    >
-      ออกจากระบบ
-    </button>
   );
 }
