@@ -21,6 +21,7 @@ import WeeklyInsightCard from "../components/WeeklyInsightCard.jsx";
 import MonthPickerSheet from "../components/MonthPickerSheet.jsx";
 import NoEntryTodayBanner from "../components/NoEntryTodayBanner.jsx";
 import WarriorMascot from "../components/mascot/WarriorMascot.jsx";
+import ArcherMascot from "../components/mascot/ArcherMascot.jsx";
 import { computeWeeklyInsight } from "../lib/weeklyInsight.js";
 import {
   colors, iconChip, card, sectionHead, textBtn, txRow, txIcon, navBtn,
@@ -56,6 +57,11 @@ export default function Dashboard() {
   const [showForm, setShowForm] = useState(false);
   const [showAddAccount, setShowAddAccount] = useState(false);
   const [showMonthPicker, setShowMonthPicker] = useState(false);
+  // Drives ArcherMascot's shoot animation — set true right after a save succeeds (submitTx
+  // below), reset false ~1.5s later. Lives here (not inside ArcherMascot) because ArcherMascot
+  // is mounted on this page's own body, outside the modal, specifically so it survives the
+  // modal closing the instant the save succeeds (see ArcherMascot.jsx's own comment).
+  const [archerFiring, setArcherFiring] = useState(false);
 
   const [form, setForm] = useState({
     kind: "expense",
@@ -218,6 +224,12 @@ export default function Dashboard() {
 
       setForm({ ...form, amount: "", note: "" });
       setShowForm(false);
+
+      // ArcherMascot's shoot animation + cheer message — 1500ms matches the .archer-fire CSS
+      // animation's own 0.6s run time plus a little buffer for the message to actually be read,
+      // not just flash by.
+      setArcherFiring(true);
+      setTimeout(() => setArcherFiring(false), 1500);
     } catch (err) {
       setSaveErr(true);
       setErrDetail(String(err && err.message ? err.message : err));
@@ -337,6 +349,14 @@ export default function Dashboard() {
           <div style={{ fontSize: 15, color: colors.white, fontWeight: 700 }}>{THAI_MONTHS[cursor.getMonth()]}</div>
         </button>
       </div>
+
+      {/* Mounted here (page body, left-anchored) rather than inside the amount-entry modal
+          below — see ArcherMascot.jsx's own comment on why: the modal closes the instant a save
+          succeeds, so it has to live somewhere that survives that. Its own bottom margin lives
+          inside the component (only applied when it actually renders something) rather than on
+          a wrapper div here — a wrapper div would still take up its marginBottom on every other
+          theme even though ArcherMascot itself renders null off-theme. */}
+      <ArcherMascot firing={archerFiring} />
 
       <div style={styles.monthNav}>
         <button style={navBtn} onClick={() => setCursor(new Date(cursor.getFullYear(), cursor.getMonth() - 1, 1))}>

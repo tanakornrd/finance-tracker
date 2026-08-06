@@ -109,6 +109,21 @@ export default function App() {
         .mage-float { animation: mageFloat 3s ease-in-out infinite; }
         @keyframes mageFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
 
+        /* ArcherMascot.jsx: idle bob while waiting (same idiom as the warrior/mage), plus a
+           one-shot (not infinite) recoil-and-release animation that plays once when a save
+           succeeds — a quick lean back then snap forward, reading as "just fired an arrow"
+           rather than a looping pose. React swaps the className from archer-idle to
+           archer-fire and back (see the component), so this only ever plays once per save. */
+        .archer-idle { animation: archerBob 2.6s ease-in-out infinite; }
+        @keyframes archerBob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+        .archer-fire { animation: archerFire 0.6s ease-out; }
+        @keyframes archerFire {
+          0% { transform: translateX(0) rotate(0deg); }
+          30% { transform: translateX(-6px) rotate(-4deg); }
+          60% { transform: translateX(2px) rotate(2deg); }
+          100% { transform: translateX(0) rotate(0deg); }
+        }
+
         /* MageMascot.jsx's own <img> size — see ".warrior-img" above for why this is a class,
            not an inline style: only a stylesheet rule can be overridden by a media query. This
            card is self-contained (BudgetMageCard.jsx), so unlike the warrior it never has to
@@ -116,6 +131,14 @@ export default function App() {
         .mage-img { width: clamp(64px, 18vw, 100px); height: clamp(64px, 18vw, 100px); }
         @media (min-width: 1280px) {
           .mage-img { width: 140px; height: 140px; }
+        }
+
+        /* ArcherMascot.jsx's own <img> size — deliberately smaller than the warrior/mage: this
+           is a small reactive flourish inline near the top of a page, not a hero element with
+           its own dedicated card. */
+        .archer-img { width: clamp(48px, 12vw, 64px); height: clamp(48px, 12vw, 64px); }
+        @media (min-width: 1280px) {
+          .archer-img { width: 90px; height: 90px; }
         }
 
         /* CastleBackground.jsx ambient decoration — not gated by the mascotAnimationEnabled
@@ -135,6 +158,8 @@ export default function App() {
           .runner-leg-back, .runner-leg-front, .runner-arm-front, .runner-arm-back { animation: none; }
           .warrior-guard { animation: none; }
           .mage-float { animation: none; }
+          .archer-idle { animation: none; }
+          .archer-fire { animation: none; }
           .castle-star-twinkle { animation: none; }
           .castle-torch-flicker { animation: none; }
           .castle-banner-sway { animation: none; }
