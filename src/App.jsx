@@ -217,6 +217,12 @@ export default function App() {
           .slime-img { width: 140px; height: 140px; }
         }
 
+        /* Compact variant — one per budget row (Budgets.jsx), next to that category's own
+           progress bar. Fixed size, not viewport-responsive like ".slime-img" above: it's a
+           small inline indicator next to text, not a page-level flourish, so it doesn't need
+           its own breakpoint scaling. */
+        .slime-img-compact { width: 22px; height: 22px; transform: scale(var(--slime-scale, 0.3)); transform-origin: center; vertical-align: -6px; }
+
         /* CastleBackground.jsx ambient decoration — not gated by the mascotAnimationEnabled
            toggle (that's specifically the mascot on/off switch), but still respects
            prefers-reduced-motion below like every other animation here. */

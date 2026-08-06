@@ -89,9 +89,13 @@ function unwrap({ data, error }) {
 // app_settings, unique(user_id, key)) — parsed here into the shapes the client actually wants.
 // Unset keys default to null so the UI can show its own "not configured yet" state.
 //
-// slime_carry_over_cents / slime_last_seen_month are two more keys in this same existing
-// table, added for the arcade theme's SlimeEnemy mascot (src/lib/slimeStatus.js) — no schema
-// change, app_settings already stores arbitrary key/value pairs per user.
+// slime_carry_over_cents / slime_category_carry_over / slime_last_seen_month are three more
+// keys in this same existing table, added for the arcade theme's SlimeEnemy mascot
+// (src/lib/slimeStatus.js) — no schema change, app_settings already stores arbitrary key/value
+// pairs per user. slime_category_carry_over holds one JSON object (category name -> carried-
+// over cents), same "one value, one JSON blob" idiom as allocation_plan above, rather than one
+// app_settings row per category — categories are dynamic (whatever budgets exist), so a single
+// key avoids having to track/clean up per-category rows as budgets are added or removed.
 export async function getSettings(supabase) {
   const rows = unwrap(await supabase.from("app_settings").select("key, value"));
   const map = Object.fromEntries(rows.map((r) => [r.key, r.value]));
@@ -106,7 +110,15 @@ export async function getSettings(supabase) {
   }
   const slimeCarryOverCents = map.slime_carry_over_cents != null ? Number(map.slime_carry_over_cents) : 0;
   const slimeLastSeenMonth = map.slime_last_seen_month || null;
-  return { targetSavingsPct, allocationPlan, slimeCarryOverCents, slimeLastSeenMonth };
+  let slimeCategoryCarryOver = {};
+  if (map.slime_category_carry_over) {
+    try {
+      slimeCategoryCarryOver = JSON.parse(map.slime_category_carry_over);
+    } catch {
+      slimeCategoryCarryOver = {};
+    }
+  }
+  return { targetSavingsPct, allocationPlan, slimeCarryOverCents, slimeCategoryCarryOver, slimeLastSeenMonth };
 }
 
 // Bounded, low-churn data used across almost every page (account balances, budget caps,

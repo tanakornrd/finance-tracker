@@ -9,7 +9,7 @@ import { card, sectionHead, textBtn } from "../components/sharedStyles.js";
 import AddBudgetSheet from "../components/AddBudgetSheet.jsx";
 import BudgetMageCard from "../components/BudgetMageCard.jsx";
 import SlimeEnemy from "../components/mascot/SlimeEnemy.jsx";
-import { resolveMonthTransition, computeSlimeRatio } from "../lib/slimeStatus.js";
+import { resolveMonthTransition, computeSlimeRatio, computeCategorySlimeRatios } from "../lib/slimeStatus.js";
 import { useTheme } from "../context/ThemeContext.jsx";
 import { CategoryIcon } from "../theme/arcadeIcons.jsx";
 import { HpBar } from "../theme/rpgBars.jsx";
@@ -30,6 +30,10 @@ export default function Budgets() {
   const [monthTx, setMonthTx] = useState([]);
   const [txLoading, setTxLoading] = useState(true);
   const [slimeJustDefeated, setSlimeJustDefeated] = useState(false);
+  // Categories whose per-row slime just got defeated (see resolveMonthTransition's
+  // defeatedCategories) — a Set, not a single bool like slimeJustDefeated, since more than one
+  // category can resolve at once.
+  const [defeatedCategories, setDefeatedCategories] = useState(new Set());
 
   // Only this month's expenses are needed to show spent-vs-limit, not the full history.
   useEffect(() => {
@@ -69,15 +73,25 @@ export default function Budgets() {
         prevMonthTransactions,
         storedLastSeenMonth: settings.slimeLastSeenMonth,
         storedCarryOverCents: settings.slimeCarryOverCents || 0,
+        storedCategoryCarryOver: settings.slimeCategoryCarryOver || {},
       });
       if (!result.changed) return;
-      await updateSettings({ slimeCarryOverCents: result.carryOverCents, slimeLastSeenMonth: result.newLastSeenMonth });
+      await updateSettings({
+        slimeCarryOverCents: result.carryOverCents,
+        slimeCategoryCarryOver: result.categoryCarryOver,
+        slimeLastSeenMonth: result.newLastSeenMonth,
+      });
       await refetch();
+      // 1.6s — matches the ".slime-defeat" CSS animation's own run time (App.jsx) plus a small
+      // buffer, same idiom as every other mascot's firing-animation timer. Both the overall and
+      // per-category defeat flags share that same timing/reset.
       if (result.defeated) {
         setSlimeJustDefeated(true);
-        // 1.6s — matches the ".slime-defeat" CSS animation's own run time (App.jsx) plus a
-        // small buffer, same idiom as every other mascot's firing-animation timer.
         setTimeout(() => setSlimeJustDefeated(false), 1600);
+      }
+      if (result.defeatedCategories.length > 0) {
+        setDefeatedCategories(new Set(result.defeatedCategories));
+        setTimeout(() => setDefeatedCategories(new Set()), 1600);
       }
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -96,6 +110,11 @@ export default function Budgets() {
   const slimeRatio = useMemo(
     () => computeSlimeRatio({ budgets, thisMonthTransactions: monthTx, today: new Date(), carryOverCents: settings.slimeCarryOverCents || 0 }),
     [budgets, monthTx, settings.slimeCarryOverCents]
+  );
+
+  const categorySlimeRatios = useMemo(
+    () => computeCategorySlimeRatios({ budgets, thisMonthTransactions: monthTx, today: new Date(), categoryCarryOver: settings.slimeCategoryCarryOver || {} }),
+    [budgets, monthTx, settings.slimeCategoryCarryOver]
   );
 
   async function handleDelete(budget) {
@@ -154,6 +173,7 @@ export default function Budgets() {
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 13, marginBottom: 4 }}>
                   <span style={{ color: "var(--color-ink)", display: "inline-flex", alignItems: "center", gap: 6 }}>
                     <CategoryIcon theme={theme} name={b.category} fallback={icon} size={16} /> {b.category}
+                    <SlimeEnemy compact ratio={categorySlimeRatios[b.category] ?? null} defeated={defeatedCategories.has(b.category)} />
                   </span>
                   <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                     <span className="num" style={{ color }}>
