@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
 import { useTheme } from "../../context/ThemeContext.jsx";
+import { playSound } from "../../lib/sound.js";
 
 // A full-screen, whole-party celebration for reaching a savings goal (RPG party interactions,
 // part 5) — deliberately NOT four separate per-page animations. Warrior/Mage live on
@@ -14,7 +15,7 @@ import { useTheme } from "../../context/ThemeContext.jsx";
 // this and persisting that it's been shown (celebratedGoalIds, server/state.js) — this component
 // only renders the celebration itself and calls onClose when it's done.
 export default function PartyLevelUpOverlay({ goalNames, onClose }) {
-  const { theme, mascotAnimationEnabled } = useTheme();
+  const { theme, mascotAnimationEnabled, soundEnabled } = useTheme();
 
   useEffect(() => {
     // Auto-dismiss — this is a celebration, not a decision the user needs to act on, so it
@@ -23,6 +24,16 @@ export default function PartyLevelUpOverlay({ goalNames, onClose }) {
     const t = setTimeout(onClose, 5000);
     return () => clearTimeout(t);
   }, [onClose]);
+
+  // Fires once per mount (this component only ever mounts when there's something new to
+  // celebrate — App.jsx doesn't render it otherwise), not tied to any click. Guarded on `theme`
+  // itself (not just the early return below) since this hook has to run unconditionally before
+  // that return either way (rules of hooks) — without the check here the jingle would still
+  // fire on a non-arcade theme even though nothing visibly renders.
+  useEffect(() => {
+    if (theme === "arcade" && soundEnabled) playSound("levelUp");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   if (theme !== "arcade") return null;
 

@@ -3,6 +3,7 @@ import { THEMES, DEFAULT_THEME, THEME_CSS } from "../theme/themes.js";
 
 const STORAGE_KEY = "financeTrackerTheme";
 const MASCOT_ANIM_STORAGE_KEY = "financeTrackerMascotAnimation";
+const SOUND_STORAGE_KEY = "financeTrackerMascotSound";
 const ThemeContext = createContext(null);
 
 function readStoredTheme() {
@@ -33,12 +34,24 @@ function readStoredMascotAnimation() {
   }
 }
 
+// Default OFF, full stop — unlike animation (which has no way to surprise/bother anyone nearby),
+// sound can genuinely startle someone or feel out of place the moment this app is opened in a
+// public or work setting. Opt-in only; no media-query equivalent to defer to here.
+function readStoredSoundEnabled() {
+  try {
+    return localStorage.getItem(SOUND_STORAGE_KEY) === "on";
+  } catch {
+    return false;
+  }
+}
+
 // Applies the theme by setting data-theme on <html> (not just this subtree) — the CSS variables
 // in THEME_CSS are scoped to :root[data-theme=...], and things like the scrollbar thumb color
 // and the page's own background live outside the React tree's root div.
 export function ThemeProvider({ children }) {
   const [theme, setThemeState] = useState(readStoredTheme);
   const [mascotAnimationEnabled, setMascotAnimationEnabledState] = useState(readStoredMascotAnimation);
+  const [soundEnabled, setSoundEnabledState] = useState(readStoredSoundEnabled);
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
@@ -62,8 +75,19 @@ export function ThemeProvider({ children }) {
     }
   }
 
+  function setSoundEnabled(enabled) {
+    setSoundEnabledState(enabled);
+    try {
+      localStorage.setItem(SOUND_STORAGE_KEY, enabled ? "on" : "off");
+    } catch {
+      // persistence-is-a-nice-to-have, same as theme above
+    }
+  }
+
   return (
-    <ThemeContext.Provider value={{ theme, setTheme, themes: THEMES, mascotAnimationEnabled, setMascotAnimationEnabled }}>
+    <ThemeContext.Provider
+      value={{ theme, setTheme, themes: THEMES, mascotAnimationEnabled, setMascotAnimationEnabled, soundEnabled, setSoundEnabled }}
+    >
       <style>{THEME_CSS}</style>
       {children}
     </ThemeContext.Provider>

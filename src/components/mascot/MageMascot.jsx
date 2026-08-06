@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useTheme } from "../../context/ThemeContext.jsx";
+import { playSound } from "../../lib/sound.js";
 
 // Picked once per successful save, same reasoning as ArcherMascot's own CHEER_MESSAGES — a
 // stable message for the whole firing window instead of re-rolling on every re-render.
@@ -37,13 +38,14 @@ const SCRIBE_MESSAGES = [
 // something people will use often. BudgetMageCard.jsx and TransactionDetail.jsx don't pass
 // onClick, so they keep rendering the plain, non-interactive <div> exactly as before.
 export default function MageMascot({ message, firing, floatingBubble, onClick }) {
-  const { theme, mascotAnimationEnabled } = useTheme();
+  const { theme, mascotAnimationEnabled, soundEnabled } = useTheme();
   const [firedMessage, setFiredMessage] = useState(null);
   const [flashing, setFlashing] = useState(false);
 
   useEffect(() => {
     if (firing) {
       setFiredMessage(SCRIBE_MESSAGES[Math.floor(Math.random() * SCRIBE_MESSAGES.length)]);
+      if (soundEnabled) playSound("mageCast");
     } else if (firedMessage) {
       // Delayed, not instant — see ArcherMascot's identical comment: lets the message stay up
       // through the tail end of the cast animation instead of vanishing mid-pose.
@@ -61,6 +63,7 @@ export default function MageMascot({ message, firing, floatingBubble, onClick })
   const animClass = firing ? "mage-cast" : mascotAnimationEnabled ? "mage-float" : undefined;
 
   function handleClick() {
+    if (soundEnabled) playSound("mageCast");
     if (mascotAnimationEnabled) {
       // Same re-trigger-on-rapid-clicks trick as WarriorMascot's handleClick — force the class
       // off then back on across a frame instead of just setFlashing(true), so clicking again

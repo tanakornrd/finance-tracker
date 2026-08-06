@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useTheme } from "../../context/ThemeContext.jsx";
+import { playSound } from "../../lib/sound.js";
 
 // Enemy mascot for the "arcade" theme — the overall (page-header) slime in Budgets.jsx, and
 // (via `variant="party"`) each category's own slime in BudgetMageCard.jsx, staged opposite the
@@ -22,7 +23,7 @@ import { useTheme } from "../../context/ThemeContext.jsx";
 // and only Budgets.jsx's page-header slime sits in plain flex flow next to plain text (not
 // absolutely stacked over another box), so there's nothing for it to be swallowed by.
 export default function SlimeEnemy({ ratio, defeated, variant = "lg", tint, onClick }) {
-  const { theme, mascotAnimationEnabled } = useTheme();
+  const { theme, mascotAnimationEnabled, soundEnabled } = useTheme();
   const [scanning, setScanning] = useState(false);
   if (theme !== "arcade") return null;
   // null ratio means "no budget set for this (or, overall, any) category" — nothing to size
@@ -43,6 +44,7 @@ export default function SlimeEnemy({ ratio, defeated, variant = "lg", tint, onCl
   const imgClass = variant === "party" ? "slime-img-party" : "slime-img";
 
   function handleClick() {
+    if (soundEnabled) playSound("slimeScan");
     if (mascotAnimationEnabled) {
       // Same re-trigger-on-rapid-clicks trick as every other mascot's click handler.
       setScanning(false);

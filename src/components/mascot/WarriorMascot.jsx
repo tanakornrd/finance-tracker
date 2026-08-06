@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useTheme } from "../../context/ThemeContext.jsx";
+import { playSound } from "../../lib/sound.js";
 
 // Pixel-art warrior guard for the "arcade" theme — mounted inside Dashboard.jsx next to the net-
 // worth card (not globally via App.jsx anymore) since its speech bubble is meant to comment on
@@ -20,7 +21,7 @@ import { useTheme } from "../../context/ThemeContext.jsx";
 // Dashboard.jsx — its own separate "does today have an entry" check, same idea as
 // NoEntryTodayBanner.jsx's own independent fetch), then reverts to `message` on its own.
 export default function WarriorMascot({ message, hasEntryToday }) {
-  const { theme, mascotAnimationEnabled } = useTheme();
+  const { theme, mascotAnimationEnabled, soundEnabled } = useTheme();
   const [slashing, setSlashing] = useState(false);
   const [clickMessage, setClickMessage] = useState(null);
 
@@ -34,6 +35,7 @@ export default function WarriorMascot({ message, hasEntryToday }) {
 
   function handleClick() {
     setClickMessage(hasEntryToday ? "เก่งมาก! วันนี้จดแล้ว" : "อย่าลืมจดรายรับรายจ่ายวันนี้นะ!");
+    if (soundEnabled) playSound("warriorSlash");
     if (mascotAnimationEnabled) {
       // Re-triggers even on rapid repeat clicks: force a reflow between removing and re-adding
       // the class, same one-shot-animation-replay trick ArcherMascot/MageMascot don't need

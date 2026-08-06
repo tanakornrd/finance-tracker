@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useTheme } from "../../context/ThemeContext.jsx";
+import { playSound } from "../../lib/sound.js";
 
 // Picked once per successful save (see the useEffect below), not re-rendered fresh every time —
 // otherwise the message would flicker between different lines as the parent re-renders while
@@ -23,13 +24,14 @@ const CHEER_MESSAGES = [
 // successful-save reaction reading as basically the same gesture — "he just did something"),
 // and calls onClick in the same handler, no delay before the modal opens.
 export default function ArcherMascot({ firing, onClick }) {
-  const { theme, mascotAnimationEnabled } = useTheme();
+  const { theme, mascotAnimationEnabled, soundEnabled } = useTheme();
   const [message, setMessage] = useState(null);
   const [clicked, setClicked] = useState(false);
 
   useEffect(() => {
     if (firing) {
       setMessage(CHEER_MESSAGES[Math.floor(Math.random() * CHEER_MESSAGES.length)]);
+      if (soundEnabled) playSound("archerFire");
     } else {
       // Delayed, not instant — the caller flips `firing` back off around the same time the
       // shoot animation finishes, so clearing the bubble immediately would cut the message off
@@ -42,6 +44,7 @@ export default function ArcherMascot({ firing, onClick }) {
   if (theme !== "arcade") return null;
 
   function handleClick() {
+    if (soundEnabled) playSound("archerFire");
     if (mascotAnimationEnabled) {
       // Same re-trigger-on-rapid-clicks trick as every other mascot's click handler.
       setClicked(false);

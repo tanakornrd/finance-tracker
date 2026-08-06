@@ -65,7 +65,7 @@ const toggleRowStyle = { ...itemStyle, justifyContent: "space-between", cursor: 
 // The actual theme list + animation toggle — no positioning of its own, so it can be dropped
 // into a floating popover (mobile, below) or straight into Sidebar.jsx's flow (desktop) as-is.
 export function ThemeMenuList({ onSelect }) {
-  const { theme, setTheme, themes, mascotAnimationEnabled, setMascotAnimationEnabled } = useTheme();
+  const { theme, setTheme, themes, mascotAnimationEnabled, setMascotAnimationEnabled, soundEnabled, setSoundEnabled } = useTheme();
   const { signOut } = useAuth();
   return (
     <>
@@ -91,6 +91,17 @@ export function ThemeMenuList({ onSelect }) {
           type="checkbox"
           checked={mascotAnimationEnabled}
           onChange={(e) => setMascotAnimationEnabled(e.target.checked)}
+        />
+      </label>
+      {/* Separate toggle from animation on purpose — sound is opt-in-only by default (see
+          ThemeContext.jsx's readStoredSoundEnabled), unlike animation, since it can genuinely
+          bother someone nearby in a way a silent visual bounce never does. */}
+      <label style={toggleRowStyle}>
+        <span>เสียงประกอบ</span>
+        <input
+          type="checkbox"
+          checked={soundEnabled}
+          onChange={(e) => setSoundEnabled(e.target.checked)}
         />
       </label>
       <div style={dividerStyle} />
