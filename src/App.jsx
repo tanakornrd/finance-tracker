@@ -155,6 +155,20 @@ export default function App() {
           100% { transform: translate(-50%, -50%) scale(1) rotate(300deg); opacity: 0.5; }
         }
 
+        /* MageMascot.jsx's click "spell flash" (RPG party interactions, part 2 — only
+           SafeToSpendCard.jsx's clickable instance ever renders this) — a bright burst covering
+           the whole sprite right as the amount-entry modal opens, reading as "a burst of magic
+           just before the modal opens" rather than a loading gate: the modal itself is opened
+           in the very same click handler, not after this animation finishes, so this is purely
+           decorative and adds zero latency. inset:0 + pointer-events:none so it can never block
+           a second click. */
+        .mage-click-flash { position: absolute; inset: 0; border-radius: 50%; background: radial-gradient(circle, #FFF8D6 0%, #FFD75E 40%, transparent 75%); pointer-events: none; animation: mageClickFlash 0.35s ease-out; }
+        @keyframes mageClickFlash {
+          0% { opacity: 0; transform: scale(0.6); }
+          40% { opacity: 0.95; transform: scale(1.15); }
+          100% { opacity: 0; transform: scale(1.4); }
+        }
+
         /* ArcherMascot.jsx: idle bob while waiting (same idiom as the warrior/mage), plus a
            one-shot (not infinite) recoil-and-release animation that plays once when a save
            succeeds — a quick lean back then snap forward, reading as "just fired an arrow"
@@ -272,6 +286,7 @@ export default function App() {
           .mage-float { animation: none; }
           .mage-cast { animation: none; }
           .mage-orb-glow.firing { animation: none; }
+          .mage-click-flash { animation: none; opacity: 0; }
           .archer-idle { animation: none; }
           .archer-fire { animation: none; }
           .slime-idle { animation: none; }

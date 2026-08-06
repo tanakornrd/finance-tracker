@@ -28,9 +28,18 @@ const SCRIBE_MESSAGES = [
 // centering off to one side for no reason a viewer would expect. floatingBubble takes the
 // bubble out of flex flow (position:absolute) so it no longer counts toward that centering at
 // all, without changing anything for the callers that still want it counted.
-export default function MageMascot({ message, firing, floatingBubble }) {
+//
+// onClick: optional (RPG party interactions, part 2) — only SafeToSpendCard.jsx's instance
+// passes one (opening the shared amount-entry modal as a shortcut). When present, the mage
+// renders as a real <button> and a click plays a brief "spell flash" then calls onClick
+// IMMEDIATELY in the same handler, not after a delay — the flash is a purely decorative overlay
+// on top of the mage image, not a gate in front of opening the modal, so it can't add latency to
+// something people will use often. BudgetMageCard.jsx and TransactionDetail.jsx don't pass
+// onClick, so they keep rendering the plain, non-interactive <div> exactly as before.
+export default function MageMascot({ message, firing, floatingBubble, onClick }) {
   const { theme, mascotAnimationEnabled } = useTheme();
   const [firedMessage, setFiredMessage] = useState(null);
+  const [flashing, setFlashing] = useState(false);
 
   useEffect(() => {
     if (firing) {
@@ -51,15 +60,19 @@ export default function MageMascot({ message, firing, floatingBubble }) {
   const shownMessage = firedMessage || message;
   const animClass = firing ? "mage-cast" : mascotAnimationEnabled ? "mage-float" : undefined;
 
-  return (
-    // justifyContent:"center" (not the full-width flex row this used to be) — BudgetMageCard.jsx
-    // is a plain card the width of the whole page, and with the bubble sized to its own content
-    // now (not flex:1 stretching to fill whatever's left), a left-anchored row would leave the
-    // mage+bubble pair stranded off in a huge empty card; centering keeps them as one compact,
-    // deliberately-placed unit regardless of card width. Callers that mount this inside their
-    // own absolutely-positioned corner (SafeToSpendCard.jsx, same idiom as WarriorMascot) get a
-    // small, self-contained unit either way since the row only ever takes its content's width.
-    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", position: floatingBubble ? "relative" : undefined }} aria-hidden="true">
+  function handleClick() {
+    if (mascotAnimationEnabled) {
+      // Same re-trigger-on-rapid-clicks trick as WarriorMascot's handleClick — force the class
+      // off then back on across a frame instead of just setFlashing(true), so clicking again
+      // mid-flash restarts the animation instead of the (already-added) class doing nothing.
+      setFlashing(false);
+      requestAnimationFrame(() => setFlashing(true));
+    }
+    onClick();
+  }
+
+  const content = (
+    <>
       {shownMessage && <SpeechBubble text={shownMessage} floating={floatingBubble} />}
       <div className={animClass} style={{ position: "relative", flexShrink: 0, pointerEvents: "none" }}>
         {/* The magic orb glow — a plain CSS radial gradient positioned over roughly where the
@@ -70,6 +83,10 @@ export default function MageMascot({ message, firing, floatingBubble }) {
             the "the magic circle moves too" effect, distinct from the staff-swing on the image
             itself, which is flat art and can't animate on its own. */}
         <div className={`mage-orb-glow${firing ? " firing" : ""}`} />
+        {/* The click "spell flash" (part 2) — a separate overlay div, not another mage-orb-glow
+            state, since it needs to cover the whole sprite (a bright flash reading as "a burst
+            of magic just before the modal opens"), not just the orb's own small area. */}
+        {flashing && <div className="mage-click-flash" onAnimationEnd={() => setFlashing(false)} />}
         <img
           src={new URL("../../assets/mascot-mage.png", import.meta.url).href}
           alt=""
@@ -80,6 +97,34 @@ export default function MageMascot({ message, firing, floatingBubble }) {
           style={{ display: "block", imageRendering: "pixelated" }}
         />
       </div>
+    </>
+  );
+
+  // justifyContent:"center" (not the full-width flex row this used to be) — BudgetMageCard.jsx
+  // is a plain card the width of the whole page, and with the bubble sized to its own content
+  // now (not flex:1 stretching to fill whatever's left), a left-anchored row would leave the
+  // mage+bubble pair stranded off in a huge empty card; centering keeps them as one compact,
+  // deliberately-placed unit regardless of card width. Callers that mount this inside their
+  // own absolutely-positioned corner (SafeToSpendCard.jsx, same idiom as WarriorMascot) get a
+  // small, self-contained unit either way since the row only ever takes its content's width.
+  const rootStyle = { display: "flex", alignItems: "center", justifyContent: "center", position: floatingBubble ? "relative" : undefined };
+
+  if (onClick) {
+    return (
+      <button
+        type="button"
+        onClick={handleClick}
+        aria-label="นักเวทย์ กดเพื่อบันทึกรายการอย่างรวดเร็ว"
+        style={{ ...rootStyle, background: "none", border: "none", padding: 0, cursor: "pointer" }}
+      >
+        {content}
+      </button>
+    );
+  }
+
+  return (
+    <div style={rootStyle} aria-hidden="true">
+      {content}
     </div>
   );
 }

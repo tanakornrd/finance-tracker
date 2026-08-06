@@ -422,7 +422,15 @@ export default function Dashboard() {
           them, so nothing about the mobile reading order or these components' own code changes. */}
       <div className="dash-columns">
         <WeeklyInsightCard />
-        <SafeToSpendCard isCurrentMonth={isCurrentMonth} expenseCentsSoFar={expenseCents} mageFiring={mageFiring} />
+        <SafeToSpendCard
+          isCurrentMonth={isCurrentMonth}
+          expenseCentsSoFar={expenseCents}
+          mageFiring={mageFiring}
+          // Mage's click shortcut (RPG party interactions, part 2) — opens the exact same
+          // amount-entry modal the "+" FAB does, reusing this same setShowForm state rather
+          // than a separate form/modal.
+          onMageClick={() => setShowForm(true)}
+        />
         <MonthComparisonBar
           thisMonthExpenseCents={expenseCents}
           prevMonthExpenseCents={prevMonthExpenseCents}

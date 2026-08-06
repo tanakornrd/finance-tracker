@@ -11,9 +11,11 @@ const ctaBtn = { padding: "9px 16px", borderRadius: 10, border: "none", backgrou
 // expenseCentsSoFar: the viewed month's expense total, computed by Dashboard.jsx.
 // Only valid to display when isCurrentMonth is true, which is exactly when this card renders its number.
 // mageFiring: Dashboard.jsx's own reactive-save flag — see MageMascot.jsx's `firing` mode.
-// Passed through even on the isCurrentMonth===false early return below would be pointless (that
-// state hides the whole card), so it's only actually used in the main render path.
-export default function SafeToSpendCard({ isCurrentMonth, expenseCentsSoFar, mageFiring }) {
+// onMageClick: Dashboard.jsx's setShowForm(true) — opens the same amount-entry modal the "+"
+// FAB does (RPG party interactions, part 2). Both passed through even on the
+// isCurrentMonth===false early return below would be pointless (that state hides the whole
+// card), so they're only actually used in the main render path.
+export default function SafeToSpendCard({ isCurrentMonth, expenseCentsSoFar, mageFiring, onMageClick }) {
   const { budgets, refetch } = useReferenceData();
   const [showSheet, setShowSheet] = useState(false);
 
@@ -72,7 +74,7 @@ export default function SafeToSpendCard({ isCurrentMonth, expenseCentsSoFar, mag
           Positioned like WarriorMascot's corner mount on the net-worth card: absolute, clear of
           the left-aligned text above. */}
       <div className="scribe-mage-mount">
-        <MageMascot firing={mageFiring} />
+        <MageMascot firing={mageFiring} onClick={onMageClick} />
       </div>
       <AddBudgetSheet
         open={showSheet}
