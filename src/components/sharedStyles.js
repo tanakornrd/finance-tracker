@@ -73,22 +73,25 @@ export const kindBtn = { flex: 1, padding: "10px 4px", borderRadius: 10, border:
 export const kindActiveInc = { background: colors.primaryTint, color: colors.primary, borderColor: colors.primary };
 export const kindActiveExp = { background: colors.dangerTint, color: colors.danger, borderColor: colors.danger };
 
-// height: "100dvh" (not left implicit via `inset:0` alone) is the fix for every bottom-sheet
-// modal in the app (this file is the one place every one of them gets `overlay`/`sheet` from —
-// see the file header comment). `inset:0` on a `position:fixed` element sizes it to the
-// *layout* viewport, which on iOS Safari does NOT shrink when the on-screen keyboard opens —
-// only the *visual* viewport does. That mismatch is what let `sheet` below (bottom-anchored via
+// height: var(--app-vh, 100dvh) is the fix for every bottom-sheet modal in the app (this file
+// is the one place every one of them gets `overlay`/`sheet` from — see the file header
+// comment). `inset:0` on a `position:fixed` element sizes it to the *layout* viewport, which on
+// iOS Safari does NOT shrink when the on-screen keyboard opens — only the *visual* viewport
+// does. `dvh` alone turned out not to fix that: WebKit's dynamic viewport units track browser-
+// chrome show/hide (the URL bar), but WebKit does not shrink them for the software keyboard —
+// only `window.visualViewport` reports that. `--app-vh` (set on <html> by App.jsx from
+// visualViewport.height, refreshed on every keyboard open/close) is the real, keyboard-aware
+// height; `100dvh` is kept only as the fallback for the brief instant before that effect's
+// first run. That mismatch is what let `sheet` below (bottom-anchored via
 // `alignItems:"flex-end"`) get positioned past the bottom of what's actually visible once the
 // keyboard is up, taking its submit button with it (see submitBtn below + each modal's amount
-// input losing autoFocus, same root cause). `100dvh` (dynamic viewport height) tracks the
-// visual viewport instead, so the overlay — and everything bottom-anchored inside it — resizes
-// with the keyboard instead of being covered by it.
-export const overlay = { position: "fixed", inset: 0, height: "100dvh", background: "rgba(15,42,92,0.35)", display: "flex", alignItems: "flex-end", justifyContent: "center", zIndex: 50 };
-// maxHeight: 85dvh (not 85vh), same reasoning as `overlay` above — keeps the sheet from ever
-// claiming more height than is actually visible above the keyboard. paddingBottom adds
-// env(safe-area-inset-bottom) on top of the original 28px so the submit button clears the home-
-// indicator area on notched iPhones when the keyboard is closed, same as before this fix.
-export const sheet = { width: "100%", maxWidth: 480, background: colors.white, borderTopLeftRadius: 20, borderTopRightRadius: 20, border: `1px solid ${colors.border}`, borderBottom: "none", padding: "20px 20px calc(28px + env(safe-area-inset-bottom))", maxHeight: "85dvh", overflowY: "auto" };
+// input losing autoFocus, same root cause).
+export const overlay = { position: "fixed", inset: 0, height: "var(--app-vh, 100dvh)", background: "rgba(15,42,92,0.35)", display: "flex", alignItems: "flex-end", justifyContent: "center", zIndex: 50 };
+// maxHeight: calc(var(--app-vh) * 0.85), same reasoning as `overlay` above — keeps the sheet
+// from ever claiming more height than is actually visible above the keyboard. paddingBottom
+// adds env(safe-area-inset-bottom) on top of the original 28px so the submit button clears the
+// home-indicator area on notched iPhones when the keyboard is closed, same as before this fix.
+export const sheet = { width: "100%", maxWidth: 480, background: colors.white, borderTopLeftRadius: 20, borderTopRightRadius: 20, border: `1px solid ${colors.border}`, borderBottom: "none", padding: "20px 20px calc(28px + env(safe-area-inset-bottom))", maxHeight: "calc(var(--app-vh, 100dvh) * 0.85)", overflowY: "auto" };
 export const sheetHead = { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 };
 export const iconBtn = { background: "none", border: "none", padding: 4 };
 export const label = { display: "block", fontSize: 12, color: colors.inkMuted, margin: "12px 0 6px" };

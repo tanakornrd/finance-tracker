@@ -25,6 +25,32 @@ const ImportStatement = lazy(() => import("./routes/ImportStatement.jsx"));
 export default function App() {
   const { session, loading } = useAuth();
 
+  // Keeps a `--app-vh` CSS var on <html> in sync with the actual visible height, refreshed
+  // on the visualViewport's own resize/scroll events (fires when the on-screen keyboard opens/
+  // closes, not just on real window resizes). This exists because `dvh` alone (used by
+  // sharedStyles.js's `overlay`/`sheet`) turned out not to be enough on iOS Safari: WebKit's
+  // dynamic viewport units track browser-chrome show/hide (the URL bar), but do NOT shrink for
+  // the software keyboard — only `window.visualViewport` reports that. `--app-vh` is the
+  // authoritative, keyboard-aware source; `dvh` stays in sharedStyles.js only as the fallback
+  // value for the instant before this effect's first run. Declared before the loading/session
+  // early returns below so it's an unconditional hook call on every render (rules of hooks) —
+  // harmless to also run on the Login screen, which has no modals.
+  React.useEffect(() => {
+    const vv = window.visualViewport;
+    function setAppVh() {
+      const h = vv ? vv.height : window.innerHeight;
+      document.documentElement.style.setProperty("--app-vh", `${h}px`);
+    }
+    setAppVh();
+    const target = vv || window;
+    target.addEventListener("resize", setAppVh);
+    target.addEventListener("scroll", setAppVh);
+    return () => {
+      target.removeEventListener("resize", setAppVh);
+      target.removeEventListener("scroll", setAppVh);
+    };
+  }, []);
+
   // While Supabase checks localStorage for an existing session, render nothing rather than
   // flashing the Login page for an instant before a real session is found.
   if (loading) return null;
@@ -116,13 +142,13 @@ export default function App() {
         .warrior-mount { position: absolute; top: 42%; transform: translateY(-50%); right: 4px; z-index: 6; }
         @media (max-width: 560px) {
           /* Mobile no longer floats the warrior above the card (that made it small and easy to
-             miss). Instead: inset:0 makes this box match the net-worth card's own box exactly
-             (the position:relative wrapper around the card in Dashboard.jsx has no other sized
-             child, so its box == the card's box) — a background element centered inside the
-             card. opacity 0.2 keeps it decorative rather than competing with the real numbers,
-             and z-index:0 (below the card's own zIndex:1 — see Dashboard.jsx's styles.passbook)
-             puts it behind that text instead of on top of it. Desktop's original side-gap
-             placement above is untouched. */
+             miss). This mount is now a CHILD of the card itself (Dashboard.jsx), sandwiched
+             between the card's own background and its numbers content div — inset:0 makes this
+             box match the card's own content box exactly, so it reads as a background element
+             centered inside the card. opacity 0.2 keeps it decorative rather than competing
+             with the real numbers, and z-index:0 (below the numbers content div's own
+             zIndex:1 — see Dashboard.jsx) puts it behind that text instead of on top of it.
+             Desktop's original side-gap placement above is untouched. */
           .warrior-mount { inset: 0; transform: none; opacity: 0.2; z-index: 0; display: flex; align-items: center; justify-content: center; }
         }
 

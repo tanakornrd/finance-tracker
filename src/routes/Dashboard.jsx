@@ -347,14 +347,23 @@ export default function Dashboard() {
         </button>
       </div>
 
-      {/* position:relative here (not on styles.passbook itself, which has overflow:hidden for
-          its own perforation-strip clipping) so WarriorMascot + its speech bubble can hang
-          outside the card's own top edge without being clipped by that overflow:hidden. */}
-      <div style={{ position: "relative" }}>
-        <div style={styles.passbook}>
-          <div style={styles.perforation} />
-          <div style={{ padding: "20px 22px" }}>
-            <div style={{ fontSize: 12, color: colors.inkMuted, marginBottom: 4 }}>ความมั่งคั่งสุทธิ (สินทรัพย์ − หนี้สิน)</div>
+      <div style={styles.passbook}>
+        <div style={styles.perforation} />
+        {/* WarriorMascot mount — a child of the card now, not a sibling floating over it. It
+            used to be a sibling specifically so it (and its speech bubble) could hang outside
+            the card's own top edge, past this card's own overflow:hidden. Neither breakpoint's
+            position needs that escape anymore (desktop sits in the internal gap below; mobile
+            now sits centered *inside* the card as a faint background — see ".warrior-mount" in
+            App.jsx), so nesting it here instead fixes a real bug the old sibling structure had:
+            this card's own background is opaque, so a mascot painted *behind the whole card* on
+            mobile was invisible no matter its z-index — it needs to be behind the card's own
+            NUMBERS, which only works if it's inside the same box, painted after the card's
+            background but before (z-index below) the numbers content div right below it. */}
+        <div className="warrior-mount">
+          <WarriorMascot message={weeklyInsight.message} />
+        </div>
+        <div style={{ padding: "20px 22px", position: "relative", zIndex: 1 }}>
+          <div style={{ fontSize: 12, color: colors.inkMuted, marginBottom: 4 }}>ความมั่งคั่งสุทธิ (สินทรัพย์ − หนี้สิน)</div>
           <div className="num" style={{ fontSize: 34, fontWeight: 600, color: colors.ink, marginBottom: 4 }}>{centsToDisplay(netWorthCents)}</div>
           <div style={{ fontSize: 12, color: colors.inkMuted, marginBottom: 16 }}>
             สินทรัพย์ {centsToDisplay(totalAssetsCents)} · หนี้สิน {centsToDisplay(totalDebtCents)}
@@ -379,15 +388,6 @@ export default function Dashboard() {
               <div className="num" style={{ fontSize: 17, color: colors.ink, fontWeight: 600 }}>{centsToDisplay(transferredCents)}</div>
             </div>
           </div>
-        </div>
-        </div>
-        {/* Positioning lives in the ".warrior-mount" CSS class (App.jsx), not inline here — it
-            needs a genuinely different position on narrow mobile (above the card, clear of
-            every number) vs. desktop (in the gap between the top figure and the income/expense/
-            transfer row), and inline styles can't be overridden by a media query, only by
-            another inline style, so a class is the only way to let CSS pick per breakpoint. */}
-        <div className="warrior-mount">
-          <WarriorMascot message={weeklyInsight.message} />
         </div>
       </div>
 
@@ -784,12 +784,6 @@ const styles = {
     background: colors.white,
     borderRadius: 14, marginBottom: 22, position: "relative", overflow: "hidden",
     border: `1px solid ${colors.border}`, boxShadow: "0 4px 16px rgba(15,42,92,0.08)",
-    // zIndex:1 (paired with WarriorMascot's own z-index, set lower on mobile in
-    // ".warrior-mount" — see App.jsx) — on mobile the mascot now sits centered *inside* this
-    // card's own box as a faint background image (see that CSS comment for why), so this card's
-    // real content (the net-worth number, income/expense/transfer row) needs an explicit
-    // z-index to guarantee it paints above the mascot rather than relying on DOM-order luck.
-    zIndex: 1,
   },
   perforation: { height: 6, width: "100%", backgroundImage: `radial-gradient(circle, ${colors.primarySoft} 2.5px, transparent 2.6px)`, backgroundSize: "14px 6px", backgroundPosition: "top" },
   accCard: { background: colors.white, border: `1px solid ${colors.border}`, borderRadius: 12, padding: "12px 16px", minWidth: 110, flexShrink: 0, boxShadow: "0 1px 3px rgba(15,42,92,0.05)" },
