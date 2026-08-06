@@ -27,6 +27,7 @@ import {
   overlay, sheet, sheetHead, iconBtn, label, input, submitBtn,
   kindToggle, kindBtn, kindActiveInc, kindActiveExp,
 } from "../components/sharedStyles.js";
+import ModalPortal from "../components/ModalPortal.jsx";
 
 function monthKey(d) { return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`; }
 function todayStr() {
@@ -579,6 +580,7 @@ export default function Dashboard() {
       </button>
 
       {showForm && (
+        <ModalPortal>
         <div style={overlay} onClick={() => setShowForm(false)}>
           <div style={sheet} className="sheet" onClick={(e) => e.stopPropagation()}>
             <div style={sheetHead}>
@@ -710,9 +712,11 @@ export default function Dashboard() {
             </form>
           </div>
         </div>
+        </ModalPortal>
       )}
 
       {showAddAccount && (
+        <ModalPortal>
         <div style={overlay} onClick={() => setShowAddAccount(false)}>
           <div style={sheet} className="sheet" onClick={(e) => e.stopPropagation()}>
             <div style={sheetHead}>
@@ -738,6 +742,7 @@ export default function Dashboard() {
             </form>
           </div>
         </div>
+        </ModalPortal>
       )}
 
       <MonthPickerSheet

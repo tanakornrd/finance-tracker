@@ -5,6 +5,7 @@ import { useReferenceData } from "../context/ReferenceDataContext.jsx";
 import { updateAccount, deleteAccountPermanently } from "../api.js";
 import { centsToDisplay } from "../../shared/money.js";
 import { colors, card, sectionHead, overlay, sheet, sheetHead, label, input, submitBtn } from "../components/sharedStyles.js";
+import ModalPortal from "../components/ModalPortal.jsx";
 
 const CONFIRM_TEXT = "ลบถาวร";
 
@@ -92,6 +93,7 @@ export default function Trash() {
       {err && <div style={{ color: "var(--color-danger)", fontSize: 12, textAlign: "center", marginTop: 8 }}>{err}</div>}
 
       {pendingDelete && (
+        <ModalPortal>
         <div style={overlay} onClick={() => !busy && setPendingDelete(null)}>
           <div style={sheet} className="sheet" onClick={(e) => e.stopPropagation()}>
             <div style={sheetHead}>
@@ -121,6 +123,7 @@ export default function Trash() {
             </button>
           </div>
         </div>
+        </ModalPortal>
       )}
     </div>
   );

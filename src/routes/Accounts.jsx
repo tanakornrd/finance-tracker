@@ -9,6 +9,7 @@ import {
   colors, iconChip, sectionHead, textBtn, overlay, sheet, sheetHead, iconBtn, label, input, submitBtn,
   kindToggle, kindBtn, kindActiveInc, kindActiveExp,
 } from "../components/sharedStyles.js";
+import ModalPortal from "../components/ModalPortal.jsx";
 import { useTheme } from "../context/ThemeContext.jsx";
 import { QuestBar } from "../theme/rpgBars.jsx";
 
@@ -249,6 +250,7 @@ export default function Accounts() {
       )}
 
       {showAdd && (
+        <ModalPortal>
         <div style={overlay} onClick={() => setShowAdd(false)}>
           <div style={sheet} className="sheet" onClick={(e) => e.stopPropagation()}>
             <div style={sheetHead}>
@@ -294,9 +296,11 @@ export default function Accounts() {
             </form>
           </div>
         </div>
+        </ModalPortal>
       )}
 
       {editingAccount && (
+        <ModalPortal>
         <div style={overlay} onClick={() => setEditingAccount(null)}>
           <div style={sheet} className="sheet" onClick={(e) => e.stopPropagation()}>
             <div style={sheetHead}>
@@ -356,6 +360,7 @@ export default function Accounts() {
             </form>
           </div>
         </div>
+        </ModalPortal>
       )}
     </div>
   );

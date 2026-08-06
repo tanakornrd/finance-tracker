@@ -6,6 +6,7 @@ import { centsToDisplay } from "../../shared/money.js";
 import { getPendingOccurrences } from "../lib/pendingBills.js";
 import { EXPENSE_CATS } from "../../shared/categories.js";
 import { sectionHead, textBtn, card, overlay, sheet, sheetHead, iconBtn, label, input, submitBtn } from "./sharedStyles.js";
+import ModalPortal from "./ModalPortal.jsx";
 import { useTheme } from "../context/ThemeContext.jsx";
 import { CategoryIcon } from "../theme/arcadeIcons.jsx";
 
@@ -100,6 +101,7 @@ export default function PendingBillsCard({ cursor }) {
       )}
 
       {showAdd && (
+        <ModalPortal>
         <div style={overlay} onClick={() => setShowAdd(false)}>
           <div style={sheet} className="sheet" onClick={(e) => e.stopPropagation()}>
             <div style={sheetHead}>
@@ -140,6 +142,7 @@ export default function PendingBillsCard({ cursor }) {
             </form>
           </div>
         </div>
+        </ModalPortal>
       )}
     </>
   );

@@ -5,6 +5,7 @@ import {
   overlay, sheet, sheetHead, iconBtn, textBtn,
   navBtn, yearSwitch, monthGrid, monthGridBtn, monthGridBtnActive,
 } from "./sharedStyles.js";
+import ModalPortal from "./ModalPortal.jsx";
 
 // Controlled month-grid picker sheet: tap a month to select it, or (if showAllOption) pick "ทั้งหมด".
 // year/month describe the currently-selected month (month is 0-indexed, or null when "all" is selected).
@@ -18,6 +19,7 @@ export default function MonthPickerSheet({ open, onClose, year, month, onSelectM
   if (!open) return null;
 
   return (
+    <ModalPortal>
     <div style={overlay} onClick={onClose}>
       <div style={sheet} className="sheet" onClick={(e) => e.stopPropagation()}>
         <div style={sheetHead}>
@@ -66,5 +68,6 @@ export default function MonthPickerSheet({ open, onClose, year, month, onSelectM
         </button>
       </div>
     </div>
+    </ModalPortal>
   );
 }

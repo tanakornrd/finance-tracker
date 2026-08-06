@@ -8,6 +8,7 @@ import { formatDateTimeThai } from "../../shared/dates.js";
 import { EXPENSE_CATS, INCOME_CATS } from "../../shared/categories.js";
 import { describeTransfer } from "../lib/transferLabel.js";
 import { card, overlay, sheet, sheetHead, iconBtn, label, input, submitBtn, colors } from "../components/sharedStyles.js";
+import ModalPortal from "../components/ModalPortal.jsx";
 import { useTheme } from "../context/ThemeContext.jsx";
 import { CategoryIcon } from "../theme/arcadeIcons.jsx";
 
@@ -195,6 +196,7 @@ function EditTransactionSheet({ tx, accounts, onClose, onSaved }) {
   }
 
   return (
+    <ModalPortal>
     <div style={overlay} onClick={onClose}>
       <div style={sheet} className="sheet" onClick={(e) => e.stopPropagation()}>
         <div style={sheetHead}>
@@ -240,5 +242,6 @@ function EditTransactionSheet({ tx, accounts, onClose, onSaved }) {
         </form>
       </div>
     </div>
+    </ModalPortal>
   );
 }
