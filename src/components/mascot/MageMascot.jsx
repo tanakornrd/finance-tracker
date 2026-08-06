@@ -97,8 +97,17 @@ function SpeechBubble({ text, floating }) {
         // floating: position:absolute, pinned to the mage wrapper's left edge (right:100% of
         // that relative-positioned wrapper — see MageMascot's own root div above) instead of a
         // normal flex child with marginRight — see MageMascot's floatingBubble comment for why.
+        // Needs width:"max-content" here, not just maxWidth: an absolutely positioned box with
+        // only `right` set (no `left`) and the default width:auto falls back to shrink-to-fit
+        // sizing, whose "available width" collapsed to ~0 in practice (both the static position
+        // AND the specified right edge land at the same point once the bubble is taken out of
+        // the flex row), wrapping the text to one character per line. max-content sizes to the
+        // text's own natural width instead (still capped by maxWidth below for long messages),
+        // sidestepping that shrink-to-fit calculation entirely.
         position: floating ? "absolute" : "relative", // "relative" still needed either way: containing block for the tail below
-        ...(floating ? { right: "100%", top: "50%", transform: "translateY(-50%)", marginRight: 0 } : { flex: "0 1 auto", marginRight: 6 }),
+        ...(floating
+          ? { right: "100%", top: "50%", transform: "translateY(-50%)", marginRight: 0, width: "max-content" }
+          : { flex: "0 1 auto", marginRight: 6 }),
         maxWidth: "min(320px, 60vw)",
         wordBreak: "break-word",
         background: "#F5F3FF",

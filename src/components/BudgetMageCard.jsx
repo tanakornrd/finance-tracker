@@ -80,17 +80,16 @@ export default function BudgetMageCard({ budgets, spentByCategory, categorySlime
               return (
                 <div
                   key={b.id}
-                  // Overlapping, staggered stance ("ยืนซ้อนสลับฟันปลา") — negative marginLeft
-                  // after the first slime overlaps each one slightly with the previous, and
-                  // alternating translateY zigzags every other one up/down, so the party reads
-                  // as a loose crowd rather than a neat row of icons. Both distances shrunk from
-                  // the first version (-18/14) to -8/6 per feedback — still overlapping, just
-                  // less aggressively. zIndex follows DOM order (later slimes drawn on top),
-                  // which alone is enough for a natural-looking stack — no extra bookkeeping
-                  // needed.
+                  // Staggered stance ("ยืนซ้อนสลับฟันปลา") — the alternating translateY zigzag
+                  // (the "height" that was specifically liked, kept unchanged at 6) does the
+                  // staggering on its own; marginLeft switched from overlapping (-8) to a small
+                  // positive gap so the slimes no longer crowd into each other, while the zigzag
+                  // still reads as a loose, uneven line rather than a neat row. zIndex follows
+                  // DOM order (later slimes drawn on top) — harmless now that they don't
+                  // overlap, kept in case spacing gets tightened again later.
                   style={{
                     position: "relative",
-                    marginLeft: i === 0 ? 0 : -8,
+                    marginLeft: i === 0 ? 0 : 6,
                     transform: `translateY(${i % 2 === 0 ? 0 : 6}px)`,
                     zIndex: i,
                     display: "flex",
