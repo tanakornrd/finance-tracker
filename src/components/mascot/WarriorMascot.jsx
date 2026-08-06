@@ -33,7 +33,7 @@ export default function WarriorMascot({ message }) {
         // Scaling down with the viewport (while still landing on the full 130px at desktop
         // widths, where there's room) keeps it clear of both regardless of screen size, instead
         // of needing a separate mobile-specific breakpoint rule.
-        style={{ display: "block", imageRendering: "pixelated", transform: "scaleX(-1)", width: "clamp(64px, 16vw, 130px)", height: "clamp(64px, 16vw, 130px)" }}
+        style={{ display: "block", imageRendering: "pixelated", width: "clamp(64px, 16vw, 130px)", height: "clamp(64px, 16vw, 130px)" }}
       />
     </div>
   );
