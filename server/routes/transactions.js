@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { rowToTx } from "../state.js";
 import { parseToCents } from "../../shared/money.js";
-import { centsToMoney } from "../moneyConvert.js";
+import { centsToMoney, moneyToCents } from "../moneyConvert.js";
 import { ALL_CATEGORY_NAMES } from "../../shared/categories.js";
 
 const router = Router();
@@ -172,11 +172,32 @@ router.post("/import", async (req, res) => {
     if (category && !ALL_CATEGORY_NAMES.has(category)) {
       return res.status(400).json({ error: `row ${i + 1}: unknown category` });
     }
-    prepared.push({ kind, amountMoney: centsToMoney(amountCents), accountId, date, category: category || null, note: note || "" });
+    prepared.push({ kind, amountCents, amountMoney: centsToMoney(amountCents), accountId, date, category: category || null, note: note || "" });
   }
 
+  // Duplicate check — same criteria as ImportStatement.jsx's frontend warning (date + amount
+  // match, scoped to the same account), but enforced here as a hard skip rather than a soft UI
+  // flag, since the frontend check can't see rows another concurrent import/session just added.
+  // Matched against every existing transaction in the involved account(s) (RLS already scopes
+  // this query to the logged-in user), not just rows within this batch.
+  const accountIds = [...new Set(prepared.map((r) => r.accountId))];
+  const { data: existingRows, error: existingErr } = await req.supabase
+    .from("transactions")
+    .select("account_id, date, amount")
+    .in("account_id", accountIds);
+  if (existingErr) return res.status(400).json({ error: existingErr.message });
+  const existingKeys = new Set(
+    (existingRows || []).map((r) => `${r.account_id}|${r.date}|${moneyToCents(r.amount)}`)
+  );
+
   const insertedIds = [];
+  const skipped = [];
   for (const row of prepared) {
+    const key = `${row.accountId}|${row.date}|${row.amountCents}`;
+    if (existingKeys.has(key)) {
+      skipped.push({ date: row.date, amount: row.amountMoney, note: row.note });
+      continue;
+    }
     const { data, error } = await req.supabase.rpc("insert_transaction", {
       p_kind: row.kind,
       p_amount: row.amountMoney,
@@ -196,7 +217,7 @@ router.post("/import", async (req, res) => {
     }
     insertedIds.push(data);
   }
-  res.status(201).json({ ids: insertedIds });
+  res.status(201).json({ ids: insertedIds, skipped });
 });
 
 export default router;

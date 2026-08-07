@@ -168,7 +168,7 @@ export default function ImportStatement() {
         note: r.note,
       }));
       const res = await importTransactions(payload);
-      setDone(res.ids.length);
+      setDone({ saved: res.ids.length, skipped: (res.skipped || []).length });
     } catch (e) {
       setSaveErr(e.message || "นำเข้าไม่สำเร็จ");
     } finally {
@@ -184,7 +184,12 @@ export default function ImportStatement() {
         <div className="page-title" style={{ fontSize: 22, fontWeight: 700, color: colors.ink, marginBottom: 18 }}>นำเข้าสำเร็จ</div>
         <div style={card}>
           <div style={{ textAlign: "center", padding: "20px 0", fontSize: 14, color: colors.ink }}>
-            ✅ นำเข้า {done} รายการเรียบร้อยแล้ว
+            ✅ บันทึกจริง {done.saved} รายการ
+            {done.skipped > 0 && (
+              <div style={{ marginTop: 6, color: colors.inkMuted, fontSize: 13 }}>
+                ⏭️ ข้ามเพราะซ้ำ {done.skipped} รายการ (วันที่และจำนวนเงินตรงกับรายการที่มีอยู่แล้ว)
+              </div>
+            )}
           </div>
           <button style={submitBtn} onClick={() => navigate("/transactions")}>ไปที่หน้ารายการ</button>
         </div>
