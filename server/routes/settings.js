@@ -4,7 +4,7 @@ import { getSettings } from "../state.js";
 const router = Router();
 
 router.patch("/", async (req, res) => {
-  const { targetSavingsPct, allocationPlan, slimeCarryOverCents, slimeCategoryCarryOver, slimeLastSeenMonth, celebratedGoalIds } = req.body;
+  const { targetSavingsPct, allocationPlan, slimeCarryOverCents, slimeCategoryCarryOver, slimeLastSeenMonth, celebratedGoalIds, celebratedFestivalIds } = req.body;
 
   if (targetSavingsPct !== undefined) {
     if (targetSavingsPct !== null && (typeof targetSavingsPct !== "number" || !Number.isFinite(targetSavingsPct) || targetSavingsPct < 0 || targetSavingsPct > 100)) {
@@ -110,6 +110,24 @@ router.patch("/", async (req, res) => {
       const { error } = await req.supabase
         .from("app_settings")
         .upsert({ user_id: req.userId, key: "celebrated_goal_ids", value: JSON.stringify(celebratedGoalIds) }, { onConflict: "user_id,key" });
+      if (error) return res.status(400).json({ error: error.message });
+    }
+  }
+
+  // Same idiom as celebrated_goal_ids just above, one more app_settings key, no schema change
+  // (ชุด 4.4, 2026-08-08) — Budgets.jsx writes this right after showing the slime's "finished
+  // the festival within budget" reaction for a given festival budget row, so it never repeats.
+  if (celebratedFestivalIds !== undefined) {
+    if (celebratedFestivalIds === null) {
+      const { error } = await req.supabase.from("app_settings").delete().eq("key", "celebrated_festival_ids");
+      if (error) return res.status(400).json({ error: error.message });
+    } else {
+      if (!Array.isArray(celebratedFestivalIds) || celebratedFestivalIds.some((id) => typeof id !== "string" || !id)) {
+        return res.status(400).json({ error: "celebratedFestivalIds must be an array of non-empty budget id strings, or null" });
+      }
+      const { error } = await req.supabase
+        .from("app_settings")
+        .upsert({ user_id: req.userId, key: "celebrated_festival_ids", value: JSON.stringify(celebratedFestivalIds) }, { onConflict: "user_id,key" });
       if (error) return res.status(400).json({ error: error.message });
     }
   }

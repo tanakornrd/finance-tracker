@@ -106,6 +106,33 @@ export default function Budgets() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [festivalBudgets.map((b) => `${b.id}:${b.festivalStartDate}:${b.festivalEndDate}`).join(",")]);
 
+  // Slime's "finished the festival within budget" reaction (ชุด 4.4, 2026-08-08) — once a
+  // festival's own end date has passed AND its real spend (festivalSpent, fetched above) came
+  // in at or under the budget, the SAME slime-defeat animation SlimeEnemy already plays for a
+  // clean month plays once here too — reused via the ratio being clamped to 0 below, not a new
+  // animation. settings.celebratedFestivalIds (app_settings, same idiom as
+  // celebratedGoalIds/PartyLevelUpOverlay.jsx) is the "already shown" record, written right
+  // after triggering so a page refresh never replays it. Runs once festivalSpent has actually
+  // loaded for every current festival budget (an empty {} on first render would otherwise look
+  // like "spent nothing" and fire prematurely for a festival that hasn't even started).
+  useEffect(() => {
+    if (festivalBudgets.length === 0) return;
+    const celebrated = new Set(settings.celebratedFestivalIds || []);
+    const today = toISODate(new Date());
+    const newlyDone = festivalBudgets.filter(
+      (b) =>
+        b.festivalEndDate < today &&
+        !celebrated.has(b.id) &&
+        b.id in festivalSpent &&
+        festivalSpent[b.id] <= b.monthlyLimitCents
+    );
+    if (newlyDone.length === 0) return;
+    setSlimeJustDefeated(true);
+    setTimeout(() => setSlimeJustDefeated(false), 1600);
+    updateSettings({ celebratedFestivalIds: [...celebrated, ...newlyDone.map((b) => b.id)] }).then(refetch);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [festivalBudgets, festivalSpent, settings.celebratedFestivalIds]);
+
   // SlimeEnemy's month-transition check (src/lib/slimeStatus.js) — runs once per app load,
   // and does nothing (skips straight past resolveMonthTransition's early-out) on every load
   // after the first one in a given month. Depends on settings.slimeLastSeenMonth specifically

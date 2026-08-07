@@ -134,7 +134,19 @@ export async function getSettings(supabase) {
       celebratedGoalIds = [];
     }
   }
-  return { targetSavingsPct, allocationPlan, slimeCarryOverCents, slimeCategoryCarryOver, slimeLastSeenMonth, celebratedGoalIds };
+  // celebrated_festival_ids: same idiom as celebrated_goal_ids just above (ชุด 4.4, 2026-08-08)
+  // — a JSON array of festival-budget row ids whose "finished the festival within budget"
+  // reaction has already been shown, so Budgets.jsx knows not to replay it on the next load.
+  let celebratedFestivalIds = [];
+  if (map.celebrated_festival_ids) {
+    try {
+      const parsed = JSON.parse(map.celebrated_festival_ids);
+      celebratedFestivalIds = Array.isArray(parsed) ? parsed : [];
+    } catch {
+      celebratedFestivalIds = [];
+    }
+  }
+  return { targetSavingsPct, allocationPlan, slimeCarryOverCents, slimeCategoryCarryOver, slimeLastSeenMonth, celebratedGoalIds, celebratedFestivalIds };
 }
 
 // Bounded, low-churn data used across almost every page (account balances, budget caps,
