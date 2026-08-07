@@ -101,11 +101,10 @@ function SpeechBubble({ text, anchorRef }) {
   // absolutely-positioned-beside-the-warrior rendering as always, no portal, no measurement.
   //
   // anchorFrac 0.14 (not the 0.5 default, and higher up than desktop's own 0.28 — mobile has no
-  // fixed "row of numbers" to clear beside, so it can sit right up near the head) + gap 3 (half
-  // the default 6) — tucks the bubble snug against the warrior's head instead of drifting down
-  // toward the balance figure below it, per feedback that the first mobile version sat too low/
-  // far and covered the numbers.
-  const { isMobile, bubbleRef, pos } = useKeepBubbleOnScreen({ anchorRef, anchorFrac: 0.14, gap: 3, deps: [text] });
+  // fixed "row of numbers" to clear beside, so it can sit right up near the head) + gap 0 (was
+  // 6, then 3 — per feedback, tightened twice more to sit flush against the warrior's head
+  // instead of drifting down toward the balance figure below it).
+  const { isMobile, bubbleRef, pos } = useKeepBubbleOnScreen({ anchorRef, anchorFrac: 0.14, gap: 0, deps: [text] });
 
   const bubble = (
     <div
