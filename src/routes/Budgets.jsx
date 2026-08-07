@@ -25,14 +25,19 @@ const COLOR_OVER = "var(--color-danger)";
 function monthKey(d) { return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`; }
 
 export default function Budgets() {
-  const { theme } = useTheme();
+  const { theme, mascotAnimationEnabled } = useTheme();
   const { budgets, loading: refLoading, refetch, settings } = useReferenceData();
   const [showAdd, setShowAdd] = useState(false);
   const [showScan, setShowScan] = useState(false);
   // BudgetSpellOverlay trigger — only this page's own "ตั้งงบประมาณ" form (below), not the
   // quick-add version embedded in SafeToSpendCard on Dashboard.jsx, per the RPG interactions
-  // follow-up request scoping this to the Budgets page specifically.
+  // follow-up request scoping this to the Budgets page specifically. Two DIFFERENT reactions to
+  // the same save event, not one feature with a stripped-down fallback: showSpell is the full
+  // animated overlay (mascotAnimationEnabled on); mageFiring is a brief, motion-free "บันทึกไว้
+  // แล้วนะ!" bubble on the small inline mage in BudgetMageCard (toggle off / reduced motion) —
+  // only ever one of the two fires per save, see onSaved below.
   const [showSpell, setShowSpell] = useState(false);
+  const [mageFiring, setMageFiring] = useState(false);
   const [err, setErr] = useState("");
   const [monthTx, setMonthTx] = useState([]);
   const [txLoading, setTxLoading] = useState(true);
@@ -156,6 +161,7 @@ export default function Budgets() {
         spentByCategory={spentByCategory}
         categorySlimeRatios={categorySlimeRatios}
         defeatedCategories={defeatedCategories}
+        firing={mageFiring}
       />
 
       <div style={sectionHead} className="section-head">
@@ -224,7 +230,16 @@ export default function Budgets() {
           // delays or blocks the actual write.
           await refetch();
           setShowAdd(false);
-          setShowSpell(true);
+          if (mascotAnimationEnabled) {
+            setShowSpell(true);
+          } else {
+            // No overlay at all in this case (not a stripped-down version of it) — just the
+            // small inline mage in BudgetMageCard showing its message briefly, no motion. 1500ms
+            // matches the same duration Dashboard.jsx/TransactionDetail.jsx already use for
+            // their own (non-overlay) mageFiring bubbles.
+            setMageFiring(true);
+            setTimeout(() => setMageFiring(false), 1500);
+          }
         }}
       />
       {showSpell && <BudgetSpellOverlay onClose={() => setShowSpell(false)} />}

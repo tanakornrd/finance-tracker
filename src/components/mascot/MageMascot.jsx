@@ -39,7 +39,12 @@ const SCRIBE_MESSAGES = [
 // on top of the mage image, not a gate in front of opening the modal, so it can't add latency to
 // something people will use often. BudgetMageCard.jsx and TransactionDetail.jsx don't pass
 // onClick, so they keep rendering the plain, non-interactive <div> exactly as before.
-export default function MageMascot({ message, firing, floatingBubble, onClick }) {
+//
+// firingText: optional override for the message shown while `firing` — BudgetMageCard.jsx's
+// reduced-motion/toggle-off fallback (see Budgets.jsx) uses this to force the exact same
+// "บันทึกไว้แล้วนะ!" line the full-screen BudgetSpellOverlay shows in its animated version,
+// instead of a random SCRIBE_MESSAGES pick. Every other caller omits it and keeps the random pick.
+export default function MageMascot({ message, firing, firingText, floatingBubble, onClick }) {
   const { theme, mascotAnimationEnabled, soundEnabled } = useTheme();
   const [firedMessage, setFiredMessage] = useState(null);
   const [flashing, setFlashing] = useState(false);
@@ -47,7 +52,7 @@ export default function MageMascot({ message, firing, floatingBubble, onClick })
 
   useEffect(() => {
     if (firing) {
-      setFiredMessage(SCRIBE_MESSAGES[Math.floor(Math.random() * SCRIBE_MESSAGES.length)]);
+      setFiredMessage(firingText || SCRIBE_MESSAGES[Math.floor(Math.random() * SCRIBE_MESSAGES.length)]);
       if (soundEnabled) playSound("mageCast");
     } else if (firedMessage) {
       // Delayed, not instant — see ArcherMascot's identical comment: lets the message stay up
@@ -63,7 +68,14 @@ export default function MageMascot({ message, firing, floatingBubble, onClick })
   // firedMessage covers both the firing window and its 300ms grace period; message (the static
   // budget-insight prop) is the fallback once neither applies.
   const shownMessage = firedMessage || message;
-  const animClass = firing ? "mage-cast" : mascotAnimationEnabled ? "mage-float" : undefined;
+  // mascotAnimationEnabled now gates the one-shot "firing" animation too, not just the idle
+  // mage-float loop (2026-08-07 fix, prompted by BudgetMageCard's reduced-motion fallback
+  // needing this to be a genuinely still, unanimated bubble when the toggle is off — previously
+  // "mage-cast"/the orb glow's "firing" pulse always played on a successful save regardless of
+  // the toggle, which didn't actually respect it). Mildly changes Dashboard.jsx's/
+  // TransactionDetail.jsx's own save-success reaction too: with the toggle off, that mage now
+  // just swaps to the message text with no cast animation, which is the toggle's whole point.
+  const animClass = firing ? (mascotAnimationEnabled ? "mage-cast" : undefined) : mascotAnimationEnabled ? "mage-float" : undefined;
 
   function handleClick() {
     if (soundEnabled) playSound("mageCast");
@@ -88,7 +100,7 @@ export default function MageMascot({ message, firing, floatingBubble, onClick })
             Idle: a faint, static glow. Firing: ".mage-orb-glow.firing" below spins/pulses it —
             the "the magic circle moves too" effect, distinct from the staff-swing on the image
             itself, which is flat art and can't animate on its own. */}
-        <div className={`mage-orb-glow${firing ? " firing" : ""}`} />
+        <div className={`mage-orb-glow${firing && mascotAnimationEnabled ? " firing" : ""}`} />
         {/* The click "spell flash" (part 2) — a separate overlay div, not another mage-orb-glow
             state, since it needs to cover the whole sprite (a bright flash reading as "a burst
             of magic just before the modal opens"), not just the orb's own small area. */}

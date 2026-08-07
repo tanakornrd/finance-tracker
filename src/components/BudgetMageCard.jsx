@@ -35,7 +35,13 @@ const COLOR_OVER = "var(--color-danger)";
 // for its own progress list (src/lib/slimeStatus.js) — passed straight through so the slime
 // party's SIZE reflects carried-over debt across months, not just this month's spend, matching
 // the page-header slime's own behavior.
-export default function BudgetMageCard({ budgets, spentByCategory, categorySlimeRatios, defeatedCategories }) {
+// firing: optional (2026-08-07, budget-save reaction) — Budgets.jsx sets this briefly right
+// after a successful save, but ONLY as the reduced-motion/mascotAnimationEnabled-off fallback;
+// when animation is enabled it shows the full-screen BudgetSpellOverlay instead and never
+// touches this prop. Forwarded straight to whichever MageMascot instance below is actually
+// rendered (the two branches are mutually exclusive), with the same fixed "บันทึกไว้แล้วนะ!"
+// text the overlay's animated version uses, via MageMascot's firingText override.
+export default function BudgetMageCard({ budgets, spentByCategory, categorySlimeRatios, defeatedCategories, firing }) {
   const { theme } = useTheme();
   const enabled = THEMES_WITH_MAGE.includes(theme);
 
@@ -64,7 +70,7 @@ export default function BudgetMageCard({ budgets, spentByCategory, categorySlime
         // comment in MageMascot.jsx.
         <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "center", gap: 40, flexWrap: "wrap" }}>
           <div className="budget-mage-mount">
-            <MageMascot message={insight.message} floatingBubble />
+            <MageMascot message={insight.message} floatingBubble firing={firing} firingText="บันทึกไว้แล้วนะ!" />
           </div>
           {/* marginBottom (not marginTop) here — see below: the party's own translateY(10px)
               nudges it down slightly past the mage's exact baseline, matching what was actually
@@ -115,7 +121,7 @@ export default function BudgetMageCard({ budgets, spentByCategory, categorySlime
           </div>
         </div>
       ) : (
-        <MageMascot message={insight.message} />
+        <MageMascot message={insight.message} firing={firing} firingText="บันทึกไว้แล้วนะ!" />
       )}
     </div>
   );
