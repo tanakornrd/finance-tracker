@@ -19,12 +19,13 @@ import { useLayoutEffect, useRef, useState } from "react";
 const MOBILE_QUERY = "(max-width: 1279px)";
 const SAFE_MARGIN = 10;
 
-export function useKeepBubbleOnScreen({ anchorRef, anchorFrac = 0.5, gap = 6, deps = [] }) {
-  const bubbleRef = useRef(null);
+// Exported separately — WarriorMascot uses this on its own (not just via useKeepBubbleOnScreen
+// below) to decide whether to show its persistent idle message on mobile at all, not just how
+// to position it. Same breakpoint/query as everything else in the app.
+export function useIsMobile() {
   const [isMobile, setIsMobile] = useState(
     () => typeof window !== "undefined" && window.matchMedia(MOBILE_QUERY).matches
   );
-  const [pos, setPos] = useState(null); // null until first measured (bubble stays hidden until then, no flash-at-wrong-spot)
 
   useLayoutEffect(() => {
     const mq = window.matchMedia(MOBILE_QUERY);
@@ -32,6 +33,14 @@ export function useKeepBubbleOnScreen({ anchorRef, anchorFrac = 0.5, gap = 6, de
     mq.addEventListener("change", onChange);
     return () => mq.removeEventListener("change", onChange);
   }, []);
+
+  return isMobile;
+}
+
+export function useKeepBubbleOnScreen({ anchorRef, anchorFrac = 0.5, gap = 6, deps = [] }) {
+  const bubbleRef = useRef(null);
+  const isMobile = useIsMobile();
+  const [pos, setPos] = useState(null); // null until first measured (bubble stays hidden until then, no flash-at-wrong-spot)
 
   useLayoutEffect(() => {
     if (!isMobile) {
@@ -56,7 +65,18 @@ export function useKeepBubbleOnScreen({ anchorRef, anchorFrac = 0.5, gap = 6, de
 
     measure();
     window.addEventListener("resize", measure);
-    return () => window.removeEventListener("resize", measure);
+    // Scroll, not just resize — getBoundingClientRect is viewport-relative, and `position:fixed`
+    // means a stale measurement stays pinned to wherever the anchor USED to be on screen. Fine
+    // for WarriorMascot (its card sits at the very top of Dashboard, already in view on mount),
+    // but MageMascot on the Budgets page sits further down: measuring once on mount and never
+    // again left the bubble pinned to whatever position the mage happened to be at when it first
+    // mounted, silently drifting away from him (often off-screen entirely) the moment the page
+    // scrolled — which read as "the bubble just doesn't show up."
+    window.addEventListener("scroll", measure, { passive: true });
+    return () => {
+      window.removeEventListener("resize", measure);
+      window.removeEventListener("scroll", measure);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isMobile, anchorFrac, gap, ...deps]);
 

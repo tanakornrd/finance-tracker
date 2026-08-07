@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useTheme } from "../../context/ThemeContext.jsx";
 import { playSound } from "../../lib/sound.js";
-import { useKeepBubbleOnScreen } from "../../lib/useKeepBubbleOnScreen.js";
+import { useKeepBubbleOnScreen, useIsMobile } from "../../lib/useKeepBubbleOnScreen.js";
 import ModalPortal from "../ModalPortal.jsx";
 
 // Pixel-art warrior guard for the "arcade" theme — mounted inside Dashboard.jsx next to the net-
@@ -27,6 +27,7 @@ export default function WarriorMascot({ message, hasEntryToday }) {
   const [slashing, setSlashing] = useState(false);
   const [clickMessage, setClickMessage] = useState(null);
   const anchorRef = useRef(null);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     if (!clickMessage) return undefined;
@@ -51,7 +52,13 @@ export default function WarriorMascot({ message, hasEntryToday }) {
     }
   }
 
-  const shownMessage = clickMessage || message;
+  // Mobile only: skip the persistent `message` (weeklyInsight) fallback entirely — the tap
+  // reminder/praise line still shows for its normal ~1.5s then disappears completely, matching
+  // what mobile users are used to (the bubble was simply invisible outright on mobile before
+  // this pass's fix, so "always up, showing the weekly insight" was never something they'd seen —
+  // per feedback, that persistent state reads as stuck/not going away on a phone, unlike desktop
+  // where it sits calmly in the card's own layout instead of floating fixed over other content).
+  const shownMessage = isMobile ? clickMessage : clickMessage || message;
 
   return (
     <button
