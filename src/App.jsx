@@ -140,9 +140,15 @@ export default function App() {
         /* WarriorMascot.jsx (mounted inside Dashboard.jsx, next to the net-worth card — not
            globally here anymore): a slow, subtle standing-guard bob rather than a run cycle —
            the warrior stands still rather than crossing the screen, so "idle" should read as
-           alert-but-still rather than static. */
+           alert-but-still rather than static. 2026-08-08: added a gentle breathing scale + tilt
+           on top of the existing bob (transform-only, same as every animation in this file) so
+           idle reads as "alive", not just "moving up and down" — kept small (2%/1.5deg) so it
+           doesn't read as a wobble/stagger. */
         .warrior-guard { animation: warriorBob 2.4s ease-in-out infinite; }
-        @keyframes warriorBob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+        @keyframes warriorBob {
+          0%, 100% { transform: translateY(0) scale(1) rotate(0deg); }
+          50% { transform: translateY(-3px) scale(1.02) rotate(-1.5deg); }
+        }
 
         /* WarriorMascot.jsx's click reaction (RPG party interactions, part 1) — a one-shot
            (not looping) sword-slash lunge, same idiom as ArcherMascot's archer-fire/MageMascot's
@@ -162,7 +168,12 @@ export default function App() {
            warrior's bob — reads as a spellcaster hovering rather than a guard shifting weight,
            same "idle but alive, not static" purpose. */
         .mage-float { animation: mageFloat 3s ease-in-out infinite; }
-        @keyframes mageFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+        /* 2026-08-08: same breathing+tilt addition as warriorBob above, slightly larger (3%/2deg)
+           since the mage's float is already the biggest of the three bobs. */
+        @keyframes mageFloat {
+          0%, 100% { transform: translateY(0) scale(1) rotate(0deg); }
+          50% { transform: translateY(-4px) scale(1.03) rotate(2deg); }
+        }
 
         /* MageMascot.jsx's reactive "firing" mode (Dashboard.jsx / TransactionDetail.jsx, via
            the "firing" prop) — a one-shot (not looping) cast animation, same idiom as
@@ -216,7 +227,11 @@ export default function App() {
            rather than a looping pose. React swaps the className from archer-idle to
            archer-fire and back (see the component), so this only ever plays once per save. */
         .archer-idle { animation: archerBob 2.6s ease-in-out infinite; }
-        @keyframes archerBob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+        /* 2026-08-08: same breathing+tilt addition as warriorBob/mageFloat above. */
+        @keyframes archerBob {
+          0%, 100% { transform: translateY(0) scale(1) rotate(0deg); }
+          50% { transform: translateY(-3px) scale(1.02) rotate(-1.5deg); }
+        }
         .archer-fire { animation: archerFire 0.6s ease-out; }
         @keyframes archerFire {
           0% { transform: translateX(0) rotate(0deg); }
@@ -260,9 +275,13 @@ export default function App() {
            to nothing while spinning slightly, then the component just stops rendering once its
            parent flips "defeated" back off (Budgets.jsx). */
         .slime-idle { animation: slimeWobble 1.8s ease-in-out infinite; }
+        /* 2026-08-08: this squish loop is already a breathing motion by itself (that's what the
+           uneven scale(x,y) is) — only a light tilt (∓2deg) is added on top, not a separate
+           scale change, so it doesn't stack two different "breathing" effects into one wobble
+           that reads as too busy. */
         @keyframes slimeWobble {
-          0%, 100% { transform: scale(1, 1); }
-          50% { transform: scale(1.08, 0.9); }
+          0%, 100% { transform: scale(1, 1) rotate(0deg); }
+          50% { transform: scale(1.08, 0.9) rotate(2deg); }
         }
         .slime-defeat { animation: slimeDefeat 1.4s ease-out forwards; }
         @keyframes slimeDefeat {
