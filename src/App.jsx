@@ -389,6 +389,13 @@ export default function App() {
            sure the number wins that overlap and stays fully readable rather than the mascot
            covering digits. */
         .warrior-mount { position: absolute; top: 42%; transform: translateY(-50%); right: 4px; z-index: 0; }
+        /* Mobile-only (2026-08-07 feedback): moved up from the base 42% so his feet/standing
+           ground line up with the bottom edge of the "สินทรัพย์ ... หนี้สิน" line above the
+           divider, instead of hanging down into that divider's own row. Desktop keeps the base
+           42% untouched — this only matches below the desktop breakpoint. */
+        @media (max-width: 1279px) {
+          .warrior-mount { top: 20%; }
+        }
 
         /* WarriorMascot.jsx's own <img> size: clamp() shrinks it with the viewport so it stays
            clear of the number on narrow phones, but with a 90px floor (not smaller — a too-tiny
