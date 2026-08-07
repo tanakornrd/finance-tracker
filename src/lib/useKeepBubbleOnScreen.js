@@ -64,6 +64,17 @@ export function useKeepBubbleOnScreen({ anchorRef, anchorFrac = 0.5, gap = 6, de
     }
 
     measure();
+    // A few more passes just after mount, not just the one above — MageMascot's card can still
+    // be settling layout at that exact instant (the web font swapping in, sibling SlimeEnemy
+    // images affecting the row's height, etc.), and the very first measure() can catch a
+    // not-yet-final position/size. Cheap (a handful of getBoundingClientRect calls, no visible
+    // effect once the position stops changing) and self-limiting.
+    const raf1 = requestAnimationFrame(() => {
+      measure();
+      requestAnimationFrame(measure);
+    });
+    const settleTimer = setTimeout(measure, 400);
+
     window.addEventListener("resize", measure);
     // Scroll, not just resize — getBoundingClientRect is viewport-relative, and `position:fixed`
     // means a stale measurement stays pinned to wherever the anchor USED to be on screen. Fine
@@ -71,11 +82,25 @@ export function useKeepBubbleOnScreen({ anchorRef, anchorFrac = 0.5, gap = 6, de
     // but MageMascot on the Budgets page sits further down: measuring once on mount and never
     // again left the bubble pinned to whatever position the mage happened to be at when it first
     // mounted, silently drifting away from him (often off-screen entirely) the moment the page
-    // scrolled — which read as "the bubble just doesn't show up."
+    // scrolled.
     window.addEventListener("scroll", measure, { passive: true });
+
+    // Catches the anchor's own box changing size/position for any reason not covered above
+    // (layout shifts from something else on the page loading in late) — belt-and-suspenders
+    // alongside the explicit listeners, since ResizeObserver only fires on the anchor's own box
+    // changing, not e.g. plain scrolling.
+    let ro;
+    if (typeof ResizeObserver !== "undefined" && anchorRef.current) {
+      ro = new ResizeObserver(measure);
+      ro.observe(anchorRef.current);
+    }
+
     return () => {
+      cancelAnimationFrame(raf1);
+      clearTimeout(settleTimer);
       window.removeEventListener("resize", measure);
       window.removeEventListener("scroll", measure);
+      if (ro) ro.disconnect();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isMobile, anchorFrac, gap, ...deps]);
