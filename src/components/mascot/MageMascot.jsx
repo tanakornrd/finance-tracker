@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { useTheme } from "../../context/ThemeContext.jsx";
 import { playSound } from "../../lib/sound.js";
 import { useKeepBubbleOnScreen } from "../../lib/useKeepBubbleOnScreen.js";
-import ModalPortal from "../ModalPortal.jsx";
+import PositionPortal from "../PositionPortal.jsx";
 
 // Picked once per successful save, same reasoning as ArcherMascot's own CHEER_MESSAGES — a
 // stable message for the whole firing window instead of re-rolling on every re-render. Exported
@@ -221,5 +221,5 @@ function SpeechBubble({ text, floating, anchorRef }) {
     </div>
   );
 
-  return isMobile ? <ModalPortal>{bubble}</ModalPortal> : bubble;
+  return isMobile ? <PositionPortal>{bubble}</PositionPortal> : bubble;
 }

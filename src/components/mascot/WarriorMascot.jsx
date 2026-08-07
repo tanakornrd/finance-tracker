@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { useTheme } from "../../context/ThemeContext.jsx";
 import { playSound } from "../../lib/sound.js";
 import { useKeepBubbleOnScreen, useIsMobile } from "../../lib/useKeepBubbleOnScreen.js";
-import ModalPortal from "../ModalPortal.jsx";
+import PositionPortal from "../PositionPortal.jsx";
 
 // Pixel-art warrior guard for the "arcade" theme — mounted inside Dashboard.jsx next to the net-
 // worth card (not globally via App.jsx anymore) since its speech bubble is meant to comment on
@@ -177,5 +177,5 @@ function SpeechBubble({ text, anchorRef }) {
     </div>
   );
 
-  return isMobile ? <ModalPortal>{bubble}</ModalPortal> : bubble;
+  return isMobile ? <PositionPortal>{bubble}</PositionPortal> : bubble;
 }
