@@ -55,6 +55,18 @@ export function ThemeProvider({ children }) {
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
+    // <meta name="theme-color"> can't read CSS custom properties itself (App.jsx's
+    // `html, body { background: var(--color-primarySoft) }` already keeps the page's own
+    // background in sync with zero JS) — this reads the SAME variable, now that data-theme is
+    // set, and copies its resolved value across so mobile browser chrome (where supported)
+    // matches too, instead of staying on index.html's static default forever.
+    try {
+      const meta = document.querySelector('meta[name="theme-color"]');
+      const color = getComputedStyle(document.documentElement).getPropertyValue("--color-primarySoft").trim();
+      if (meta && color) meta.setAttribute("content", color);
+    } catch {
+      // Best-effort only — theme-color is a mobile-chrome nicety, not core functionality.
+    }
     try {
       localStorage.setItem(STORAGE_KEY, theme);
     } catch {

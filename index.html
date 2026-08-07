@@ -3,6 +3,11 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Default (passbook theme's --color-primarySoft, src/theme/themes.js) — ThemeContext.jsx
+         overwrites this to match the active theme as soon as React mounts, same value it also
+         sets on <html>/<body> via CSS. Static fallback here covers the brief window before that
+         (e.g. first paint), so mobile browser chrome never flashes/settles on a mismatched color. -->
+    <meta name="theme-color" content="#F3F7FD" />
     <title>สมุดบัญชีของฉัน</title>
   </head>
   <body>

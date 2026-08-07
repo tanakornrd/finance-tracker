@@ -378,14 +378,6 @@ export default function App() {
           .castle-banner-sway { animation: none; }
         }
 
-        /* WarriorMascot.jsx's speech bubble sits beside the net-worth card's own number, which
-           can render arbitrarily wide — below ~560px there isn't reliable room for both next to
-           each other no matter how far the bubble itself is shrunk (see its own comment). The
-           warrior stays visible at every width; only the bubble text drops out on narrow phones. */
-        @media (max-width: 560px) {
-          .warrior-speech-bubble { display: none; }
-        }
-
         /* Dashboard.jsx's net-worth card mascot mount: standing beside the net-worth number,
            full opacity, at every width — not a background layer. right:4px + top:42%
            (translateY(-50%) to center on that point) lands it in the blank space to the right
@@ -425,6 +417,17 @@ export default function App() {
         @media (min-width: 1280px) {
           .passbook-card { overflow: visible; }
         }
+
+        /* html/body themselves (not just .app-shell below) — otherwise they keep the browser's
+           default white, which shows at the edges on mobile during bounce-scroll/rubber-band
+           overscroll (the page can render past 100vh momentarily) or behind the safe-area on
+           notched phones, regardless of theme. Plain var(--color-primarySoft) here (no JS)
+           means it just follows whichever theme is active automatically, same as every other
+           themed color in this file — ThemeContext.jsx flips the data-theme attribute these
+           variables key off, this rule doesn't need to know about themes at all. Desktop never
+           shows this (no bounce-scroll there), so this is invisible/no-op at that breakpoint —
+           not a desktop-layout change, just a correctness fix that only ever mattered on mobile. */
+        html, body { background: var(--color-primarySoft); }
 
         /* --- Desktop shell (added 2026-08-06) ---
            Everything above/below this block is untouched from the mobile-only layout; this is

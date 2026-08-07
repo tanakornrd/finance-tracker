@@ -1,6 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useTheme } from "../../context/ThemeContext.jsx";
 import { playSound } from "../../lib/sound.js";
+import { useKeepBubbleOnScreen } from "../../lib/useKeepBubbleOnScreen.js";
+import ModalPortal from "../ModalPortal.jsx";
 
 // Picked once per successful save, same reasoning as ArcherMascot's own CHEER_MESSAGES — a
 // stable message for the whole firing window instead of re-rolling on every re-render.
@@ -41,6 +43,7 @@ export default function MageMascot({ message, firing, floatingBubble, onClick })
   const { theme, mascotAnimationEnabled, soundEnabled } = useTheme();
   const [firedMessage, setFiredMessage] = useState(null);
   const [flashing, setFlashing] = useState(false);
+  const anchorRef = useRef(null);
 
   useEffect(() => {
     if (firing) {
@@ -76,7 +79,7 @@ export default function MageMascot({ message, firing, floatingBubble, onClick })
 
   const content = (
     <>
-      {shownMessage && <SpeechBubble text={shownMessage} floating={floatingBubble} />}
+      {shownMessage && <SpeechBubble text={shownMessage} floating={floatingBubble} anchorRef={anchorRef} />}
       <div className={animClass} style={{ position: "relative", flexShrink: 0, pointerEvents: "none" }}>
         {/* The magic orb glow — a plain CSS radial gradient positioned over roughly where the
             orb sits in mascot-mage.png (right of center, upper-middle), not a separate art
@@ -115,6 +118,7 @@ export default function MageMascot({ message, firing, floatingBubble, onClick })
   if (onClick) {
     return (
       <button
+        ref={anchorRef}
         type="button"
         onClick={handleClick}
         aria-label="นักเวทย์ กดเพื่อบันทึกรายการอย่างรวดเร็ว"
@@ -126,7 +130,7 @@ export default function MageMascot({ message, firing, floatingBubble, onClick })
   }
 
   return (
-    <div style={rootStyle} aria-hidden="true">
+    <div ref={anchorRef} style={rootStyle} aria-hidden="true">
       {content}
     </div>
   );
@@ -138,25 +142,40 @@ export default function MageMascot({ message, firing, floatingBubble, onClick })
 // box that read as an empty input field, not a speech bubble, with the tail barely reaching the
 // mage. Sized to its own content now (flex: "0 1 auto", maxWidth as a cap for unusually long
 // messages) so it hugs the text and stays visually anchored right next to him instead.
-function SpeechBubble({ text, floating }) {
-  return (
+function SpeechBubble({ text, floating, anchorRef }) {
+  // Below the desktop breakpoint, `floating` vs. non-floating stops mattering — both variants
+  // portal to document.body and get their position measured + clamped to the real viewport
+  // (see useKeepBubbleOnScreen.js), so a long message (e.g. an over-budget amount) can never
+  // push part of the bubble off the left edge of the phone screen regardless of where the mage
+  // itself landed that render. Desktop keeps the exact original two-branch rendering (floating
+  // absolute vs. flex-flow) untouched.
+  const { isMobile, bubbleRef, pos } = useKeepBubbleOnScreen({ anchorRef, anchorFrac: 0.5, deps: [text] });
+
+  const bubble = (
     <div
+      ref={bubbleRef}
       style={{
-        // floating: position:absolute, pinned to the mage wrapper's left edge (right:100% of
-        // that relative-positioned wrapper — see MageMascot's own root div above) instead of a
-        // normal flex child with marginRight — see MageMascot's floatingBubble comment for why.
-        // Needs width:"max-content" here, not just maxWidth: an absolutely positioned box with
-        // only `right` set (no `left`) and the default width:auto falls back to shrink-to-fit
-        // sizing, whose "available width" collapsed to ~0 in practice (both the static position
-        // AND the specified right edge land at the same point once the bubble is taken out of
-        // the flex row), wrapping the text to one character per line. max-content sizes to the
-        // text's own natural width instead (still capped by maxWidth below for long messages),
-        // sidestepping that shrink-to-fit calculation entirely.
-        position: floating ? "absolute" : "relative", // "relative" still needed either way: containing block for the tail below
-        ...(floating
-          ? { right: "100%", top: "50%", transform: "translateY(-50%)", marginRight: 0, width: "max-content" }
-          : { flex: "0 1 auto", marginRight: 6 }),
-        maxWidth: "min(320px, 60vw)",
+        // "relative" still needed on desktop either way: containing block for the tail below.
+        position: isMobile ? "fixed" : floating ? "absolute" : "relative",
+        ...(isMobile
+          ? {
+              left: pos ? pos.left : -9999,
+              top: pos ? pos.top : -9999,
+              visibility: pos ? "visible" : "hidden",
+              width: "max-content",
+              maxWidth: "calc(100vw - 20px)",
+              zIndex: 45,
+            }
+          : floating
+          // Needs width:"max-content" here, not just maxWidth: an absolutely positioned box with
+          // only `right` set (no `left`) and the default width:auto falls back to shrink-to-fit
+          // sizing, whose "available width" collapsed to ~0 in practice (both the static position
+          // AND the specified right edge land at the same point once the bubble is taken out of
+          // the flex row), wrapping the text to one character per line. max-content sizes to the
+          // text's own natural width instead (still capped by maxWidth below for long messages),
+          // sidestepping that shrink-to-fit calculation entirely.
+          ? { right: "100%", top: "50%", transform: "translateY(-50%)", marginRight: 0, width: "max-content", maxWidth: "min(320px, 60vw)" }
+          : { flex: "0 1 auto", marginRight: 6, maxWidth: "min(320px, 60vw)" }),
         wordBreak: "break-word",
         background: "#F5F3FF",
         color: "#1A1030",
@@ -170,9 +189,16 @@ function SpeechBubble({ text, floating }) {
       }}
     >
       {text}
-      {/* Stepped-notch tail pointing right at the mage, same construction as WarriorMascot's. */}
-      <div style={{ position: "absolute", left: "100%", top: "50%", marginTop: -7, width: 7, height: 14, background: "#1A1030" }} />
-      <div style={{ position: "absolute", left: "100%", top: "50%", marginTop: -4, marginLeft: -3, width: 4, height: 8, background: "#F5F3FF" }} />
+      {/* Tail dropped on mobile — same reasoning as WarriorMascot's: once clamped back onto the
+          screen the bubble may not sit exactly beside the mage anymore. */}
+      {!isMobile && (
+        <>
+          <div style={{ position: "absolute", left: "100%", top: "50%", marginTop: -7, width: 7, height: 14, background: "#1A1030" }} />
+          <div style={{ position: "absolute", left: "100%", top: "50%", marginTop: -4, marginLeft: -3, width: 4, height: 8, background: "#F5F3FF" }} />
+        </>
+      )}
     </div>
   );
+
+  return isMobile ? <ModalPortal>{bubble}</ModalPortal> : bubble;
 }

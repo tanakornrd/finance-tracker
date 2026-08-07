@@ -1,6 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useTheme } from "../../context/ThemeContext.jsx";
 import { playSound } from "../../lib/sound.js";
+import { useKeepBubbleOnScreen } from "../../lib/useKeepBubbleOnScreen.js";
+import ModalPortal from "../ModalPortal.jsx";
 
 // Pixel-art warrior guard for the "arcade" theme — mounted inside Dashboard.jsx next to the net-
 // worth card (not globally via App.jsx anymore) since its speech bubble is meant to comment on
@@ -24,6 +26,7 @@ export default function WarriorMascot({ message, hasEntryToday }) {
   const { theme, mascotAnimationEnabled, soundEnabled } = useTheme();
   const [slashing, setSlashing] = useState(false);
   const [clickMessage, setClickMessage] = useState(null);
+  const anchorRef = useRef(null);
 
   useEffect(() => {
     if (!clickMessage) return undefined;
@@ -52,6 +55,7 @@ export default function WarriorMascot({ message, hasEntryToday }) {
 
   return (
     <button
+      ref={anchorRef}
       type="button"
       onClick={handleClick}
       onAnimationEnd={() => setSlashing(false)}
@@ -67,7 +71,7 @@ export default function WarriorMascot({ message, hasEntryToday }) {
         zIndex: 5,
       }}
     >
-      {shownMessage && <SpeechBubble text={shownMessage} />}
+      {shownMessage && <SpeechBubble text={shownMessage} anchorRef={anchorRef} />}
       <img
         src={new URL("../../assets/mascot-warrior.png", import.meta.url).href}
         alt=""
@@ -87,42 +91,44 @@ export default function WarriorMascot({ message, hasEntryToday }) {
 // CastleBackground.jsx's props use. The message text itself stays on the app's normal readable
 // font, not the pixel one — this is a real sentence about the user's own spending someone has
 // to actually read, not a short label.
-function SpeechBubble({ text }) {
-  return (
+function SpeechBubble({ text, anchorRef }) {
+  // Below the desktop breakpoint (see useKeepBubbleOnScreen.js), the bubble used to just be
+  // hidden outright below ~560px — the card it shares with the net-worth number is too narrow
+  // for a fixed-offset bubble to reliably fit beside it. Now it's portaled to document.body
+  // (escapes ".passbook-card"'s overflow:hidden, same as every modal in the app) and its real
+  // position is measured + clamped to the actual viewport, so it can stay visible and fully
+  // on-screen at every phone width instead of being switched off. Desktop is untouched — same
+  // absolutely-positioned-beside-the-warrior rendering as always, no portal, no measurement.
+  const { isMobile, bubbleRef, pos } = useKeepBubbleOnScreen({ anchorRef, anchorFrac: 0.28, deps: [text] });
+
+  const bubble = (
     <div
-      // Hidden below ~560px (see App.jsx's ".warrior-speech-bubble" media query) — the net-worth
-      // number this sits beside can render arbitrarily wide (it's a real, unbounded balance
-      // figure, not a fixed-width label), and on a narrow phone-width card there just isn't
-      // reliable room for a 120px+ bubble next to it no matter how far it's shrunk; clamp()ing
-      // it smaller was tried first and still clipped into the number on real mobile widths.
-      // The warrior itself stays visible and clear at every width (see its own clamp() above) —
-      // only the bubble text is the part that needs the extra room desktop has and mobile
-      // doesn't.
-      className="warrior-speech-bubble"
+      ref={bubbleRef}
       style={{
-        position: "absolute",
-        // To the warrior's LEFT now (was above it) — sitting at the same row as the card's
-        // income/expense/transfer numbers instead of needing headroom above the card (the
-        // reason it used to be pinned to the card's very top edge — see Dashboard.jsx's mount
-        // comment for that earlier constraint, which no longer applies here).
-        // top: 28% (not 50%, the sprite's own vertical center) is deliberate: the warrior image
-        // is taller than the card is, so centering the bubble on the whole 130px sprite pushed
-        // it up far enough to cover the label text above the numbers row. The head — where a
-        // speech bubble's tail should actually point — sits in roughly the top third of a
-        // standing sprite, so aiming there instead both looks right (tail meets the head, not
-        // the chest) and keeps the bubble low enough to clear the label above it.
-        top: "28%",
-        right: "100%",
-        transform: "translateY(-50%)",
-        // 6, not the previous 12 — moves the bubble right up against the warrior (its own 7px
-        // tail below now just about touches his head) so it reads as him actually speaking,
-        // rather than a caption floating apart from him.
-        marginRight: 6,
-        // Same reasoning as the warrior's own clamp() above: this used to be a fixed 200px,
-        // which combined with the (also-fixed) warrior was wide enough to spill into the net-
-        // worth number's own space on a ~480px-wide mobile screen — the app's real target
-        // width, not an edge case.
-        width: "clamp(120px, 32vw, 200px)",
+        position: isMobile ? "fixed" : "absolute",
+        ...(isMobile
+          ? {
+              left: pos ? pos.left : -9999,
+              top: pos ? pos.top : -9999,
+              visibility: pos ? "visible" : "hidden",
+              width: "max-content",
+              maxWidth: "calc(100vw - 20px)",
+              zIndex: 45,
+            }
+          : {
+              // top: 28% (not 50%, the sprite's own vertical center) is deliberate: the warrior
+              // image is taller than the card is, so centering the bubble on the whole 130px
+              // sprite pushed it up far enough to cover the label text above the numbers row.
+              // The head — where a speech bubble's tail should actually point — sits in roughly
+              // the top third of a standing sprite, so aiming there instead both looks right
+              // (tail meets the head, not the chest) and keeps the bubble low enough to clear
+              // the label above it.
+              top: "28%",
+              right: "100%",
+              transform: "translateY(-50%)",
+              marginRight: 6,
+              width: "clamp(120px, 32vw, 200px)",
+            }),
         background: "#F5F3FF",
         color: "#1A1030",
         border: "3px solid #1A1030",
@@ -131,18 +137,26 @@ function SpeechBubble({ text }) {
         // as inconsistent; a true 8-bit text-box look wants square corners throughout.
         borderRadius: 0,
         padding: "8px 10px",
-        fontSize: "clamp(10px, 2.6vw, 12px)",
+        fontSize: isMobile ? 12 : "clamp(10px, 2.6vw, 12px)",
         lineHeight: 1.4,
         fontFamily: "'IBM Plex Sans Thai', sans-serif",
         textAlign: "left",
+        wordBreak: "break-word",
       }}
     >
       {text}
-      {/* Blocky pixel-style tail pointing right at the warrior's head — built the same
-          two-rect "stepped notch" way as before, just rotated 90° to point sideways instead of
-          down, since the bubble is now beside the warrior instead of above it. */}
-      <div style={{ position: "absolute", left: "100%", top: "50%", marginTop: -7, width: 7, height: 14, background: "#1A1030" }} />
-      <div style={{ position: "absolute", left: "100%", top: "50%", marginTop: -4, marginLeft: -3, width: 4, height: 8, background: "#F5F3FF" }} />
+      {/* Tail dropped on mobile — once the bubble's position is clamped back onto the screen it
+          may no longer sit exactly beside the warrior's head, so a tail fixed to "left:100%"
+          could end up pointing at empty space instead of him. Desktop keeps it exactly as
+          before (never clamped, so it's always aimed correctly). */}
+      {!isMobile && (
+        <>
+          <div style={{ position: "absolute", left: "100%", top: "50%", marginTop: -7, width: 7, height: 14, background: "#1A1030" }} />
+          <div style={{ position: "absolute", left: "100%", top: "50%", marginTop: -4, marginLeft: -3, width: 4, height: 8, background: "#F5F3FF" }} />
+        </>
+      )}
     </div>
   );
+
+  return isMobile ? <ModalPortal>{bubble}</ModalPortal> : bubble;
 }
