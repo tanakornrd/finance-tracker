@@ -442,6 +442,12 @@ export default function App() {
         .castle-banner-sway { animation: castleBannerSway 3.2s ease-in-out infinite; }
         @keyframes castleBannerSway { 0%, 100% { transform: rotate(-4deg); } 50% { transform: rotate(4deg); } }
 
+        /* CastleBackground.jsx's festival tint (ชุด 4.5, 2026-08-08) — one-shot (fill-mode both,
+           not infinite) opacity-only fade-in when a festival tint mounts, not a loop; ends at
+           full opacity and stays there. */
+        .festival-tint-fade { animation: festivalTintFadeIn 1s ease-out both; }
+        @keyframes festivalTintFadeIn { from { opacity: 0; } to { opacity: 1; } }
+
         @media (prefers-reduced-motion: reduce) {
           .mascot-dash { animation: none; }
           .runner-leg-back, .runner-leg-front, .runner-arm-front, .runner-arm-back { animation: none; }
@@ -471,6 +477,7 @@ export default function App() {
           .castle-star-twinkle { animation: none; }
           .castle-torch-flicker { animation: none; }
           .castle-banner-sway { animation: none; }
+          .festival-tint-fade { animation: none; }
         }
 
         /* Dashboard.jsx's net-worth card mascot mount: standing beside the net-worth number,

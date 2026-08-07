@@ -1,6 +1,18 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { useTheme } from "../context/ThemeContext.jsx";
+import { useReferenceData } from "../context/ReferenceDataContext.jsx";
 import { useIsMobile } from "../lib/useKeepBubbleOnScreen.js";
+import { toISODate } from "../../shared/dates.js";
+
+// Tint colors per festival (ชุด 4.5, 2026-08-08) — shown to the user as swatches before this was
+// written, see that approval. `gold` (a soft radial glow, reusing the same glow idiom the moon/
+// torches already use elsewhere in this file) is only set for the two festivals it was actually
+// asked for; songkran stays a plain wash with no glow accent.
+const FESTIVAL_TINTS = {
+  songkran: { wash: "rgba(35,140,220,0.32)" },
+  chinese_new_year: { wash: "rgba(215,35,45,0.32)", gold: "rgba(220,175,70,0.35)" },
+  christmas_newyear: { wash: "rgba(110,40,150,0.32)", gold: "rgba(220,175,70,0.35)" },
+};
 
 const wallImg = new URL("../assets/backgrounds/castle_layer1_far.png", import.meta.url).href;
 const floorImg = new URL("../assets/backgrounds/castle_layer2_near.png", import.meta.url).href;
@@ -46,8 +58,21 @@ const floorImg = new URL("../assets/backgrounds/castle_layer2_near.png", import.
 // wide desktop windows, instead of stretching to app-container's full (up to 1400px) width and
 // looking oversized/blurry.
 export default function CastleBackground() {
-  const { theme } = useTheme();
+  const { theme, mascotAnimationEnabled } = useTheme();
   const isMobile = useIsMobile();
+  // Active festival tint (ชุด 4.5) — same "no hardcoded festival calendar" rule as 4.3's
+  // reminder: today has to fall inside a festival budget's OWN start/end dates (Budgets.jsx),
+  // not some baked-in "Songkran is always April 13-15" assumption, since this whole feature
+  // works off whatever the user actually set. `budgets` here already includes both kinds of row
+  // (see server/routes/budgets.js) — filtering to festivalStartDate is enough to only ever match
+  // a festival row, no separate categoryBudgets split needed (nothing else in this file reads
+  // budgets at all).
+  const { budgets } = useReferenceData();
+  const activeTint = useMemo(() => {
+    const today = toISODate(new Date());
+    const row = budgets.find((b) => b.festivalStartDate && b.festivalStartDate <= today && today <= b.festivalEndDate);
+    return row ? FESTIVAL_TINTS[row.category] : null;
+  }, [budgets]);
   if (theme !== "arcade") return null;
 
   return (
@@ -128,6 +153,32 @@ export default function CastleBackground() {
           width: "100%", maxWidth: 900, height: "auto", display: "block",
         }}
       />
+
+      {/* 4.5. Festival tint (ชุด 4.5) — placed BEFORE the dark overlay below (not after), so the
+          overlay's own contrast guarantee still gets the final say over every pixel behind the
+          UI text no matter how strong a tint color is; the tint only ever colors what's already
+          being dimmed, it never fights that dimming. mascotAnimationEnabled gates a plain fade-
+          in (opacity-only, App.jsx's "festival-tint-fade" class + prefers-reduced-motion override
+          there) — off just skips straight to the tint's full opacity with no transition, same
+          idiom as every other themed animation here. */}
+      {activeTint && (
+        <>
+          <div
+            className={mascotAnimationEnabled ? "festival-tint-fade" : undefined}
+            style={{ position: "absolute", inset: 0, background: activeTint.wash }}
+          />
+          {activeTint.gold && (
+            <div
+              className={mascotAnimationEnabled ? "festival-tint-fade" : undefined}
+              style={{
+                position: "absolute", top: 0, left: "50%", width: "70%", maxWidth: 500, height: 200,
+                transform: "translateX(-50%)",
+                background: `radial-gradient(ellipse at top, ${activeTint.gold} 0%, transparent 75%)`,
+              }}
+            />
+          )}
+        </>
+      )}
 
       {/* 5. Dark overlay — the actual contrast guarantee. Everything above this exists only to
           be seen through it. */}
