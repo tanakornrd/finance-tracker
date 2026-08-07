@@ -475,9 +475,27 @@ export default function App() {
              own children too) — not just the scrollable content column.
            1.17 ≈ the "~15-20% bigger" the user asked for. Gated to the mobile range only (same
            breakpoint as everywhere else in this file) — desktop is completely untouched, this
-           selector doesn't even match there. */
+           selector doesn't even match there.
+
+           --mobile-zoom-factor (2026-08-07 follow-up fix): the factor itself now lives in a CSS
+           var, not just baked into this one rule — sharedStyles.js's overlay reads it back via
+           calc(1 / var(--mobile-zoom-factor, 1)) to cancel this zoom out specifically for every
+           bottom-sheet modal (ModalPortal.jsx renders them as direct children of this same zoomed
+           body). Without that, overlay/sheet's height/maxHeight (sharedStyles.js's
+           var(--app-vh, 100dvh)) is computed from the TRUE unzoomed viewport but then gets
+           rendered 1.17x too tall as a zoomed descendant of body — pushing the sheet's lower
+           portion (and the date field around where it sits) below the fold, unreachable by
+           scroll, with drags falling through to the page behind it instead. Modals are
+           deliberately excluded from the "everything's bigger" effect as the fix (they go back to
+           their original, pre-zoom size) rather than trying to make the height math zoom-aware,
+           since that path also has known zoom+touch/scroll-hit-testing quirks across browsers —
+           not worth the risk for a cosmetic-only win on top of forms that must work reliably.
+           Falls back to 1 (a no-op, calc(1/1)) wherever --mobile-zoom-factor isn't defined —
+           desktop, or any future path that forgets to set it — so this can never accidentally
+           double-zoom or invert on an unexpected width. */
         @media (max-width: 1279px) {
-          body { zoom: 1.17; }
+          :root { --mobile-zoom-factor: 1.17; }
+          body { zoom: var(--mobile-zoom-factor); }
         }
 
         /* --- Desktop shell (added 2026-08-06) ---
