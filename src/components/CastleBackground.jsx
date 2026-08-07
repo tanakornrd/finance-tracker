@@ -72,6 +72,42 @@ export default function CastleBackground() {
           in the top band that's always in view on load. */}
       <StarField />
 
+      {/* 2.5. Brick wall texture, full height (2026-08-08, brought back from the pre-art CSS
+          version) — the two art images above only cover a band each near the top/bottom; on a
+          short page (nothing to scroll) the gap between them was plain flat gradient, reported
+          as looking bare. This repeating pattern fills that whole gap with the same stone/mortar
+          texture the art itself uses (var(--castle-stone)/--castle-mortar, still defined in
+          themes.js from before), sitting behind both art images and the final dark overlay so it
+          reads as "the same wall, continuing down" rather than a separate decoration competing
+          with them. Low risk: purely decorative, no interactivity, was already exactly this same
+          div before the art layers replaced the rest of the old CSS version. */}
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          opacity: 0.6,
+          backgroundColor: "var(--castle-stone)",
+          backgroundImage: `
+            repeating-linear-gradient(0deg, var(--castle-mortar) 0px, var(--castle-mortar) 2px, transparent 2px, transparent 26px),
+            repeating-linear-gradient(90deg, var(--castle-mortar) 0px, var(--castle-mortar) 2px, transparent 2px, transparent 52px),
+            repeating-linear-gradient(90deg, var(--castle-mortar) 0px, var(--castle-mortar) 2px, transparent 2px, transparent 52px)
+          `,
+          backgroundPosition: "0 0, 0 0, 26px 26px",
+          backgroundSize: "100% 26px, 52px 52px, 52px 52px",
+        }}
+      />
+      {/* Alternating brick shading for depth, offset rows via the same 52px rhythm as the mortar
+          grid above so bricks and mortar lines line up. */}
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          opacity: 0.3,
+          backgroundImage: "linear-gradient(180deg, var(--castle-stone) 0%, var(--castle-stone-dark) 100%)",
+          mixBlendMode: "multiply",
+        }}
+      />
+
       {/* 3. Far wall art */}
       <img
         src={wallImg}
