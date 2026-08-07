@@ -74,6 +74,10 @@ export function useKeepBubbleOnScreen({ anchorRef, anchorFrac = 0.5, gap = 6, de
       requestAnimationFrame(measure);
     });
     const settleTimer = setTimeout(measure, 400);
+    // A second, later pass — the keyboard-close animation that can immediately precede this
+    // mount (see the visualViewport listener's comment below) sometimes takes noticeably longer
+    // than 400ms to fully settle on iOS.
+    const settleTimer2 = setTimeout(measure, 700);
 
     window.addEventListener("resize", measure);
     // Scroll, not just resize — getBoundingClientRect is viewport-relative, and `position:fixed`
@@ -84,6 +88,20 @@ export function useKeepBubbleOnScreen({ anchorRef, anchorFrac = 0.5, gap = 6, de
     // mounted, silently drifting away from him (often off-screen entirely) the moment the page
     // scrolled.
     window.addEventListener("scroll", measure, { passive: true });
+    // visualViewport's own resize/scroll — same reasoning as App.jsx's --app-vh mechanism (see
+    // its comment): the on-screen keyboard opening/closing does NOT reliably fire a plain window
+    // "resize" on every mobile browser, only visualViewport does. This specifically matters here
+    // because Dashboard.jsx's submitTx() closes the add-transaction sheet (which can dismiss the
+    // keyboard, since the amount field was likely focused) in the same tick it sets
+    // mageFiring=true — so this bubble's very first mount/measure can land mid-keyboard-close,
+    // capturing a transient, wrong position (observed: the bubble landing far down near the "+"
+    // FAB instead of beside the mage) that the plain resize/scroll listeners above never
+    // corrected afterward, since no plain resize/scroll event necessarily follows.
+    const vv = window.visualViewport;
+    if (vv) {
+      vv.addEventListener("resize", measure);
+      vv.addEventListener("scroll", measure);
+    }
 
     // Catches the anchor's own box changing size/position for any reason not covered above
     // (layout shifts from something else on the page loading in late) — belt-and-suspenders
@@ -98,8 +116,13 @@ export function useKeepBubbleOnScreen({ anchorRef, anchorFrac = 0.5, gap = 6, de
     return () => {
       cancelAnimationFrame(raf1);
       clearTimeout(settleTimer);
+      clearTimeout(settleTimer2);
       window.removeEventListener("resize", measure);
       window.removeEventListener("scroll", measure);
+      if (vv) {
+        vv.removeEventListener("resize", measure);
+        vv.removeEventListener("scroll", measure);
+      }
       if (ro) ro.disconnect();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
