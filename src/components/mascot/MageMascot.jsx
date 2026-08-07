@@ -15,14 +15,18 @@ export const SCRIBE_MESSAGES = [
   "จดครบทุกตัวเลขแล้ว",
 ];
 
-// Pixel-art mage — two different jobs depending on which prop the caller passes in:
-//   - `message`: static advice text (BudgetMageCard.jsx passes the computed budget insight).
+// Pixel-art mage — two different jobs depending on which prop(s) the caller passes in:
+//   - `message`: static/rotating advice text (BudgetMageCard.jsx passes the computed budget
+//     insight; SafeToSpendCard.jsx passes a rotating Mage Insight line — see mageInsight.js).
 //     Idle float only, no firing animation.
-//   - `firing`: reactive mode (Dashboard.jsx / TransactionDetail.jsx) — plays a one-shot
-//     "cast a spell" animation (staff swing + the magic orb pulsing/spinning) and shows a
-//     random SCRIBE_MESSAGES line, mirroring ArcherMascot's firing/CHEER_MESSAGES pattern.
-// A component never gets both props at once in practice (one caller per mode), but `firing`
-// takes priority over `message` if it somehow did, since it's the more specific, momentary state.
+//   - `firing`: reactive mode (Dashboard.jsx / TransactionDetail.jsx / SafeToSpendCard.jsx) —
+//     plays a one-shot "cast a spell" animation (staff swing + the magic orb pulsing/spinning)
+//     and shows a random SCRIBE_MESSAGES line (or `firingText`'s override), mirroring
+//     ArcherMascot's firing/CHEER_MESSAGES pattern.
+// SafeToSpendCard.jsx is the one caller that passes BOTH at once (2026-08-07) — `firing` briefly
+// overrides `message` for the cast animation's duration (firedMessage below), then falls back to
+// whatever `message` currently is once it ends, so the idle rotation resumes exactly where a
+// viewer would expect rather than needing its own separate resume logic.
 //
 // floatingBubble: BudgetMageCard.jsx only. Normally the bubble sits in flex flow to the mage's
 // left (marginRight, see SpeechBubble below), which is exactly what makes justifyContent:
