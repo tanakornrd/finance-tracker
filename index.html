@@ -8,6 +8,23 @@
          sets on <html>/<body> via CSS. Static fallback here covers the brief window before that
          (e.g. first paint), so mobile browser chrome never flashes/settles on a mismatched color. -->
     <meta name="theme-color" content="#F3F7FD" />
+
+    <!-- PWA: installable to the home screen (see public/manifest.json + public/sw.js). No
+         offline mode — the manifest/icons/meta tags below only affect what happens when someone
+         chooses to install the app; normal browser tabs work exactly as before either way. -->
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="icon" href="/icons/icon-192.png" type="image/png" />
+    <!-- iOS ignores manifest.json's icons entirely — this is the one it actually uses for the
+         home-screen icon, and doesn't need to be square-with-rounded-corners like the maskable
+         Android ones (iOS applies its own mask/corner treatment on top). -->
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+    <!-- Tells iOS Safari's "Add to Home Screen" to open standalone (no browser chrome/URL bar),
+         same effect manifest.json's display:"standalone" has on Android — iOS doesn't read
+         display from the manifest for this, only these meta tags. -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="สมุดบัญชี" />
+
     <title>สมุดบัญชีของฉัน</title>
   </head>
   <body>
