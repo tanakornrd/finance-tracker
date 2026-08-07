@@ -40,6 +40,10 @@ export function rowToBudget(row) {
     id: row.id,
     category: row.category,
     monthlyLimitCents: moneyToCents(row.monthly_limit),
+    // null/null for every plain category budget (existing rows, unaffected) — see
+    // routes/budgets.js's own comment for how a festival row differs.
+    festivalStartDate: row.festival_start_date || null,
+    festivalEndDate: row.festival_end_date || null,
   };
 }
 

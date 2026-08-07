@@ -88,7 +88,12 @@ create table budgets (
   user_id uuid not null references auth.users(id) on delete cascade,
   category text not null,
   monthly_limit numeric(12,2) not null,
-  unique (user_id, category)  -- เดิม category UNIQUE ทั้งตาราง เปลี่ยนเป็น unique ต่อผู้ใช้แทน
+  unique (user_id, category),  -- เดิม category UNIQUE ทั้งตาราง เปลี่ยนเป็น unique ต่อผู้ใช้แทน
+  -- งบเทศกาล (ข้อ 4.1, เพิ่มทีหลังด้วย ALTER TABLE — แถวเก่าเป็น NULL ทั้งคู่เสมอ):
+  -- ไม่ NULL ทั้งคู่ = แถวนี้คือ "งบเทศกาล" ไม่ใช่งบหมวดหมู่ปกติ, category จะเก็บรหัสเทศกาล
+  -- (shared/festivals.js) แทนชื่อหมวดหมู่ในกรณีนั้น — ดู server/routes/budgets.js
+  festival_start_date date,
+  festival_end_date date
 );
 
 -- ----------------------------------------------------------------------------
