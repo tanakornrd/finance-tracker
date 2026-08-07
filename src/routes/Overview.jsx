@@ -31,7 +31,12 @@ function TrendTag({ deltaCents, goodWhen }) {
 
 export default function Overview() {
   const { theme } = useTheme();
-  const { accounts, budgets, loading: refLoading } = useReferenceData();
+  const { accounts, budgets: allBudgets, loading: refLoading } = useReferenceData();
+  // allBudgets mixes category budgets and festival budgets now (2026-08-08, ชุด 4.1 — see
+  // server/routes/budgets.js's own comment). Everything below this page already computed
+  // (totalBudgetCents, the category progress list) assumes category-only, same reasoning as
+  // every other consumer of useReferenceData().budgets.
+  const budgets = allBudgets.filter((b) => !b.festivalStartDate);
   const [transactions, setTransactions] = useState([]);
   const [txLoading, setTxLoading] = useState(true);
   const loading = refLoading || txLoading;

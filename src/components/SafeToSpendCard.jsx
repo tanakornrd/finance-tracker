@@ -24,7 +24,12 @@ const ctaBtn = { padding: "9px 16px", borderRadius: 10, border: "none", backgrou
 // (a plain, motion-free "จดไว้แล้ว!" bubble here instead of the overlay) — same
 // enabled-gets-overlay/disabled-gets-plain-inline-bubble split as BudgetMageCard.jsx.
 export default function SafeToSpendCard({ isCurrentMonth, expenseCentsSoFar, mageFiring, onMageClick }) {
-  const { budgets, refetch } = useReferenceData();
+  const { budgets: allBudgets, refetch } = useReferenceData();
+  // `allBudgets` mixes category budgets and festival budgets now (2026-08-08, ชุด 4.1 — see
+  // server/routes/budgets.js's own comment). This card's whole point is "today's slice of your
+  // MONTHLY category budgets" — summing a festival's one-off total in here too would inflate
+  // budgetTotalCents with an unrelated number and skew the daily figure below.
+  const budgets = allBudgets.filter((b) => !b.festivalStartDate);
   const [showSheet, setShowSheet] = useState(false);
 
   if (!isCurrentMonth) {

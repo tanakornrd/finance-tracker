@@ -24,6 +24,7 @@ import WarriorMascot from "../components/mascot/WarriorMascot.jsx";
 import MageSpellOverlay from "../components/mascot/MageSpellOverlay.jsx";
 import { SCRIBE_MESSAGES } from "../components/mascot/MageMascot.jsx";
 import { computeWeeklyInsight } from "../lib/weeklyInsight.js";
+import { computeFestivalReminder } from "../lib/festivalReminder.js";
 import { useCardPress } from "../lib/useCardPress.js";
 import PressableCard from "../components/PressableCard.jsx";
 import {
@@ -53,6 +54,13 @@ function dayLabel(dateStr) {
 export default function Dashboard() {
   const { theme, mascotAnimationEnabled } = useTheme();
   const { accounts, budgets, loading: refLoading, error, refetch: refetchReference } = useReferenceData();
+  // `budgets` mixes category budgets and festival budgets now (2026-08-08, ชุด 4.1 — see
+  // server/routes/budgets.js's own comment). RecommendationsCard below assumes category-only
+  // (it sums monthlyLimitCents across all of them as "total budget" and matches by category
+  // name), same reasoning as Budgets.jsx's own categoryBudgets split — a festival row would
+  // otherwise inflate that sum with an unrelated amount.
+  const categoryBudgets = useMemo(() => budgets.filter((b) => !b.festivalStartDate), [budgets]);
+  const festivalBudgets = useMemo(() => budgets.filter((b) => b.festivalStartDate), [budgets]);
   // Card press feedback (2026-08-07) — the net-worth card gets its own instance (not shared with
   // the transaction rows below, which each need their own independent pressed state per row).
   const netWorthPress = useCardPress();
@@ -335,6 +343,10 @@ export default function Dashboard() {
   // two mascot themes, off last30Tx (30 days comfortably covers the 14 it needs) instead of a
   // separate fetch.
   const weeklyInsight = useMemo(() => computeWeeklyInsight(last30Tx, new Date()), [last30Tx]);
+  // Festival countdown reminder (ชุด 4.3, 2026-08-08) — takes priority over weeklyInsight below
+  // when one applies (see WarriorMascot's own message prop): "your festival is in N days" is
+  // more useful/time-sensitive than the rolling spend comparison most days it'd otherwise show.
+  const festivalReminder = useMemo(() => computeFestivalReminder(festivalBudgets, new Date()), [festivalBudgets]);
 
   // Selecting a category (from either the quick-pick row or the dropdown) also looks up which
   // account that category was most often paired with in the last 30 days and fills it in — the
@@ -426,7 +438,7 @@ export default function Dashboard() {
             regardless of z-index. See ".warrior-mount"/".warrior-img" in App.jsx for the actual
             per-breakpoint size/position. */}
         <div className="warrior-mount">
-          <WarriorMascot message={weeklyInsight.message} hasEntryToday={hasEntryToday} />
+          <WarriorMascot message={festivalReminder || weeklyInsight.message} hasEntryToday={hasEntryToday} />
         </div>
         {/* pointerEvents:"none" — this div is plain display text, nothing inside it is ever
             clickable, but its own box (a block spanning the full card width) sat ABOVE
@@ -488,7 +500,7 @@ export default function Dashboard() {
           prevLabel={prevMonthLabel}
         />
         <PendingBillsCard cursor={cursor} />
-        <RecommendationsCard transactions={rangeTx} budgets={budgets} cursor={cursor} isCurrentMonth={isCurrentMonth} />
+        <RecommendationsCard transactions={rangeTx} budgets={categoryBudgets} cursor={cursor} isCurrentMonth={isCurrentMonth} />
       </div>
 
       <div style={sectionHead} className="section-head">
