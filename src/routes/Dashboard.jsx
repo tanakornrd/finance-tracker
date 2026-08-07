@@ -20,6 +20,7 @@ import RecommendationsCard from "../components/RecommendationsCard.jsx";
 import WeeklyInsightCard from "../components/WeeklyInsightCard.jsx";
 import MonthPickerSheet from "../components/MonthPickerSheet.jsx";
 import NoEntryTodayBanner from "../components/NoEntryTodayBanner.jsx";
+import StreakBadge from "../components/StreakBadge.jsx";
 import WarriorMascot from "../components/mascot/WarriorMascot.jsx";
 import MageSpellOverlay from "../components/mascot/MageSpellOverlay.jsx";
 import { SCRIBE_MESSAGES } from "../components/mascot/MageMascot.jsx";
@@ -387,13 +388,19 @@ export default function Dashboard() {
           <div style={{ fontSize: 12, letterSpacing: 2, color: colors.inkMuted, marginBottom: 2 }}>สมุดบัญชีของฉัน</div>
           <div className="page-title" style={{ fontSize: 22, fontWeight: 700, color: colors.ink }}>บันทึกรายรับ-รายจ่าย</div>
         </div>
-        <button
-          style={styles.monthBadge}
-          onClick={() => setShowMonthPicker(true)}
-        >
-          <div style={{ fontSize: 10, color: colors.white, fontWeight: 700 }}>{cursor.getFullYear() + 543}</div>
-          <div style={{ fontSize: 15, color: colors.white, fontWeight: 700 }}>{THAI_MONTHS[cursor.getMonth()]}</div>
-        </button>
+        {/* Streak badge (below the month circle, same corner) — its own column so it doesn't
+            widen/disturb the month button's own layout; centered under it per feedback on
+            where this should sit. */}
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+          <button
+            style={styles.monthBadge}
+            onClick={() => setShowMonthPicker(true)}
+          >
+            <div style={{ fontSize: 10, color: colors.white, fontWeight: 700 }}>{cursor.getFullYear() + 543}</div>
+            <div style={{ fontSize: 15, color: colors.white, fontWeight: 700 }}>{THAI_MONTHS[cursor.getMonth()]}</div>
+          </button>
+          <StreakBadge refreshSignal={entrySavedSignal} />
+        </div>
       </div>
 
       <div style={styles.monthNav}>
