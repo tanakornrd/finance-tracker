@@ -165,6 +165,13 @@ function SpeechBubble({ text, floating, anchorRef }) {
               width: "max-content",
               maxWidth: "calc(100vw - 20px)",
               zIndex: 45,
+              // Cancels App.jsx's mobile body zoom for this element specifically, same trick as
+              // sharedStyles.js's overlay — top/left here are real, unzoomed viewport pixels
+              // (from getBoundingClientRect), but this div is itself a zoomed descendant of body
+              // (portaled straight into it), so those offsets were landing far past where they
+              // should (2026-08-07: observed pinned near the bottom of the screen instead of
+              // beside the mage). Falls back to a no-op (calc(1/1)) outside the mobile zoom range.
+              zoom: "calc(1 / var(--mobile-zoom-factor, 1))",
             }
           : floating
           // Needs width:"max-content" here, not just maxWidth: an absolutely positioned box with

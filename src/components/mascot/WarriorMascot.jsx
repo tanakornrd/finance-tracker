@@ -129,6 +129,11 @@ function SpeechBubble({ text, anchorRef }) {
               // spans most of the screen and covers the net-worth figure below.
               maxWidth: "min(170px, 55vw)",
               zIndex: 45,
+              // Cancels App.jsx's mobile body zoom for this element specifically — see
+              // MageMascot.jsx's identical line for the full explanation (top/left here are real
+              // unzoomed viewport pixels, but this div is a zoomed descendant of body via the
+              // portal, so without this those offsets land somewhere else entirely).
+              zoom: "calc(1 / var(--mobile-zoom-factor, 1))",
             }
           : {
               // top: 28% (not 50%, the sprite's own vertical center) is deliberate: the warrior
