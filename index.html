@@ -8,7 +8,15 @@
          .app-container's own padding-top (App.jsx) adds env(safe-area-inset-top) on top of this
          so real content still starts safely below the notch; only the page BACKGROUND extends
          all the way up. -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <!-- maximum-scale=1, user-scalable=no (2026-08-08, second attempt) — tried once before and
+         pulled when it didn't seem to help, but that was BEFORE --app-vh-offset-top (App.jsx)
+         fixed the separate "modal reveals the page behind it" bug — the two symptoms were
+         probably co-occurring and masking whether this one specifically was doing anything.
+         With that bug now fixed, re-added specifically to stop Safari's own native
+         auto-zoom-on-focus from firing on ANY input (reported: the whole page visibly zooms in
+         the moment any field, including "เพิ่มบัญชี"'s, is focused). Trade-off (accepted, same
+         as the first time this was tried): visitors can't pinch-zoom the page manually either. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
     <!-- Default (passbook theme's --color-primarySoft, src/theme/themes.js) — ThemeContext.jsx
          overwrites this to match the active theme as soon as React mounts, same value it also
          sets on <html>/<body> via CSS. Static fallback here covers the brief window before that
