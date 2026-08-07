@@ -3,7 +3,7 @@ import { Plus, Trash2, X, ChevronLeft, ChevronRight, Wallet, CreditCard, Target,
 import { useReferenceData } from "../context/ReferenceDataContext.jsx";
 import { fetchTransactions, createTransaction, deleteTransaction, createAccount, fetchLatestTransaction } from "../api.js";
 import { centsToDisplay, centsToPlain, parseToCents } from "../../shared/money.js";
-import { THAI_MONTHS, THAI_WEEKDAYS_SHORT, parseISODate, toISODate } from "../../shared/dates.js";
+import { THAI_MONTHS, THAI_WEEKDAYS_SHORT, parseISODate, toISODate, formatTimeThai } from "../../shared/dates.js";
 import { EXPENSE_CATS, INCOME_CATS } from "../../shared/categories.js";
 import { describeTransfer } from "../lib/transferLabel.js";
 import { useTheme } from "../context/ThemeContext.jsx";
@@ -137,7 +137,20 @@ export default function Dashboard() {
   const loading = refLoading || txLoading;
 
   const monthTx = useMemo(
-    () => rangeTx.filter((t) => t.date.slice(0, 7) === mKey).sort((a, b) => (a.date < b.date ? 1 : -1)),
+    () =>
+      rangeTx
+        .filter((t) => t.date.slice(0, 7) === mKey)
+        .sort((a, b) => {
+          if (a.date !== b.date) return a.date < b.date ? 1 : -1;
+          // Same day: newest createdAt first. Rows missing createdAt (saved before the field
+          // existed) have no reliable order to claim, so leave them where the date-only sort put
+          // them relative to each other — but still after any row on the same day that does have
+          // a createdAt, since that one is known to be more recent than "unknown".
+          if (a.createdAt && b.createdAt) return a.createdAt < b.createdAt ? 1 : -1;
+          if (a.createdAt) return -1;
+          if (b.createdAt) return 1;
+          return 0;
+        }),
     [rangeTx, mKey]
   );
   const incomeCents = monthTx.filter((t) => t.kind === "income").reduce((s, t) => s + t.amountCents, 0);
@@ -600,6 +613,9 @@ export default function Dashboard() {
                         <div style={{ fontSize: 11, color: colors.inkMuted }}>
                           {isTransfer ? `จาก ${acc?.name || "-"}` : acc?.name || "-"}
                           {t.note ? ` · ${t.note}` : ""}
+                          {/* Rows saved before createdAt existed have it as null — shown as
+                              nothing rather than a guessed time, same as TransactionDetail.jsx. */}
+                          {t.createdAt ? ` · ${formatTimeThai(t.createdAt)}` : ""}
                         </div>
                       </div>
                       <div className="num" style={{ fontSize: 14, fontWeight: 600, color: isTransfer ? colors.ink : t.kind === "income" ? colors.primary : colors.danger }}>

@@ -4,7 +4,7 @@ import { Search, Download, Upload } from "lucide-react";
 import { useReferenceData } from "../context/ReferenceDataContext.jsx";
 import { fetchTransactions } from "../api.js";
 import { centsToDisplay, centsToPlain } from "../../shared/money.js";
-import { THAI_MONTHS } from "../../shared/dates.js";
+import { THAI_MONTHS, formatTimeThai } from "../../shared/dates.js";
 import { EXPENSE_CATS, INCOME_CATS } from "../../shared/categories.js";
 import MonthPickerSheet from "../components/MonthPickerSheet.jsx";
 import { describeTransfer } from "../lib/transferLabel.js";
@@ -118,7 +118,16 @@ export default function Transactions() {
           amountStr.includes(q)
         );
       })
-      .sort((a, b) => (a.date < b.date ? 1 : -1));
+      .sort((a, b) => {
+        if (a.date !== b.date) return a.date < b.date ? 1 : -1;
+        // Same day: newest createdAt first, matching Dashboard.jsx's monthTx sort. Rows missing
+        // createdAt (saved before the field existed) fall back to whatever order they arrived
+        // in, but after any same-day row that does have a createdAt.
+        if (a.createdAt && b.createdAt) return a.createdAt < b.createdAt ? 1 : -1;
+        if (a.createdAt) return -1;
+        if (b.createdAt) return 1;
+        return 0;
+      });
   }, [transactions, accounts, searchQuery, monthFilter, groupTab]);
 
   function handleExport() {
@@ -206,6 +215,9 @@ export default function Transactions() {
                   <div style={{ fontSize: 11, color: "var(--color-inkMuted)" }}>
                     {t.date} · {isTransfer ? `จาก ${acc?.name || "-"}` : acc?.name || "-"}
                     {t.note ? ` · ${t.note}` : ""}
+                    {/* Rows saved before createdAt existed have it as null — shown as nothing
+                        rather than a guessed time, same as TransactionDetail.jsx. */}
+                    {t.createdAt ? ` · ${formatTimeThai(t.createdAt)}` : ""}
                   </div>
                 </div>
                 <div className="num" style={{ fontSize: 14, fontWeight: 600, color: isTransfer ? "var(--color-ink)" : t.kind === "income" ? "var(--color-primary)" : "var(--color-danger)" }}>

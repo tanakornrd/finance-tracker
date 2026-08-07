@@ -32,6 +32,15 @@ export function formatDateTimeThai(isoTimestamp) {
   return `${d.getDate()} ${THAI_MONTHS[d.getMonth()]} ${d.getFullYear() + 543} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
 }
 
+// Formats a full ISO timestamp (transactions.createdAt) into just the local time "14:23" —
+// for inline display in list rows where the date is already shown separately. Same UTC-safe
+// parsing as formatDateTimeThai above (full ISO timestamp, not a date-only string).
+export function formatTimeThai(isoTimestamp) {
+  const d = new Date(isoTimestamp);
+  const pad = (n) => String(n).padStart(2, "0");
+  return `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
 // Whole calendar months between fromDate and toDate, floored (conservative: undershooting
 // months-remaining yields a higher, safer required-per-month figure for savings goals).
 export function monthsBetween(fromDate, toDate) {
