@@ -226,9 +226,12 @@ export default function Budgets() {
         onClose={() => setShowAdd(false)}
         onSaved={async () => {
           // The save itself (createBudget, inside AddBudgetSheet) has already fully completed by
-          // the time onSaved runs — this only decides what happens visually afterward, never
-          // delays or blocks the actual write.
-          await refetch();
+          // the time onSaved runs. The visual reaction fires FIRST, before refetch() — measured
+          // on the live deploy, refetch() alone (re-fetching budgets + this month's transactions)
+          // can take several seconds over a real network, and awaiting it before showing anything
+          // made a successful save look like nothing had happened at all for that whole stretch.
+          // refetch() still runs (so the numbers on screen catch up), just no longer gates
+          // whether/when the overlay or bubble appears.
           setShowAdd(false);
           if (mascotAnimationEnabled) {
             setShowSpell(true);
@@ -240,6 +243,7 @@ export default function Budgets() {
             setMageFiring(true);
             setTimeout(() => setMageFiring(false), 1500);
           }
+          await refetch();
         }}
       />
       {showSpell && <BudgetSpellOverlay onClose={() => setShowSpell(false)} />}
