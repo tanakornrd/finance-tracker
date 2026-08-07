@@ -49,7 +49,12 @@ export default function MageSpellOverlay({ message, castingMs = 1800, messageMs 
       className={`mage-spell-overlay${phase === "fading" ? " mage-spell-overlay-fading" : ""}`}
       style={{
         position: "fixed", inset: 0, zIndex: 60,
-        background: "rgba(10,4,26,0.72)",
+        // Plain near-black, not a color tinted toward the arcade theme's own already-dark
+        // purple background — that tint (the first version's rgba(10,4,26,...)) sat close
+        // enough to the page's real background that the "dim everything behind" effect read as
+        // barely-there (2026-08-07 feedback: looked like there was no backdrop at all). Higher
+        // opacity too, for the same reason.
+        background: "rgba(0,0,0,0.85)",
         display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
         // No click-to-dismiss — this is a short, self-timed sequence, not a dialog waiting on
         // the user; deliberately no role="button"/onClick/aria-label either.
@@ -112,7 +117,15 @@ export default function MageSpellOverlay({ message, castingMs = 1800, messageMs 
           className="mage-spell-ring"
           style={{
             position: "absolute", inset: 0, width: "100%", height: "100%",
-            imageRendering: "pixelated",
+            // NOT pixelated, unlike every other sprite in this theme — deliberately. This image
+            // spins continuously via CSS transform:rotate(), and pixel art rendered crisp at
+            // arbitrary (non-90°) rotation angles gets a jagged, torn-looking edge (each square
+            // pixel becomes a hard-edged rotated block instead of smoothly interpolating) —
+            // reported 2026-08-07 as the ring looking "broken/patchy". Smooth scaling here reads
+            // as a soft magic glow anyway (it already has a blur-like drop-shadow), so letting
+            // the browser anti-alias it while it rotates is a strict visual improvement, not a
+            // style mismatch — mascot-mage.png itself (never rotated) stays pixelated below.
+            imageRendering: "auto",
             filter: "drop-shadow(0 0 22px rgba(255,180,80,0.65))",
           }}
         />
