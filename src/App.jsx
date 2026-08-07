@@ -118,6 +118,12 @@ export default function App() {
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 4px; }
         input:focus, select:focus { outline: 2px solid var(--color-primary); outline-offset: 1px; }
+        /* DateField.jsx (2026-08-08) renders its own always-working calendar button instead of
+           relying on this native icon — see that file's own comment for why (appearance:none on
+           input[type=date], needed to fix its width overflowing its own box, left this icon
+           visually present but not reliably clickable in Chrome). Hidden here globally so there's
+           never two calendar icons competing in the same box. */
+        input[type="date"]::-webkit-calendar-picker-indicator { opacity: 0; pointer-events: none; }
 
         /* SpeedsterMascot.jsx: dashes across ".app-container"'s full width, pauses off-screen,
            repeats. Percentage keyframes pack "run in → cross → exit → long pause" into one

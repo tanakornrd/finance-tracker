@@ -2,8 +2,9 @@ import React, { useState } from "react";
 import { X } from "lucide-react";
 import { createBudget } from "../api.js";
 import { FESTIVALS } from "../../shared/festivals.js";
-import { overlay, sheet, sheetHead, iconBtn, label, input, dateInput, submitBtn } from "./sharedStyles.js";
+import { overlay, sheet, sheetHead, iconBtn, label, input, submitBtn } from "./sharedStyles.js";
 import ModalPortal from "./ModalPortal.jsx";
+import DateField from "./DateField.jsx";
 
 // "งบเทศกาล" (ชุด 4.1) — same upsert-by-category flow as AddBudgetSheet.jsx, just POSTing
 // festivalStartDate/festivalEndDate alongside a festival slug (instead of a real category name)
@@ -67,13 +68,13 @@ export default function AddFestivalBudgetSheet({ open, onClose, onSaved }) {
             <div style={{ display: "flex", gap: 10 }}>
               <div style={{ flex: 1 }}>
                 <label style={label}>วันที่เริ่ม</label>
-                <input type="date" required value={form.startDate}
-                  onChange={(e) => setForm({ ...form, startDate: e.target.value })} style={dateInput} />
+                <DateField required value={form.startDate}
+                  onChange={(e) => setForm({ ...form, startDate: e.target.value })} />
               </div>
               <div style={{ flex: 1 }}>
                 <label style={label}>วันที่สิ้นสุด</label>
-                <input type="date" required value={form.endDate}
-                  onChange={(e) => setForm({ ...form, endDate: e.target.value })} style={dateInput} />
+                <DateField required value={form.endDate}
+                  onChange={(e) => setForm({ ...form, endDate: e.target.value })} />
               </div>
             </div>
 

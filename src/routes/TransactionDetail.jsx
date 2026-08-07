@@ -7,7 +7,8 @@ import { centsToDisplay } from "../../shared/money.js";
 import { formatDateTimeThai } from "../../shared/dates.js";
 import { EXPENSE_CATS, INCOME_CATS } from "../../shared/categories.js";
 import { describeTransfer } from "../lib/transferLabel.js";
-import { card, overlay, sheet, sheetHead, iconBtn, label, input, dateInput, submitBtn, colors } from "../components/sharedStyles.js";
+import { card, overlay, sheet, sheetHead, iconBtn, label, input, submitBtn, colors } from "../components/sharedStyles.js";
+import DateField from "../components/DateField.jsx";
 import ModalPortal from "../components/ModalPortal.jsx";
 import { useTheme } from "../context/ThemeContext.jsx";
 import { CategoryIcon } from "../theme/arcadeIcons.jsx";
@@ -238,7 +239,7 @@ function EditTransactionSheet({ tx, accounts, onClose, onSaved }) {
           )}
 
           <label style={label}>วันที่</label>
-          <input type="date" required value={date} onChange={(e) => setDate(e.target.value)} style={dateInput} />
+          <DateField required value={date} onChange={(e) => setDate(e.target.value)} />
 
           <label style={label}>โน้ต</label>
           <input type="text" value={note} onChange={(e) => setNote(e.target.value)} style={input} />

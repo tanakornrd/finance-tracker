@@ -8,6 +8,7 @@ import { parseISODate, toISODate } from "../../shared/dates.js";
 import { EXPENSE_CATS, INCOME_CATS } from "../../shared/categories.js";
 import { describeTransfer } from "../lib/transferLabel.js";
 import { colors, iconChip, card, sectionHead, txRow, txIcon } from "../components/sharedStyles.js";
+import DateField from "../components/DateField.jsx";
 import { useTheme } from "../context/ThemeContext.jsx";
 import { CategoryIcon } from "../theme/arcadeIcons.jsx";
 import { QuestBar } from "../theme/rpgBars.jsx";
@@ -24,10 +25,6 @@ const chipBtn = { padding: "7px 12px", borderRadius: 20, border: `1px solid ${co
 // Same `border` shorthand as chipBtn (not `borderColor`) — mixing shorthand and
 // non-shorthand for the same property across a rerender trips a React style warning.
 const chipBtnActive = { background: colors.primary, color: colors.white, border: `1px solid ${colors.primary}` };
-// fontSize: 16, not 13 (2026-08-07 fix) — below 16px, iOS Safari auto-zooms the whole page on
-// focus of any text input; same threshold sharedStyles.js's own `input` already uses.
-const dateInput = { flex: 1, padding: "9px 10px", borderRadius: 8, border: `1px solid ${colors.border}`, background: colors.inputBg, color: colors.ink, fontSize: 16 };
-
 function todayStr() {
   const d = new Date();
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
@@ -131,8 +128,8 @@ export default function AccountDetail() {
 
       {range === "custom" && (
         <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
-          <input type="date" value={customFrom} onChange={(e) => setCustomFrom(e.target.value)} style={dateInput} />
-          <input type="date" value={customTo} onChange={(e) => setCustomTo(e.target.value)} style={dateInput} />
+          <DateField value={customFrom} onChange={(e) => setCustomFrom(e.target.value)} style={{ flex: 1 }} />
+          <DateField value={customTo} onChange={(e) => setCustomTo(e.target.value)} style={{ flex: 1 }} />
         </div>
       )}
 
