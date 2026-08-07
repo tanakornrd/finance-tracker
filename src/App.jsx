@@ -535,7 +535,12 @@ export default function App() {
              the first place — there's simply no nested zoom left for it to happen to. */
         @media (max-width: 1279px) {
           :root { --mobile-zoom-factor: 1.17; }
-          #root { zoom: var(--mobile-zoom-factor); }
+          /* TEMPORARY DIAGNOSTIC (2026-08-08): zoom forced to 1 (off) to test whether CSS zoom
+             itself is what's causing the iOS-keyboard horizontal-scroll bug that's survived
+             three targeted fixes so far. --mobile-zoom-factor is left defined above so this is
+             a one-line revert (change 1 back to var(--mobile-zoom-factor)) once the test result
+             is in — not a decision to drop the "bigger on mobile" feature. */
+          #root { zoom: 1; }
         }
 
         /* --- Desktop shell (added 2026-08-06) ---
