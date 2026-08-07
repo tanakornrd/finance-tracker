@@ -99,7 +99,13 @@ function SpeechBubble({ text, anchorRef }) {
   // position is measured + clamped to the actual viewport, so it can stay visible and fully
   // on-screen at every phone width instead of being switched off. Desktop is untouched — same
   // absolutely-positioned-beside-the-warrior rendering as always, no portal, no measurement.
-  const { isMobile, bubbleRef, pos } = useKeepBubbleOnScreen({ anchorRef, anchorFrac: 0.28, deps: [text] });
+  //
+  // anchorFrac 0.14 (not the 0.5 default, and higher up than desktop's own 0.28 — mobile has no
+  // fixed "row of numbers" to clear beside, so it can sit right up near the head) + gap 3 (half
+  // the default 6) — tucks the bubble snug against the warrior's head instead of drifting down
+  // toward the balance figure below it, per feedback that the first mobile version sat too low/
+  // far and covered the numbers.
+  const { isMobile, bubbleRef, pos } = useKeepBubbleOnScreen({ anchorRef, anchorFrac: 0.14, gap: 3, deps: [text] });
 
   const bubble = (
     <div
@@ -112,7 +118,10 @@ function SpeechBubble({ text, anchorRef }) {
               top: pos ? pos.top : -9999,
               visibility: pos ? "visible" : "hidden",
               width: "max-content",
-              maxWidth: "calc(100vw - 20px)",
+              // Tight cap (not the old calc(100vw - 20px)) so long messages WRAP into a compact
+              // multi-line box beside the head instead of stretching into one wide line that
+              // spans most of the screen and covers the net-worth figure below.
+              maxWidth: "min(170px, 55vw)",
               zIndex: 45,
             }
           : {
