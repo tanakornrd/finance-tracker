@@ -623,6 +623,23 @@ export default function App() {
           .theme-switcher-fab { display: none; }
           .dashboard-fab { bottom: 40px; right: 40px; transform: none; }
 
+          /* Bottom sheet -> centered modal on desktop (2026-08-07) — every modal in the app
+             already renders a className="sheet" div (13 usages, sharedStyles.js's own sheet
+             object supplies the inline styles) inside an overlay div with
+             alignItems: "flex-end" (sharedStyles.js), which is what makes it slide up flush
+             against the bottom edge on mobile. Rather than touching any of those 13 call sites
+             (or overlay's own inline style, which has no className to hook at all), align-self
+             here overrides just THIS flex child's own cross-axis alignment within that same
+             flex-end container — centering it vertically without needing the parent overlay
+             div to change at all. Full corner radius + a real bottom border restore the "actual
+             dialog card" look now that it's not visually anchored to the screen edge anymore. */
+          .sheet {
+            align-self: center;
+            border-radius: 20px;
+            border-bottom: 1px solid var(--color-border);
+            max-height: 85vh;
+          }
+
           /* Dashboard.jsx (Phase 2, 2026-08-06): same DOM order as mobile in every case below —
              only how that order is laid out into columns changes, so nothing needed to move in
              the JSX itself. */
