@@ -76,16 +76,21 @@ export default function CastleBackground() {
           version) — the two art images above only cover a band each near the top/bottom; on a
           short page (nothing to scroll) the gap between them was plain flat gradient, reported
           as looking bare. This repeating pattern fills that whole gap with the same stone/mortar
-          texture the art itself uses (var(--castle-stone)/--castle-mortar, still defined in
-          themes.js from before), sitting behind both art images and the final dark overlay so it
-          reads as "the same wall, continuing down" rather than a separate decoration competing
-          with them. Low risk: purely decorative, no interactivity, was already exactly this same
-          div before the art layers replaced the rest of the old CSS version. */}
+          colors the art itself uses (var(--castle-stone)/--castle-mortar, still defined in
+          themes.js from before), sitting behind both art images and the final dark overlay.
+          opacity 0.6 (this pattern's original value, from before the art layers existed) read as
+          its own competing grid right where it showed through the art's soft-faded edges — a
+          crisp geometric pattern butting up against the art's much softer painted brick texture,
+          reported as looking like two different walls stitched together. Dropped to 0.18 (barely
+          a hint of texture, not a second wall) specifically so it doesn't fight the art at that
+          seam; the "alternating shading" pass that used to sit on top of this (for its own
+          depth) is dropped entirely — at this low an opacity it only added visual noise, not
+          depth. */}
       <div
         style={{
           position: "absolute",
           inset: 0,
-          opacity: 0.6,
+          opacity: 0.18,
           backgroundColor: "var(--castle-stone)",
           backgroundImage: `
             repeating-linear-gradient(0deg, var(--castle-mortar) 0px, var(--castle-mortar) 2px, transparent 2px, transparent 26px),
@@ -94,17 +99,6 @@ export default function CastleBackground() {
           `,
           backgroundPosition: "0 0, 0 0, 26px 26px",
           backgroundSize: "100% 26px, 52px 52px, 52px 52px",
-        }}
-      />
-      {/* Alternating brick shading for depth, offset rows via the same 52px rhythm as the mortar
-          grid above so bricks and mortar lines line up. */}
-      <div
-        style={{
-          position: "absolute",
-          inset: 0,
-          opacity: 0.3,
-          backgroundImage: "linear-gradient(180deg, var(--castle-stone) 0%, var(--castle-stone-dark) 100%)",
-          mixBlendMode: "multiply",
         }}
       />
 
