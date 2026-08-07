@@ -16,10 +16,10 @@ import { useAuth } from "../context/AuthContext.jsx";
 // browser. A fixed-pixel offset from the real screen edge has no such assumption to break.
 const fabStyle = {
   position: "fixed",
-  // 84 -> 108 (2026-08-07): the bottom nav became a taller floating pill sitting higher off the
-  // screen edge (App.jsx's ".bottom-nav") — 84 was tuned for the old flush-to-the-edge bar and
-  // now overlapped it.
-  bottom: 108,
+  // 84 -> 108 -> 150 (2026-08-07, second pass — still overlapped the pill on a real device at
+  // 108): the bottom nav became a taller floating pill sitting higher off the screen edge
+  // (App.jsx's ".bottom-nav") — 84 was tuned for the old flush-to-the-edge bar.
+  bottom: 150,
   left: 18,
   width: 44,
   height: 44,
@@ -36,7 +36,7 @@ const fabStyle = {
 // Opens upward from the FAB, not downward — downward would run under the bottom nav bar.
 const menuStyle = {
   position: "fixed",
-  bottom: 160, // same +52 gap above fabStyle.bottom as before (136 - 84 = 52; 108 + 52 = 160)
+  bottom: 202, // same +52 gap above fabStyle.bottom as before (136 - 84 = 52; 150 + 52 = 202)
   left: 18,
   background: "var(--color-white)",
   border: "1px solid var(--color-border)",

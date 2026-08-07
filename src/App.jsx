@@ -552,10 +552,11 @@ export default function App() {
            instead of getting hidden behind it. CastleBackground.jsx (position:absolute; inset:0
            relative to this same .app-container) automatically extends into that padding too —
            no separate fix needed there, it was always sized off this container's own box. */
-        /* bottom padding 84px -> 110px (2026-08-07): matches the FABs' own bottom offset bump
-           below — the floating nav pill sits higher/taller than the old flush bar, so scrolled
-           content needs a bit more clearance to not tuck in behind it at the very end of a page. */
-        .app-container { width: 100%; max-width: 480px; margin: 0 auto; padding: calc(24px + env(safe-area-inset-top)) 18px 110px; position: relative; z-index: 0; }
+        /* bottom padding 84px -> 130px (2026-08-07, second pass — 110px still wasn't enough
+           clearance on a real device): matches the FABs' own bottom offset bump below — the
+           floating nav pill sits higher/taller than the old flush bar, so scrolled content
+           needs more clearance to not tuck in behind it at the very end of a page. */
+        .app-container { width: 100%; max-width: 480px; margin: 0 auto; padding: calc(24px + env(safe-area-inset-top)) 18px 130px; position: relative; z-index: 0; }
         /* Floating "glass pill" bottom nav (2026-08-07, mobile only, all themes) — was a
            full-width bar flush with the screen edges/bottom; now floats clear of every edge,
            fully rounded, translucent + blurred. left/right (not a centered fixed width) is what
@@ -578,7 +579,8 @@ export default function App() {
           margin: 0 auto; max-width: 480px;
           justify-content: center;
           border-radius: 999px;
-          background: color-mix(in srgb, var(--color-white) 82%, transparent);
+          /* 82% -> 55% (2026-08-07 feedback: wanted more see-through, less solid-looking). */
+          background: color-mix(in srgb, var(--color-white) 55%, transparent);
           backdrop-filter: blur(14px);
           -webkit-backdrop-filter: blur(14px);
           border: 1px solid color-mix(in srgb, var(--color-border) 70%, transparent);
@@ -592,10 +594,11 @@ export default function App() {
            end of the desktop range) — reliably computing "the column's actual right edge" from
            pure viewport-percentage CSS isn't possible in that case. Simplest correct fix: just
            pin it near the real screen corner on desktop instead of chasing the column. */
-        /* bottom: 84px -> 108px (2026-08-07): the bottom nav became a taller floating pill
-           sitting higher off the screen edge (".bottom-nav" below) — 84px was tuned for the old
-           flush-to-the-edge bar and now overlapped it. */
-        .dashboard-fab { position: fixed; bottom: 108px; right: 50%; transform: translateX(calc(240px - 60px)); }
+        /* bottom: 84px -> 108px -> 150px (2026-08-07, second pass — still overlapped the pill
+           on a real device at 108px): the bottom nav became a taller floating pill sitting
+           higher off the screen edge (".bottom-nav" below) — 84px was tuned for the old
+           flush-to-the-edge bar. */
+        .dashboard-fab { position: fixed; bottom: 150px; right: 50%; transform: translateX(calc(240px - 60px)); }
 
         /* Accounts.jsx's account cards — 2 columns on mobile (unchanged; this line reproduces
            what used to be an inline gridTemplateColumns), more columns once there's room. */
