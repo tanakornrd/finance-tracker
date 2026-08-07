@@ -24,6 +24,8 @@ import WarriorMascot from "../components/mascot/WarriorMascot.jsx";
 import MageSpellOverlay from "../components/mascot/MageSpellOverlay.jsx";
 import { SCRIBE_MESSAGES } from "../components/mascot/MageMascot.jsx";
 import { computeWeeklyInsight } from "../lib/weeklyInsight.js";
+import { useCardPress } from "../lib/useCardPress.js";
+import PressableCard from "../components/PressableCard.jsx";
 import {
   colors, iconChip, card, sectionHead, textBtn, txRow, txIcon, navBtn,
   overlay, sheet, sheetHead, iconBtn, label, input, submitBtn,
@@ -51,6 +53,9 @@ function dayLabel(dateStr) {
 export default function Dashboard() {
   const { theme, mascotAnimationEnabled } = useTheme();
   const { accounts, budgets, loading: refLoading, error, refetch: refetchReference } = useReferenceData();
+  // Card press feedback (2026-08-07) — the net-worth card gets its own instance (not shared with
+  // the transaction rows below, which each need their own independent pressed state per row).
+  const netWorthPress = useCardPress();
   const [saving, setSaving] = useState(false);
   const [saveErr, setSaveErr] = useState(false);
   const [errDetail, setErrDetail] = useState("");
@@ -406,7 +411,11 @@ export default function Dashboard() {
         </button>
       </div>
 
-      <div style={styles.passbook} className="passbook-card">
+      <div
+        style={styles.passbook}
+        className={`passbook-card press-card${netWorthPress.pressed ? " press-active" : ""}`}
+        {...netWorthPress.handlers}
+      >
         <div style={styles.perforation} />
         {/* WarriorMascot mount — a child of the card (not a sibling floating over it), so it
             reads as standing genuinely *inside* the card's frame next to the numbers, at full
@@ -622,7 +631,7 @@ export default function Dashboard() {
                   const toAcc = isTransfer ? accounts.find((a) => a.id === t.toAccountId) : null;
                   const xfer = isTransfer ? describeTransfer(toAcc) : null;
                   return (
-                    <div key={t.id} style={txRow}>
+                    <PressableCard key={t.id} style={txRow}>
                       <div style={txIcon}>
                         <CategoryIcon theme={theme} name={t.category} fallback={isTransfer ? xfer.icon : (cat?.icon || "📦")} isTransfer={isTransfer} size={18} />
                       </div>
@@ -640,7 +649,7 @@ export default function Dashboard() {
                         {isTransfer ? "" : t.kind === "income" ? "+" : "-"}{centsToDisplay(t.amountCents)}
                       </div>
                       <button style={iconBtn} onClick={() => deleteTx(t)}><Trash2 size={14} color={colors.inkMuted} /></button>
-                    </div>
+                    </PressableCard>
                   );
                 })}
               </div>

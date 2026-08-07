@@ -14,6 +14,7 @@ import { CategoryIcon } from "../theme/arcadeIcons.jsx";
 import ArcherMascot from "../components/mascot/ArcherMascot.jsx";
 import StreakQuestModal from "../components/StreakQuestModal.jsx";
 import { computeStreak } from "../lib/streak.js";
+import PressableCard from "../components/PressableCard.jsx";
 
 function monthKey(d) { return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`; }
 
@@ -208,7 +209,7 @@ export default function Transactions() {
             const toAcc = isTransfer ? accounts.find((a) => a.id === t.toAccountId) : null;
             const xfer = isTransfer ? describeTransfer(toAcc) : null;
             return (
-              <Link key={t.id} to={`/transactions/${t.id}`} style={{ ...txRow, textDecoration: "none" }}>
+              <PressableCard key={t.id} as={Link} to={`/transactions/${t.id}`} style={{ ...txRow, textDecoration: "none" }}>
                 <div style={txIcon}><CategoryIcon theme={theme} name={t.category} fallback={isTransfer ? xfer.icon : (cat?.icon || "📦")} isTransfer={isTransfer} size={18} /></div>
                 <div style={{ flex: 1 }}>
                   <div style={{ fontSize: 13, color: "var(--color-ink)" }}>{isTransfer ? `${xfer.toward} ${toAcc?.name || ""}` : t.category}</div>
@@ -223,7 +224,7 @@ export default function Transactions() {
                 <div className="num" style={{ fontSize: 14, fontWeight: 600, color: isTransfer ? "var(--color-ink)" : t.kind === "income" ? "var(--color-primary)" : "var(--color-danger)" }}>
                   {isTransfer ? "" : t.kind === "income" ? "+" : "-"}{centsToDisplay(t.amountCents)}
                 </div>
-              </Link>
+              </PressableCard>
             );
           })
         )}

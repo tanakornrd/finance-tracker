@@ -47,6 +47,11 @@ const PRESETS = {
   levelUp: (c) => {
     [523, 659, 784, 1046].forEach((freq, i) => tone(c, { freq, start: i * 0.09, duration: 0.16, type: "square", gain: 0.14 }));
   },
+  // Card press feedback (2026-08-07) — deliberately the shortest/quietest preset here: this can
+  // fire on nearly any card tap across the whole app (not one mascot's occasional reaction), so
+  // it needs to read as a light acknowledgment tick, not compete with or resemble the RPG
+  // mascots' own bigger sounds.
+  cardTap: (c) => tone(c, { freq: 600, start: 0, duration: 0.045, type: "square", gain: 0.06 }),
 };
 
 // Callers already gate this on the soundEnabled toggle (ThemeContext) themselves — same pattern

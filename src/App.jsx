@@ -390,6 +390,16 @@ export default function App() {
           100% { transform: translate(-50%, -50%) rotate(var(--spark-angle)) translateX(46px) scale(1); opacity: 0; }
         }
 
+        /* Card press feedback (useCardPress.js, 2026-08-07) — transform-only (no width/height/
+           margin, so it never triggers layout/reflow on mobile). transition lives on the base
+           ".press-card" class (always present on a pressable card) so the bounce-BACK is
+           animated; ".press-active" (added only while actually pressed, via the hook's pressed
+           state) is what actually applies the shrink — the press-down itself reads as
+           near-instant since the browser starts that transition from whatever scale it's
+           currently at, same as every other transform transition in this app. */
+        .press-card { transition: transform 0.12s ease-out; }
+        .press-active { transform: scale(0.98); }
+
         /* CastleBackground.jsx ambient decoration — not gated by the mascotAnimationEnabled
            toggle (that's specifically the mascot on/off switch), but still respects
            prefers-reduced-motion below like every other animation here. */
@@ -425,6 +435,8 @@ export default function App() {
           .mage-spell-ring { animation: none; }
           .mage-spell-bubble { animation: none; }
           .mage-spell-spark { animation: none; opacity: 0; }
+          .press-card { transition: none; }
+          .press-active { transform: none; }
           .castle-star-twinkle { animation: none; }
           .castle-torch-flicker { animation: none; }
           .castle-banner-sway { animation: none; }
