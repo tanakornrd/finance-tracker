@@ -115,15 +115,5 @@ export const label = { display: "block", fontSize: 12, color: colors.inkMuted, m
 // fontSize: 16 (was 14) — below 16px, iOS Safari auto-zooms the whole page on focus of any text
 // input, which is its own layout-jank bug distinct from the keyboard-height issue above. 16px is
 // the documented threshold where iOS stops doing that.
-// height: 44 (2026-08-08) — without an explicit height, every field here sizes itself off its
-// own content, and `<input type="date">` renders its OWN native control (day/month/year
-// segments) taller than a plain text input's single line of text even with identical padding —
-// an iOS Safari quirk, not something this padding/fontSize controls. That made the date field
-// visibly taller than every other field sharing this same `input` object in the same form. Worse
-// on the floating centered modal (App.jsx's mobile `.sheet` override, 2026-08-08): since that
-// modal centers itself vertically off its own total content height, the date field's extra
-// height shifted the whole popup's resting position, which read as the popup "not settling" /
-// jittering into place. Pinning every field (text, number, date, select all share this one
-// object) to the same explicit height fixes both at once.
-export const input = { width: "100%", height: 44, padding: "11px 12px", borderRadius: 10, border: `1px solid ${colors.border}`, background: colors.inputBg, color: colors.ink, fontSize: 16 };
+export const input = { width: "100%", padding: "11px 12px", borderRadius: 10, border: `1px solid ${colors.border}`, background: colors.inputBg, color: colors.ink, fontSize: 16 };
 export const submitBtn = { width: "100%", marginTop: 20, padding: "13px 0", borderRadius: 10, border: "none", background: colors.primary, color: colors.white, fontWeight: 700, fontSize: 14 };
