@@ -6,7 +6,7 @@ import { createAccount, updateAccount } from "../api.js";
 import { centsToDisplay, centsToPlain } from "../../shared/money.js";
 import { getPendingOccurrences } from "../lib/pendingBills.js";
 import {
-  colors, iconChip, sectionHead, textBtn, overlay, sheet, sheetHead, iconBtn, label, input, submitBtn,
+  colors, iconChip, sectionHead, textBtn, overlay, sheet, sheetHead, iconBtn, label, input, dateInput, submitBtn,
   kindToggle, kindBtn, kindActiveInc, kindActiveExp,
 } from "../components/sharedStyles.js";
 import ModalPortal from "../components/ModalPortal.jsx";
@@ -286,7 +286,7 @@ export default function Accounts() {
                     placeholder="0.00" style={input} />
                   <label style={label}>วันที่ต้องการให้ถึงเป้าหมาย</label>
                   <input type="date" required value={newAcc.targetDate}
-                    onChange={(e) => setNewAcc({ ...newAcc, targetDate: e.target.value })} style={input} />
+                    onChange={(e) => setNewAcc({ ...newAcc, targetDate: e.target.value })} style={dateInput} />
                 </>
               )}
               {err && <div style={{ color: "var(--color-danger)", fontSize: 12, marginTop: 8 }}>{err}</div>}
@@ -349,7 +349,7 @@ export default function Accounts() {
                     style={input} />
                   <label style={label}>วันที่ต้องการให้ถึงเป้าหมาย</label>
                   <input type="date" required value={editGoal.targetDate}
-                    onChange={(e) => setEditGoal({ ...editGoal, targetDate: e.target.value })} style={input} />
+                    onChange={(e) => setEditGoal({ ...editGoal, targetDate: e.target.value })} style={dateInput} />
                 </>
               )}
 

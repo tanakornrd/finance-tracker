@@ -116,4 +116,16 @@ export const label = { display: "block", fontSize: 12, color: colors.inkMuted, m
 // input, which is its own layout-jank bug distinct from the keyboard-height issue above. 16px is
 // the documented threshold where iOS stops doing that.
 export const input = { width: "100%", padding: "11px 12px", borderRadius: 10, border: `1px solid ${colors.border}`, background: colors.inputBg, color: colors.ink, fontSize: 16 };
+
+// dateInput: `input` above, plus a fix for `<input type="date">` specifically (2026-08-08).
+// iOS Safari's native date control (its own day/month/year segments) can ignore `width: 100%`
+// and render at its own wider intrinsic minimum instead, pushing the box past the form's right
+// edge — every OTHER field sharing `input` sizes correctly, only the date ones did this.
+// -webkit-appearance/appearance: none strips that native sizing behavior so it respects the box
+// like a plain text field does (the calendar-icon affordance is unaffected — iOS still shows its
+// native date picker on tap regardless of this property, it only changes how the control itself
+// is boxed/sized). maxWidth is a second belt-and-suspenders cap in case any device still ignores
+// the above. Not applied to every field in `input` (e.g. `<select>`) since appearance:none there
+// would also strip the native dropdown arrow, which those fields still rely on.
+export const dateInput = { ...input, WebkitAppearance: "none", appearance: "none", maxWidth: "100%" };
 export const submitBtn = { width: "100%", marginTop: 20, padding: "13px 0", borderRadius: 10, border: "none", background: colors.primary, color: colors.white, fontWeight: 700, fontSize: 14 };

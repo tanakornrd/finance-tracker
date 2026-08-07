@@ -6,7 +6,7 @@ import { useReferenceData } from "../context/ReferenceDataContext.jsx";
 import { fetchTransactions, importTransactions } from "../api.js";
 import { parseToCents } from "../../shared/money.js";
 import { EXPENSE_CATS, INCOME_CATS } from "../../shared/categories.js";
-import { card, sectionHead, label, input, submitBtn, colors } from "../components/sharedStyles.js";
+import { card, sectionHead, label, input, dateInput, submitBtn, colors } from "../components/sharedStyles.js";
 
 // Best-effort ISO normalization for the two formats Thai bank/app exports actually use.
 // Anything else is left blank — the preview step's date input is a real <input type="date">,
@@ -317,7 +317,7 @@ export default function ImportStatement() {
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
                     <div>
                       <label style={{ ...label, margin: "0 0 4px" }}>วันที่</label>
-                      <input type="date" style={input} value={r.date} onChange={(e) => updateRow(r._id, { date: e.target.value })} />
+                      <input type="date" style={dateInput} value={r.date} onChange={(e) => updateRow(r._id, { date: e.target.value })} />
                     </div>
                     <div>
                       <label style={{ ...label, margin: "0 0 4px" }}>จำนวนเงิน (บาท)</label>

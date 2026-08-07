@@ -28,7 +28,7 @@ import { useCardPress } from "../lib/useCardPress.js";
 import PressableCard from "../components/PressableCard.jsx";
 import {
   colors, iconChip, card, sectionHead, textBtn, txRow, txIcon, navBtn,
-  overlay, sheet, sheetHead, iconBtn, label, input, submitBtn,
+  overlay, sheet, sheetHead, iconBtn, label, input, dateInput, submitBtn,
   kindToggle, kindBtn, kindActiveInc, kindActiveExp,
 } from "../components/sharedStyles.js";
 import ModalPortal from "../components/ModalPortal.jsx";
@@ -788,7 +788,7 @@ export default function Dashboard() {
                 <button type="button" style={{ ...styles.quickPickBtn, ...(form.date === yesterdayStr() ? styles.quickPickBtnActive : {}) }}
                   onClick={() => setForm((f) => ({ ...f, date: yesterdayStr() }))}>เมื่อวาน</button>
               </div>
-              <input type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} style={input} />
+              <input type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} style={dateInput} />
               <label style={label}>บันทึกเพิ่มเติม (ไม่บังคับ)</label>
               <input type="text" value={form.note} onChange={(e) => setForm({ ...form, note: e.target.value })}
                 placeholder="เช่น ซื้อของที่ 7-11" style={input} />

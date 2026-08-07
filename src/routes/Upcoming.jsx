@@ -5,7 +5,7 @@ import { createRecurringBill, payRecurringBillOccurrence, skipRecurringBillOccur
 import { centsToDisplay } from "../../shared/money.js";
 import { getPendingOccurrences } from "../lib/pendingBills.js";
 import { EXPENSE_CATS } from "../../shared/categories.js";
-import { card, sectionHead, textBtn, overlay, sheet, sheetHead, iconBtn, label, input, submitBtn } from "../components/sharedStyles.js";
+import { card, sectionHead, textBtn, overlay, sheet, sheetHead, iconBtn, label, input, dateInput, submitBtn } from "../components/sharedStyles.js";
 import ModalPortal from "../components/ModalPortal.jsx";
 import { useTheme } from "../context/ThemeContext.jsx";
 import { CategoryIcon } from "../theme/arcadeIcons.jsx";
@@ -207,7 +207,7 @@ export default function Upcoming() {
               </select>
               <label style={label}>{form.frequency === "once" ? "วันครบกำหนด" : "เริ่มครบกำหนดวันที่"}</label>
               <input type="date" required value={form.startDate}
-                onChange={(e) => setForm({ ...form, startDate: e.target.value })} style={input} />
+                onChange={(e) => setForm({ ...form, startDate: e.target.value })} style={dateInput} />
               {err && <div style={{ color: "var(--color-danger)", fontSize: 12, marginTop: 8 }}>{err}</div>}
               <button type="submit" disabled={saving} style={{ ...submitBtn, opacity: saving ? 0.6 : 1 }}>
                 {saving ? "กำลังบันทึก..." : "เพิ่มบิลประจำ"}
