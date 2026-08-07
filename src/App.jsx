@@ -545,7 +545,32 @@ export default function App() {
            making the castle backdrop (and anything else using a negative z-index here) invisible
            entirely rather than "behind the cards" as intended. */
         .app-container { width: 100%; max-width: 480px; margin: 0 auto; padding: 24px 18px 84px; position: relative; z-index: 0; }
-        .bottom-nav { display: flex; }
+        /* Floating "glass pill" bottom nav (2026-08-07, mobile only, all themes) — was a
+           full-width bar flush with the screen edges/bottom; now floats clear of every edge,
+           fully rounded, translucent + blurred. left/right (not a centered fixed width) is what
+           makes it a pill spanning "most of the screen with margin" like the reference image,
+           rather than a small pill needing its own width/centering math; max-width caps it at
+           the same 480px .app-container itself uses, so it doesn't stretch absurdly wide on a
+           tablet-width phone still under the 1280px breakpoint.
+           color-mix(in srgb, var(--color-white) X%, transparent) — not a flat rgba() — is what
+           lets this read the theme's OWN card color and blend it toward transparent, so the
+           glass tint automatically matches whichever of the 3 themes is active (arcade's dark
+           card color, passbook's white, speedster's dark red-black) with no per-theme override
+           needed; same trick used for the active-tab highlight in BottomNav.jsx's own styles.
+           backdrop-filter needs the -webkit- prefix too — still required for Safari (iOS is the
+           primary mobile target here). */
+        .bottom-nav {
+          display: flex;
+          position: fixed; left: 16px; right: 16px; bottom: max(14px, env(safe-area-inset-bottom));
+          margin: 0 auto; max-width: 480px;
+          justify-content: center;
+          border-radius: 999px;
+          background: color-mix(in srgb, var(--color-white) 82%, transparent);
+          backdrop-filter: blur(14px);
+          -webkit-backdrop-filter: blur(14px);
+          border: 1px solid color-mix(in srgb, var(--color-border) 70%, transparent);
+          box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+        }
 
         /* Dashboard.jsx's own "+" FAB — mobile math anchors it to the (always-centered-in-
            viewport) 480px column's right edge. At desktop that column isn't centered in the
