@@ -62,7 +62,14 @@ export default function SlimeEnemy({ ratio, defeated, variant = "lg", tint, onCl
         // tint: a CSS filter string (hue-rotate/saturate), not a separate art asset — there is
         // only one slime PNG (green); BudgetMageCard.jsx assigns each category slime a
         // different tint so the party reads as a group of distinct enemies, not clones.
-        style={{ display: "block", imageRendering: "pixelated", filter: tint || undefined }}
+        // transitionDuration: "0s" when the toggle is off (2.2, 2026-08-08) — ".slime-img"/
+        // ".slime-img-party" (App.jsx) always carry a `transition: transform 0.6s ease` for the
+        // data-driven resize, same as every other animation here that's gated by
+        // mascotAnimationEnabled; an inline style always wins over a stylesheet rule, so this is
+        // what actually turns it off when the toggle is off (prefers-reduced-motion's own
+        // override lives in App.jsx's media query, same as the rest, and still applies
+        // regardless of this toggle's own state).
+        style={{ display: "block", imageRendering: "pixelated", filter: tint || undefined, transitionDuration: mascotAnimationEnabled ? undefined : "0s" }}
       />
       {scanning && <div className="slime-scan-ring" onAnimationEnd={() => setScanning(false)} />}
     </>

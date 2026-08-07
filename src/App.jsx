@@ -316,7 +316,15 @@ export default function App() {
            clamp() itself via calc(clamp(...) * var(...)) for width/height directly — dropped
            after testing showed it not reliably taking effect; plain transform:scale() has none
            of that risk and also sidesteps any layout-overflow concern for free.) */
-        .slime-img { width: clamp(48px, 14vw, 90px); height: clamp(48px, 14vw, 90px); transform: scale(var(--slime-scale, 0.3)); transform-origin: center; }
+        /* transition: transform 0.6s ease (2026-08-08) — --slime-scale is a pure function of
+           the live spend/budget ratio (src/lib/slimeStatus.js), so it already goes back DOWN
+           whenever that ratio drops (deleting/editing an over-budget transaction, raising the
+           limit, a new month starting fresh) exactly as readily as it goes up — that part was
+           never one-directional. What was missing is that the change had no transition, so a
+           resize (either direction) just snapped instantly on the next render instead of
+           visibly "growing"/"shrinking" — easy to read as one-way growth if you never happened
+           to catch the instant jump downward. This is the only change 2.2 needed. */
+        .slime-img { width: clamp(48px, 14vw, 90px); height: clamp(48px, 14vw, 90px); transform: scale(var(--slime-scale, 0.3)); transform-origin: center; transition: transform 0.6s ease; }
         @media (min-width: 1280px) {
           .slime-img { width: 140px; height: 140px; }
         }
@@ -327,7 +335,7 @@ export default function App() {
            SlimeEnemy.jsx's 0.5 baseline scale only reads as "half the mage's size" if both
            share the same reserved box to begin with. Keep these two rules' width/height in sync
            if either changes. */
-        .slime-img-party { width: clamp(90px, 22vw, 130px); height: clamp(90px, 22vw, 130px); transform: scale(var(--slime-scale, 0.5)); transform-origin: center; }
+        .slime-img-party { width: clamp(90px, 22vw, 130px); height: clamp(90px, 22vw, 130px); transform: scale(var(--slime-scale, 0.5)); transform-origin: center; transition: transform 0.6s ease; }
         @media (min-width: 1280px) {
           .slime-img-party { width: 190px; height: 190px; }
         }
@@ -468,6 +476,7 @@ export default function App() {
           .mage-spell-spark { animation: none; opacity: 0; }
           .press-card { transition: none; }
           .press-active { transform: none; }
+          .slime-img, .slime-img-party { transition: none; }
           .castle-star-twinkle { animation: none; }
           .castle-torch-flicker { animation: none; }
           .castle-banner-sway { animation: none; }
