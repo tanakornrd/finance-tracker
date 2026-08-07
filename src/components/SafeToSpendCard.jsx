@@ -1,15 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useReferenceData } from "../context/ReferenceDataContext.jsx";
-import { fetchTransactions } from "../api.js";
 import { centsToDisplay } from "../../shared/money.js";
-import { daysInMonth, toISODate } from "../../shared/dates.js";
-import { STREAK_WINDOW_DAYS } from "../lib/streak.js";
-import { computeMageInsights } from "../lib/mageInsight.js";
+import { daysInMonth } from "../../shared/dates.js";
 import { card } from "./sharedStyles.js";
 import AddBudgetSheet from "./AddBudgetSheet.jsx";
 import MageMascot from "./mascot/MageMascot.jsx";
-
-const INSIGHT_ROTATE_MS = 5000;
 
 // pointerEvents:"auto" overrides the body wrapper's own pointerEvents:"none" below (a child can
 // always re-enable pointer events an ancestor turned off) — this button is the one real
@@ -31,41 +26,6 @@ const ctaBtn = { padding: "9px 16px", borderRadius: 10, border: "none", backgrou
 export default function SafeToSpendCard({ isCurrentMonth, expenseCentsSoFar, mageFiring, onMageClick }) {
   const { budgets, refetch } = useReferenceData();
   const [showSheet, setShowSheet] = useState(false);
-
-  // Mage Insight (2026-08-07) — self-contained fetch, same idiom as StreakBadge.jsx/
-  // NoEntryTodayBanner.jsx: always reflects the real current date/month regardless of which
-  // month Dashboard.jsx's own calendar cursor is pointed at. Fetches the same STREAK_WINDOW_DAYS
-  // (120 days) StreakBadge already uses — not because streak and insight are related, just a
-  // convenient shared "far enough back to be statistically meaningful, not so far it's wasteful"
-  // constant, and computeWorstWeekday wants a real multi-week window to average over.
-  const [insights, setInsights] = useState([]);
-  const [insightIndex, setInsightIndex] = useState(0);
-
-  useEffect(() => {
-    let cancelled = false;
-    const today = new Date();
-    const from = new Date(today);
-    from.setDate(from.getDate() - STREAK_WINDOW_DAYS);
-    fetchTransactions({ from: toISODate(from), to: toISODate(today) })
-      .then((rows) => {
-        if (cancelled) return;
-        setInsights(computeMageInsights(rows, from, today, today));
-        setInsightIndex(0);
-      })
-      .catch(() => { if (!cancelled) setInsights([]); }); // stay silent — a nice-to-have bubble, not critical data
-    return () => { cancelled = true; };
-  }, []);
-
-  // Rotates through whatever insights were actually computable — a no-op interval if there's
-  // only 0 or 1 (nothing to rotate TO), so this never re-renders the card pointlessly in that
-  // case.
-  useEffect(() => {
-    if (insights.length < 2) return undefined;
-    const id = setInterval(() => {
-      setInsightIndex((i) => (i + 1) % insights.length);
-    }, INSIGHT_ROTATE_MS);
-    return () => clearInterval(id);
-  }, [insights]);
 
   if (!isCurrentMonth) {
     return (
@@ -127,12 +87,7 @@ export default function SafeToSpendCard({ isCurrentMonth, expenseCentsSoFar, mag
           Positioned like WarriorMascot's corner mount on the net-worth card: absolute, clear of
           the left-aligned text above. */}
       <div className="scribe-mage-mount">
-        {/* message (the rotating insight) and firing are meant to never both matter at once —
-            MageMascot's own firedMessage state already overrides message for the brief firing
-            window, then falls back to whatever message currently is, exactly matching "insights
-            keep rotating in the idle state, tapping still reacts normally" (MageMascot.jsx's own
-            comment documents this as the intended contract between the two props). */}
-        <MageMascot message={insights[insightIndex]} firing={mageFiring} firingText="จดไว้แล้ว! ✨" onClick={onMageClick} />
+        <MageMascot firing={mageFiring} firingText="จดไว้แล้ว! ✨" onClick={onMageClick} />
       </div>
       <AddBudgetSheet
         open={showSheet}
