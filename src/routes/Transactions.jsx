@@ -249,7 +249,9 @@ export default function Transactions() {
 }
 
 const styles = {
-  searchInput: { width: "100%", padding: "11px 12px 11px 34px", borderRadius: 10, border: "1px solid var(--color-border)", background: "var(--color-inputBg)", color: "var(--color-ink)", fontSize: 14 },
+  // fontSize: 16, not 14 (2026-08-07 fix) — below 16px, iOS Safari auto-zooms the whole page on
+  // focus of any text input; same threshold sharedStyles.js's own `input` already uses.
+  searchInput: { width: "100%", padding: "11px 12px 11px 34px", borderRadius: 10, border: "1px solid var(--color-border)", background: "var(--color-inputBg)", color: "var(--color-ink)", fontSize: 16 },
   filterBtn: { flex: 1, padding: "9px 4px", borderRadius: 10, border: "1px solid var(--color-border)", background: "var(--color-white)", color: "var(--color-ink)", fontSize: 12, fontWeight: 600 },
   tabBtn: { flex: 1, padding: "9px 4px", borderRadius: 10, border: "1px solid var(--color-border)", background: "var(--color-primarySoft)", color: "var(--color-ink)", fontSize: 12, fontWeight: 600 },
   tabBtnActive: { background: "var(--color-primary)", color: "var(--color-white)", borderColor: "var(--color-primary)" },

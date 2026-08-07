@@ -24,7 +24,9 @@ const chipBtn = { padding: "7px 12px", borderRadius: 20, border: `1px solid ${co
 // Same `border` shorthand as chipBtn (not `borderColor`) — mixing shorthand and
 // non-shorthand for the same property across a rerender trips a React style warning.
 const chipBtnActive = { background: colors.primary, color: colors.white, border: `1px solid ${colors.primary}` };
-const dateInput = { flex: 1, padding: "9px 10px", borderRadius: 8, border: `1px solid ${colors.border}`, background: colors.inputBg, color: colors.ink, fontSize: 13 };
+// fontSize: 16, not 13 (2026-08-07 fix) — below 16px, iOS Safari auto-zooms the whole page on
+// focus of any text input; same threshold sharedStyles.js's own `input` already uses.
+const dateInput = { flex: 1, padding: "9px 10px", borderRadius: 8, border: `1px solid ${colors.border}`, background: colors.inputBg, color: colors.ink, fontSize: 16 };
 
 function todayStr() {
   const d = new Date();
