@@ -86,15 +86,24 @@ export const kindActiveExp = { background: colors.dangerTint, color: colors.dang
 // `alignItems:"flex-end"`) get positioned past the bottom of what's actually visible once the
 // keyboard is up, taking its submit button with it (see submitBtn below + each modal's amount
 // input losing autoFocus, same root cause).
-// No zoom-cancel property here anymore (2026-08-08 — see App.jsx's own long comment on its
-// mobile "everything's bigger" rule for the full story). That rule now zooms #root instead of
-// <body>, and every bottom-sheet modal is portaled straight into document.body (ModalPortal.jsx)
-// — a SIBLING of #root, never a descendant of it — so this overlay was never inside a zoomed box
-// to begin with and needs no cancellation math. Same outcome as before either way (modals render
-// at their normal, non-enlarged size on mobile), just without the nested-zoom setup that twice
-// caused real bugs (a modal-height miscalculation, then a horizontal-scroll glitch when the iOS
-// keyboard opened inside a focused input).
-export const overlay = { position: "fixed", inset: 0, height: "var(--app-vh, 100dvh)", background: "rgba(15,42,92,0.35)", display: "flex", alignItems: "flex-end", justifyContent: "center", zIndex: 50 };
+// No zoom-cancel property here (removed 2026-08-08 when App.jsx's mobile zoom rule moved from
+// <body> to #root — every modal is portaled straight into document.body, a SIBLING of #root,
+// so it was never inside a zoomed box needing cancellation). Turned out NOT to be what caused
+// the horizontal-scroll-on-keyboard-open bug reported around the same time (confirmed by
+// disabling the zoom feature entirely as a diagnostic — the bug persisted with zoom fully off),
+// so don't reach for zoom as the explanation if something like this shows up again; see
+// --app-vh-offset-top below for the actual cause/fix.
+//
+// transform: translate(offset-left, offset-top) — the real fix for that bug. height:
+// var(--app-vh) alone (see below) sizes this correctly, but `position:fixed` anchors to the
+// LAYOUT viewport's own origin, which iOS Safari does NOT move when it scrolls the page to keep
+// a focused input clear of the keyboard — only the VISUAL viewport (what's actually on screen)
+// shifts, reported as visualViewport.offsetTop/offsetLeft (App.jsx's effect writes these to
+// --app-vh-offset-top/-left on every resize/scroll). Without following that offset too, this
+// fixed overlay stayed glued to the old, no-longer-visible top of the layout viewport while the
+// real visible area scrolled out from under it — exposing the page behind it at the top edge,
+// which is what actually looked like "the modal jumps to reveal the background."
+export const overlay = { position: "fixed", inset: 0, height: "var(--app-vh, 100dvh)", transform: "translate(var(--app-vh-offset-left, 0px), var(--app-vh-offset-top, 0px))", background: "rgba(15,42,92,0.35)", display: "flex", alignItems: "flex-end", justifyContent: "center", zIndex: 50 };
 // maxHeight: calc(var(--app-vh) * 0.85), same reasoning as `overlay` above — keeps the sheet
 // from ever claiming more height than is actually visible above the keyboard. paddingBottom
 // adds env(safe-area-inset-bottom) on top of the original 28px so the submit button clears the

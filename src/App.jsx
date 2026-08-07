@@ -64,11 +64,23 @@ export default function App() {
   // value for the instant before this effect's first run. Declared before the loading/session
   // early returns below so it's an unconditional hook call on every render (rules of hooks) —
   // harmless to also run on the Login screen, which has no modals.
+  //
+  // --app-vh-offset-top (2026-08-08, the actual fix for a bug this original effect only half
+  // solved): sizing the modal correctly via --app-vh alone isn't enough — `position:fixed` is
+  // anchored to the LAYOUT viewport's own origin, which does not move when iOS scrolls the
+  // page to keep a focused input clear of the keyboard. The VISUAL viewport (what's actually on
+  // screen) shifts down in that moment via `visualViewport.offsetTop`, but our fixed overlay,
+  // still pinned to the unmoved layout-viewport top, no longer starts where the real visible
+  // area starts — exposing the page behind it at the top edge. Tracking offsetTop/offsetLeft
+  // too and nudging the overlay by that amount (sharedStyles.js's `overlay` transform) keeps it
+  // glued to the real visible viewport instead of the layout viewport underneath it.
   React.useEffect(() => {
     const vv = window.visualViewport;
     function setAppVh() {
       const h = vv ? vv.height : window.innerHeight;
       document.documentElement.style.setProperty("--app-vh", `${h}px`);
+      document.documentElement.style.setProperty("--app-vh-offset-top", `${vv ? vv.offsetTop : 0}px`);
+      document.documentElement.style.setProperty("--app-vh-offset-left", `${vv ? vv.offsetLeft : 0}px`);
     }
     setAppVh();
     const target = vv || window;
@@ -535,12 +547,7 @@ export default function App() {
              the first place — there's simply no nested zoom left for it to happen to. */
         @media (max-width: 1279px) {
           :root { --mobile-zoom-factor: 1.17; }
-          /* TEMPORARY DIAGNOSTIC (2026-08-08): zoom forced to 1 (off) to test whether CSS zoom
-             itself is what's causing the iOS-keyboard horizontal-scroll bug that's survived
-             three targeted fixes so far. --mobile-zoom-factor is left defined above so this is
-             a one-line revert (change 1 back to var(--mobile-zoom-factor)) once the test result
-             is in — not a decision to drop the "bigger on mobile" feature. */
-          #root { zoom: 1; }
+          #root { zoom: var(--mobile-zoom-factor); }
         }
 
         /* --- Desktop shell (added 2026-08-06) ---
