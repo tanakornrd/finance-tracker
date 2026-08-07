@@ -149,7 +149,10 @@ function SpeechBubble({ text, floating, anchorRef }) {
   // push part of the bubble off the left edge of the phone screen regardless of where the mage
   // itself landed that render. Desktop keeps the exact original two-branch rendering (floating
   // absolute vs. flex-flow) untouched.
-  const { isMobile, bubbleRef, pos } = useKeepBubbleOnScreen({ anchorRef, anchorFrac: 0.5, deps: [text] });
+  // anchorFrac 0.42, not the default 0.5 — per feedback (2026-08-07), nudged ~8% higher toward
+  // the mage's head/shoulders once the position math itself was actually fixed, same idea as
+  // WarriorMascot's own anchorFrac tuning.
+  const { isMobile, bubbleRef, pos } = useKeepBubbleOnScreen({ anchorRef, anchorFrac: 0.42, deps: [text] });
 
   const bubble = (
     <div
