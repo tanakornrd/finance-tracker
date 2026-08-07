@@ -1,34 +1,53 @@
 import React from "react";
 import { useTheme } from "../context/ThemeContext.jsx";
+import { useIsMobile } from "../lib/useKeepBubbleOnScreen.js";
 
-const roomImg = new URL("../assets/backgrounds/castle_room.jpg", import.meta.url).href;
+const wallImg = new URL("../assets/backgrounds/castle_layer1_far.png", import.meta.url).href;
+const floorImg = new URL("../assets/backgrounds/castle_layer2_near.png", import.meta.url).href;
+
+// castle_layer1_far.png / castle_layer2_near.png (2026-08-08, third pass): pre-processed from the
+// original art (kept alongside as castle_layer1_far_original.png / castle_layer2_near_original.png
+// in case a future edit wants to start from the unfaded source again), NOT via a runtime CSS mask.
+// Straight out of the box, each PNG's own edges — the wall's left/right sides and bottom, the
+// floor's left/right pillar columns — were hard, fully-opaque pixels running flush to the image's
+// own rectangular canvas edge. Composited onto the gradient sky behind them, that read as a
+// visible straight-line "sticker" cutout rather than something that belongs in the scene
+// (reported: "ตัดภาพไม่ค่อยเนียน ดูเป็นเหลี่ยมก้อนสี่เหลี่ยม"). Each file now has its alpha channel
+// faded to transparent along just the edges that needed it (wall: left/right/bottom, top left
+// alone since the crenellations are already a natural silhouette there; floor: left/right/top,
+// bottom left alone since that edge is meant to sit flush against the screen's own bottom edge,
+// not fade into anything). Baked into the files instead of an equivalent CSS mask-image so it
+// doesn't depend on iOS Safari's mask-image support at all, and costs nothing at runtime.
 
 // Dungeon/castle backdrop for the "arcade" theme.
 //
-// 2026-08-08, second pass: the wall+windows and pillars+floor used to be two SEPARATE art layers
-// (the "near" one `position: fixed` to the viewport bottom, for a parallax-ish "always visible"
-// effect) — replaced with ONE single full-room illustration the user supplied instead, for two
-// reasons reported after trying the two-layer version: (1) the fixed near layer centered itself
-// on the whole browser viewport, which doesn't account for .app-sidebar's 260px on desktop, so it
-// drifted left onto the sidebar's own icons/text; (2) on mobile, having the wall and the floor as
-// two separate bands left a visibly empty gap of plain sky between them. A single image sidesteps
-// both: it's one `position: absolute` element (like every other layer here, no more `fixed`
-// anywhere in this file — the desktop-sidebar bug has no code path left to happen through), and
-// there's no gap because the room is one continuous illustrated scene, wall down to floor.
+// 2026-08-08: the wall/window/banner/torch pieces that used to be hand-drawn CSS+SVG are now two
+// real art layers the user supplied (src/assets/backgrounds) — replaced, not layered on top of
+// the old ones, since the art already depicts the same things (window, banners, torches) and
+// having both would double up. Night sky/stars/dark-overlay stay exactly as before; those aren't
+// things the new art replaces, they're the open sky the wall sits in front of. The separate CSS
+// moon disc + glow that used to sit here were dropped — layer1's own art already has a moon
+// rendered inside its window, and keeping both read as two moons stacked on top of each other.
 //
 //  1. Night sky gradient, full height (unchanged — the page can scroll for thousands of px, this
-//     is the one layer that's fine being that tall; the room art below is a fixed-size band near
-//     the top, same as the layers it replaces always were).
-//  2. Star field (unchanged). The separate CSS moon disc + glow from the two-layer version were
-//     dropped here — the room art already has its own moon rendered in the center window, and
-//     keeping both read as two moons stacked on top of each other.
-//  3. castle_room.jpg — the room art itself.
-//  4. Flat dark overlay — same contrast guarantee as before, still last so it dims the art
-//     exactly like it used to dim the hand-drawn CSS version.
-// maxWidth: 900 keeps the room looking like a mobile-scaled band even on wide desktop windows,
-// instead of stretching to app-container's full (up to 1400px) width and looking oversized.
+//     is the one layer that's fine being that tall; the two art images are each a fixed-size band
+//     near the top/bottom).
+//  2. Star field (unchanged).
+//  3. layer1_far.png — the far wall (window, banners, torches baked into the art itself). Sits at
+//     the very top, same spot the old CSS wall band occupied — scrolls away with the page on a
+//     long scroll, same as before.
+//  4. layer2_near.png — pillars + floor, transparent in the middle. Mobile: `position: fixed` to
+//     the viewport's bottom edge (same idiom as BottomNav.jsx) so it stays in view framing the
+//     bottom of the screen the whole time you're on this page, not scroll away like the far wall
+//     does. Desktop uses `absolute` instead — see that image's own comment below for why.
+//  5. Flat dark overlay — same contrast guarantee as before, still last so it dims the art layers
+//     exactly like it used to dim the hand-drawn ones.
+// maxWidth: 900 on both art layers keeps them looking like a mobile-scaled castle band even on
+// wide desktop windows, instead of stretching to app-container's full (up to 1400px) width and
+// looking oversized/blurry.
 export default function CastleBackground() {
   const { theme } = useTheme();
+  const isMobile = useIsMobile();
   if (theme !== "arcade") return null;
 
   return (
@@ -53,14 +72,34 @@ export default function CastleBackground() {
           in the top band that's always in view on load. */}
       <StarField />
 
-      {/* 3. Room art */}
+      {/* 3. Far wall art */}
       <img
-        src={roomImg}
+        src={wallImg}
         alt=""
         style={{ position: "absolute", top: 0, left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: 900, height: "auto", display: "block" }}
       />
 
-      {/* 4. Dark overlay — the actual contrast guarantee. Everything above this exists only to
+      {/* 4. Near pillars/floor art. Mobile: `position: fixed` to the viewport bottom (not the
+          scrollable page) — there's no sidebar there, app-container is essentially the whole
+          screen width, so viewport-centering lines up with the content underneath it.
+          Desktop: `fixed` centers on the FULL viewport width, which doesn't account for
+          .app-sidebar's 260px — that pushed this layer left, off center under the actual content
+          column and onto the sidebar's own icons/text instead (2026-08-08 bug report). Desktop
+          switches to `absolute, bottom: 0` instead, which sizes/centers against app-container
+          (this element's own containing block, same as the wall layer above) and scrolls with
+          the page like every other layer here — an acceptable trade (desktop pages are also far
+          less often as tall/scrolly as the mobile one-column layout gets). */}
+      <img
+        src={floorImg}
+        alt=""
+        style={{
+          position: isMobile ? "fixed" : "absolute",
+          bottom: 0, left: "50%", transform: "translateX(-50%)",
+          width: "100%", maxWidth: 900, height: "auto", display: "block",
+        }}
+      />
+
+      {/* 5. Dark overlay — the actual contrast guarantee. Everything above this exists only to
           be seen through it. */}
       <div style={{ position: "absolute", inset: 0, background: "var(--castle-overlay)" }} />
     </div>
