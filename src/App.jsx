@@ -504,7 +504,7 @@ export default function App() {
         html, body { background: var(--color-primarySoft); }
 
         /* Mobile-only "everything's a bit bigger" pass (2026-08-07 feedback) — CSS zoom, not
-           transform:scale, and on <body> (not just .app-container) deliberately:
+           transform:scale:
            - zoom triggers a real layout recalculation at the larger size, so tap targets grow
              along with the visuals instead of just LOOKING bigger while the actual hit area
              stays the original (smaller) size the way a pure visual transform would.
@@ -513,33 +513,29 @@ export default function App() {
              fixed positioning (they'd start being fixed relative to that ancestor instead of the
              viewport). zoom does neither — fixed elements keep behaving exactly as before, just
              rendered at the larger scale like everything else.
-           - <body>, not .app-container, so this reaches EVERYTHING uniformly in one place —
-             including BottomNav/the FABs (position:fixed, but still DOM descendants of body) and
-             every modal (ModalPortal.jsx renders straight into document.body, so they're body's
-             own children too) — not just the scrollable content column.
            1.17 ≈ the "~15-20% bigger" the user asked for. Gated to the mobile range only (same
            breakpoint as everywhere else in this file) — desktop is completely untouched, this
            selector doesn't even match there.
 
-           --mobile-zoom-factor (2026-08-07 follow-up fix): the factor itself now lives in a CSS
-           var, not just baked into this one rule — sharedStyles.js's overlay reads it back via
-           calc(1 / var(--mobile-zoom-factor, 1)) to cancel this zoom out specifically for every
-           bottom-sheet modal (ModalPortal.jsx renders them as direct children of this same zoomed
-           body). Without that, overlay/sheet's height/maxHeight (sharedStyles.js's
-           var(--app-vh, 100dvh)) is computed from the TRUE unzoomed viewport but then gets
-           rendered 1.17x too tall as a zoomed descendant of body — pushing the sheet's lower
-           portion (and the date field around where it sits) below the fold, unreachable by
-           scroll, with drags falling through to the page behind it instead. Modals are
-           deliberately excluded from the "everything's bigger" effect as the fix (they go back to
-           their original, pre-zoom size) rather than trying to make the height math zoom-aware,
-           since that path also has known zoom+touch/scroll-hit-testing quirks across browsers —
-           not worth the risk for a cosmetic-only win on top of forms that must work reliably.
-           Falls back to 1 (a no-op, calc(1/1)) wherever --mobile-zoom-factor isn't defined —
-           desktop, or any future path that forgets to set it — so this can never accidentally
-           double-zoom or invert on an unexpected width. */
+           #root, not <body> (2026-08-08 rework — the original body-level version caused two
+           separate rounds of real bugs: a modal-height miscalculation, then a horizontal-scroll
+           glitch specifically when the iOS keyboard opened inside a focused input). The
+           difference matters because of what's a DESCENDANT of each:
+           - #root is the React tree's actual mount point — .app-shell, BottomNav, the FABs,
+             every page, all still zoomed exactly as before, so nothing about "everything in the
+             app looks bigger" changes.
+           - Every modal/speech bubble is portaled straight into document.body itself
+             (ModalPortal.jsx / WarriorMascot.jsx / MageMascot.jsx's own createPortal calls) —
+             a SIBLING of #root under body, never a descendant of it. Zooming #root instead of
+             body means that portaled content was never inside a zoomed box to begin with, full
+             stop — no nested zoom, no zoom-cancel calc() needed on the modal/bubble side
+             anymore (sharedStyles.js's overlay and both mascots' speech bubbles had their own
+             zoom-cancel property removed alongside this change), and no possibility of the
+             iOS-keyboard-plus-nested-zoom interaction that caused the horizontal-scroll bug in
+             the first place — there's simply no nested zoom left for it to happen to. */
         @media (max-width: 1279px) {
           :root { --mobile-zoom-factor: 1.17; }
-          body { zoom: var(--mobile-zoom-factor); }
+          #root { zoom: var(--mobile-zoom-factor); }
         }
 
         /* --- Desktop shell (added 2026-08-06) ---

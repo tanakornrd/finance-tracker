@@ -86,20 +86,15 @@ export const kindActiveExp = { background: colors.dangerTint, color: colors.dang
 // `alignItems:"flex-end"`) get positioned past the bottom of what's actually visible once the
 // keyboard is up, taking its submit button with it (see submitBtn below + each modal's amount
 // input losing autoFocus, same root cause).
-// zoom: calc(1 / var(--mobile-zoom-factor, 1)) — cancels out App.jsx's mobile-only
-// `body { zoom: var(--mobile-zoom-factor) }` specifically for this overlay (and everything
-// inside it, including `sheet` below — zoom's scaling effect applies to the whole subtree from
-// wherever it's set, same as the body-level rule it's undoing). Every bottom-sheet modal is
-// portaled straight into document.body (ModalPortal.jsx), i.e. INTO that zoomed body, so without
-// this the height math directly above/below (var(--app-vh, 100dvh)) — which reflects the real,
-// unzoomed viewport — gets rendered ~17% too tall, pushing the sheet's lower portion off the
-// bottom of the actual screen and breaking scroll inside it. --mobile-zoom-factor is undefined
-// outside that mobile media query (desktop, or App.jsx forgetting to set it), so this falls back
-// to calc(1/1) = a total no-op there — this line can never invert/double-apply anywhere it
-// isn't needed. Trade-off: every modal goes back to its pre-zoom (normal) size on mobile rather
-// than being ~17% bigger like the rest of the page — deliberate, see App.jsx's own comment on
-// this rule for why (a correctness fix, not chasing the cosmetic win for forms that must work).
-export const overlay = { position: "fixed", inset: 0, height: "var(--app-vh, 100dvh)", zoom: "calc(1 / var(--mobile-zoom-factor, 1))", background: "rgba(15,42,92,0.35)", display: "flex", alignItems: "flex-end", justifyContent: "center", zIndex: 50 };
+// No zoom-cancel property here anymore (2026-08-08 — see App.jsx's own long comment on its
+// mobile "everything's bigger" rule for the full story). That rule now zooms #root instead of
+// <body>, and every bottom-sheet modal is portaled straight into document.body (ModalPortal.jsx)
+// — a SIBLING of #root, never a descendant of it — so this overlay was never inside a zoomed box
+// to begin with and needs no cancellation math. Same outcome as before either way (modals render
+// at their normal, non-enlarged size on mobile), just without the nested-zoom setup that twice
+// caused real bugs (a modal-height miscalculation, then a horizontal-scroll glitch when the iOS
+// keyboard opened inside a focused input).
+export const overlay = { position: "fixed", inset: 0, height: "var(--app-vh, 100dvh)", background: "rgba(15,42,92,0.35)", display: "flex", alignItems: "flex-end", justifyContent: "center", zIndex: 50 };
 // maxHeight: calc(var(--app-vh) * 0.85), same reasoning as `overlay` above — keeps the sheet
 // from ever claiming more height than is actually visible above the keyboard. paddingBottom
 // adds env(safe-area-inset-bottom) on top of the original 28px so the submit button clears the
