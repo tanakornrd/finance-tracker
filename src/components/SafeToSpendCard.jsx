@@ -13,11 +13,16 @@ const ctaBtn = { padding: "9px 16px", borderRadius: 10, border: "none", backgrou
 
 // expenseCentsSoFar: the viewed month's expense total, computed by Dashboard.jsx.
 // Only valid to display when isCurrentMonth is true, which is exactly when this card renders its number.
-// mageFiring: Dashboard.jsx's own reactive-save flag — see MageMascot.jsx's `firing` mode.
 // onMageClick: Dashboard.jsx's setShowForm(true) — opens the same amount-entry modal the "+"
-// FAB does (RPG party interactions, part 2). Both passed through even on the
-// isCurrentMonth===false early return below would be pointless (that state hides the whole
-// card), so they're only actually used in the main render path.
+// FAB does (RPG party interactions, part 2). Passed through even on the isCurrentMonth===false
+// early return below would be pointless (that state hides the whole card), so it's only actually
+// used in the main render path.
+//
+// mageFiring: (2026-08-07) NOT the main save-success reaction anymore — Dashboard.jsx's own
+// full-screen MageSpellOverlay replaced this mage's old small in-card cast animation for that.
+// Dashboard.jsx only ever sets this when mascotAnimationEnabled is OFF, as that case's fallback
+// (a plain, motion-free "จดไว้แล้ว!" bubble here instead of the overlay) — same
+// enabled-gets-overlay/disabled-gets-plain-inline-bubble split as BudgetMageCard.jsx.
 export default function SafeToSpendCard({ isCurrentMonth, expenseCentsSoFar, mageFiring, onMageClick }) {
   const { budgets, refetch } = useReferenceData();
   const [showSheet, setShowSheet] = useState(false);
@@ -82,7 +87,7 @@ export default function SafeToSpendCard({ isCurrentMonth, expenseCentsSoFar, mag
           Positioned like WarriorMascot's corner mount on the net-worth card: absolute, clear of
           the left-aligned text above. */}
       <div className="scribe-mage-mount">
-        <MageMascot firing={mageFiring} onClick={onMageClick} />
+        <MageMascot firing={mageFiring} firingText="จดไว้แล้ว! ✨" onClick={onMageClick} />
       </div>
       <AddBudgetSheet
         open={showSheet}

@@ -21,6 +21,8 @@ import WeeklyInsightCard from "../components/WeeklyInsightCard.jsx";
 import MonthPickerSheet from "../components/MonthPickerSheet.jsx";
 import NoEntryTodayBanner from "../components/NoEntryTodayBanner.jsx";
 import WarriorMascot from "../components/mascot/WarriorMascot.jsx";
+import MageSpellOverlay from "../components/mascot/MageSpellOverlay.jsx";
+import { SCRIBE_MESSAGES } from "../components/mascot/MageMascot.jsx";
 import { computeWeeklyInsight } from "../lib/weeklyInsight.js";
 import {
   colors, iconChip, card, sectionHead, textBtn, txRow, txIcon, navBtn,
@@ -47,7 +49,7 @@ function dayLabel(dateStr) {
 }
 
 export default function Dashboard() {
-  const { theme } = useTheme();
+  const { theme, mascotAnimationEnabled } = useTheme();
   const { accounts, budgets, loading: refLoading, error, refetch: refetchReference } = useReferenceData();
   const [saving, setSaving] = useState(false);
   const [saveErr, setSaveErr] = useState(false);
@@ -56,10 +58,18 @@ export default function Dashboard() {
   const [showForm, setShowForm] = useState(false);
   const [showAddAccount, setShowAddAccount] = useState(false);
   const [showMonthPicker, setShowMonthPicker] = useState(false);
-  // Drives the MageMascot mount inside SafeToSpendCard's "firing" cast animation — set true
-  // right after a save succeeds (submitTx below), reset false ~1.5s later. Lives here (not
-  // inside SafeToSpendCard) because submitTx, the thing that actually knows when a save
-  // succeeds, is this component's own handler.
+  // showMageSpell drives the full-screen MageSpellOverlay after a successful save (submitTx
+  // below) — replaces the old small in-card "firing" cast animation SafeToSpendCard's mage used
+  // to show (2026-08-07 RPG interactions follow-up). mageFiring is now ONLY used as that
+  // overlay's toggle-off/reduced-motion fallback — a plain, motion-free bubble on
+  // SafeToSpendCard's own small mage instead of the overlay, same split BudgetMageCard.jsx uses.
+  // Exactly one of the two fires per save, never both (see submitTx).
+  const [showMageSpell, setShowMageSpell] = useState(false);
+  // Picked once per save (not re-rolled on every re-render while the overlay is up) and stored
+  // here rather than inside MageSpellOverlay itself — same reasoning as MageMascot's own
+  // firedMessage state, just one level up now that Dashboard.jsx (not MageMascot) owns deciding
+  // whether to show the overlay at all.
+  const [mageSpellMessage, setMageSpellMessage] = useState("");
   const [mageFiring, setMageFiring] = useState(false);
 
   const [form, setForm] = useState({
@@ -253,11 +263,19 @@ export default function Dashboard() {
       setForm({ ...form, amount: "", note: "" });
       setShowForm(false);
 
-      // MageMascot's cast animation + scribe message — 1500ms matches the .mage-cast CSS
-      // animation's own 0.7s run time plus a little buffer for the message to actually be read,
-      // not just flash by.
-      setMageFiring(true);
-      setTimeout(() => setMageFiring(false), 1500);
+      // Covers all three kinds (income/expense/transfer) equally — they all funnel through this
+      // one submitTx. Full overlay when animation is on; otherwise the same plain, motion-free
+      // inline bubble this used to always show (see SafeToSpendCard.jsx's own comment).
+      if (mascotAnimationEnabled) {
+        setMageSpellMessage(SCRIBE_MESSAGES[Math.floor(Math.random() * SCRIBE_MESSAGES.length)]);
+        setShowMageSpell(true);
+      } else {
+        // 1500ms matches the .mage-cast CSS animation's own 0.7s run time plus a little buffer
+        // for the message to actually be read, not just flash by — same figure this used
+        // unconditionally before the overlay existed.
+        setMageFiring(true);
+        setTimeout(() => setMageFiring(false), 1500);
+      }
     } catch (err) {
       setSaveErr(true);
       setErrDetail(String(err && err.message ? err.message : err));
@@ -812,6 +830,19 @@ export default function Dashboard() {
         onSelectMonth={(y, m) => { setCursor(new Date(y, m, 1)); setShowMonthPicker(false); }}
         showAllOption={false}
       />
+
+      {/* Shorter than Budgets.jsx's own MageSpellOverlay (~1.65s total vs. ~3.7s) — this fires on
+          nearly every save (income/expense/transfer, all funnel through submitTx above), while a
+          budget save is a rarer, more deliberate action that can afford to linger longer. */}
+      {showMageSpell && (
+        <MageSpellOverlay
+          message={mageSpellMessage}
+          castingMs={700}
+          messageMs={650}
+          fadeMs={300}
+          onClose={() => setShowMageSpell(false)}
+        />
+      )}
     </div>
   );
 }

@@ -2,38 +2,38 @@ import React, { useEffect, useState } from "react";
 import { useTheme } from "../../context/ThemeContext.jsx";
 import { playSound } from "../../lib/sound.js";
 
-// Full-screen "spell cast" sequence for a successful budget save on Budgets.jsx (RPG party
-// interactions follow-up, 2026-08-07 — redesigned per feedback from the first, single-fade
-// version). Only ever mounted when mascotAnimationEnabled is true (Budgets.jsx decides that —
-// see its own comment); the reduced-motion/toggle-off experience is a completely different,
-// much simpler path (BudgetMageCard's own small inline mage getting a brief `firing` bubble, no
-// overlay at all), not a stripped-down version of this component.
+// Full-screen "spell cast" sequence — originally built for Budgets.jsx's budget-save reaction,
+// generalized (2026-08-07) so Dashboard.jsx's transaction-save reaction can reuse the exact same
+// mechanism with its own message/timing instead of duplicating it. Callers decide whether/when to
+// mount this (Budgets.jsx and Dashboard.jsx both gate it behind mascotAnimationEnabled — the
+// reduced-motion/toggle-off experience is a completely different, simpler path for each: a plain
+// inline mage bubble, no overlay at all — not a stripped-down version of this component).
 //
-// Four phases, driven by one internal `phase` state + chained timers (not four separate CSS
-// animations racing each other): "casting" (ring spins, no message yet) -> "message" (message
-// bubble pops in above the mage with a sparkle burst, ring keeps spinning underneath) ->
-// "fading" (whole thing fades out) -> onClose. ~3.7s total — close to what was asked for
-// (3.7-3.9s) without being pinned to an exact figure, since the four phases are independently
-// timed and don't need to add up to a fixed target.
-const CASTING_MS = 1800;
-const MESSAGE_MS = 1500;
-const FADE_MS = 400;
-
-export default function BudgetSpellOverlay({ onClose }) {
+// Four phases, driven by one internal `phase` state + chained timers (not several CSS animations
+// racing each other): "casting" (ring spins, no message yet) -> "message" (message bubble pops
+// in above the mage with a sparkle burst, ring keeps spinning underneath) -> "fading" (whole
+// thing fades out) -> onClose. castingMs/messageMs/fadeMs are all caller-supplied so Budgets.jsx
+// (a rarer action, ~3.7s total is fine) and Dashboard.jsx (fires on nearly every save, wants
+// ~1.5-1.8s) can each pick their own pace without a second copy of this component.
+//
+// The ring itself is mage-orb-ring.png — a crop of the actual magic-circle art already in
+// mascot-mage.png's hand (not a separate/new asset, not a CSS approximation like the first
+// version of this component used) — see that file's own note for the crop provenance.
+export default function MageSpellOverlay({ message, castingMs = 1800, messageMs = 1500, fadeMs = 400, onClose }) {
   const { theme, soundEnabled } = useTheme();
   const [phase, setPhase] = useState("casting");
 
   useEffect(() => {
-    const t1 = setTimeout(() => setPhase("message"), CASTING_MS);
-    const t2 = setTimeout(() => setPhase("fading"), CASTING_MS + MESSAGE_MS);
-    const t3 = setTimeout(onClose, CASTING_MS + MESSAGE_MS + FADE_MS);
+    const t1 = setTimeout(() => setPhase("message"), castingMs);
+    const t2 = setTimeout(() => setPhase("fading"), castingMs + messageMs);
+    const t3 = setTimeout(onClose, castingMs + messageMs + fadeMs);
     return () => {
       clearTimeout(t1);
       clearTimeout(t2);
       clearTimeout(t3);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [onClose]);
+  }, [onClose, castingMs, messageMs, fadeMs]);
 
   useEffect(() => {
     if (theme === "arcade" && soundEnabled) playSound("mageCast");
@@ -46,13 +46,13 @@ export default function BudgetSpellOverlay({ onClose }) {
 
   return (
     <div
-      className={`budget-spell-overlay${phase === "fading" ? " budget-spell-overlay-fading" : ""}`}
+      className={`mage-spell-overlay${phase === "fading" ? " mage-spell-overlay-fading" : ""}`}
       style={{
         position: "fixed", inset: 0, zIndex: 60,
         background: "rgba(10,4,26,0.72)",
         display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-        // No click-to-dismiss (removed per feedback) — this is a short, self-timed sequence, not
-        // a dialog waiting on the user; deliberately no role="button"/onClick/aria-label either.
+        // No click-to-dismiss — this is a short, self-timed sequence, not a dialog waiting on
+        // the user; deliberately no role="button"/onClick/aria-label either.
         pointerEvents: "auto",
       }}
     >
@@ -69,7 +69,7 @@ export default function BudgetSpellOverlay({ onClose }) {
       >
         {showMessage && (
           <div
-            className="budget-spell-bubble"
+            className="mage-spell-bubble"
             style={{
               position: "relative",
               maxWidth: "min(360px, 88vw)",
@@ -79,7 +79,7 @@ export default function BudgetSpellOverlay({ onClose }) {
               lineHeight: 1.4, fontFamily: "'IBM Plex Sans Thai', sans-serif", textAlign: "center",
             }}
           >
-            บันทึกไว้แล้วนะ! ✨
+            {message}
             {/* Tail pointing DOWN at the mage below (bubble sits above him in this stacked
                 layout, unlike every other mascot's bubble which sits beside its anchor) — same
                 stepped-notch construction, just rotated to point down instead of sideways. */}
@@ -89,9 +89,9 @@ export default function BudgetSpellOverlay({ onClose }) {
                 one's angle is set via an inline --spark-angle custom property the shared
                 @keyframes reads (rotate(angle) then translateX(distance) sends it outward along
                 that angle), so one @keyframes drives all 8 without a separate one per angle. */}
-            <div className="budget-spell-sparkles" aria-hidden="true">
+            <div className="mage-spell-sparkles" aria-hidden="true">
               {Array.from({ length: 8 }).map((_, i) => (
-                <span key={i} className="budget-spell-spark" style={{ "--spark-angle": `${i * 45}deg` }} />
+                <span key={i} className="mage-spell-spark" style={{ "--spark-angle": `${i * 45}deg` }} />
               ))}
             </div>
           </div>
@@ -99,20 +99,20 @@ export default function BudgetSpellOverlay({ onClose }) {
       </div>
 
       <div
-        className="budget-spell-circle"
+        className="mage-spell-circle"
         style={{
           position: "relative",
           width: "clamp(200px, 62vw, 360px)", height: "clamp(200px, 62vw, 360px)",
           display: "flex", alignItems: "center", justifyContent: "center",
         }}
       >
-        <div
-          className="budget-spell-ring"
+        <img
+          src={new URL("../../assets/mage-orb-ring.png", import.meta.url).href}
+          alt=""
+          className="mage-spell-ring"
           style={{
-            position: "absolute", inset: 0, borderRadius: "50%",
-            background: "conic-gradient(from 0deg, #FFD75E, #FF8A3D, #FFD75E 50%, #FF8A3D, #FFD75E)",
-            WebkitMask: "radial-gradient(closest-side, transparent 72%, black 74%, black 100%)",
-            mask: "radial-gradient(closest-side, transparent 72%, black 74%, black 100%)",
+            position: "absolute", inset: 0, width: "100%", height: "100%",
+            imageRendering: "pixelated",
             filter: "drop-shadow(0 0 22px rgba(255,180,80,0.65))",
           }}
         />

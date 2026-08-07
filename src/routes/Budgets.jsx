@@ -8,7 +8,7 @@ import { EXPENSE_CATS } from "../../shared/categories.js";
 import { card, sectionHead, textBtn } from "../components/sharedStyles.js";
 import AddBudgetSheet from "../components/AddBudgetSheet.jsx";
 import BudgetMageCard from "../components/BudgetMageCard.jsx";
-import BudgetSpellOverlay from "../components/mascot/BudgetSpellOverlay.jsx";
+import MageSpellOverlay from "../components/mascot/MageSpellOverlay.jsx";
 import SlimeScanModal from "../components/SlimeScanModal.jsx";
 import SlimeEnemy from "../components/mascot/SlimeEnemy.jsx";
 import { resolveMonthTransition, computeSlimeRatio, computeCategorySlimeRatios } from "../lib/slimeStatus.js";
@@ -29,7 +29,7 @@ export default function Budgets() {
   const { budgets, loading: refLoading, refetch, settings } = useReferenceData();
   const [showAdd, setShowAdd] = useState(false);
   const [showScan, setShowScan] = useState(false);
-  // BudgetSpellOverlay trigger — only this page's own "ตั้งงบประมาณ" form (below), not the
+  // MageSpellOverlay trigger — only this page's own "ตั้งงบประมาณ" form (below), not the
   // quick-add version embedded in SafeToSpendCard on Dashboard.jsx, per the RPG interactions
   // follow-up request scoping this to the Budgets page specifically. Two DIFFERENT reactions to
   // the same save event, not one feature with a stripped-down fallback: showSpell is the full
@@ -246,7 +246,15 @@ export default function Budgets() {
           await refetch();
         }}
       />
-      {showSpell && <BudgetSpellOverlay onClose={() => setShowSpell(false)} />}
+      {showSpell && (
+        <MageSpellOverlay
+          message="บันทึกไว้แล้วนะ! ✨"
+          castingMs={1800}
+          messageMs={1500}
+          fadeMs={400}
+          onClose={() => setShowSpell(false)}
+        />
+      )}
       <SlimeScanModal
         open={showScan}
         onClose={() => setShowScan(false)}

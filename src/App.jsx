@@ -343,46 +343,49 @@ export default function App() {
           50% { transform: translateY(-14px); }
         }
 
-        /* BudgetSpellOverlay.jsx (RPG party interactions follow-up, redesigned 2026-08-07 —
-           casting -> message -> fading phases driven by the component's own timers, not a
-           single CSS animation). This component is only ever mounted when
-           mascotAnimationEnabled is true (Budgets.jsx's own decision — the toggle-off/reduced-
-           motion experience is a completely different, non-overlay path), so nothing here needs
-           its own mascotAnimationEnabled gate — but prefers-reduced-motion below still applies,
-           since the user could have the in-app toggle on despite the OS asking for reduced
-           motion. */
-        .budget-spell-overlay { animation: budgetSpellFadeIn 0.2s ease-out; }
-        @keyframes budgetSpellFadeIn { from { opacity: 0; } to { opacity: 1; } }
-        /* Same specificity as .budget-spell-overlay above (both plain single classes) — wins by
+        /* MageSpellOverlay.jsx (RPG party interactions follow-up, generalized 2026-08-07 —
+           originally Budgets.jsx-only as BudgetSpellOverlay.jsx, now shared with Dashboard.jsx's
+           own transaction-save reaction too, each with its own message/timing). Casting ->
+           message -> fading phases driven by the component's own timers, not a single CSS
+           animation. Only ever mounted when mascotAnimationEnabled is true (each caller's own
+           decision — the toggle-off/reduced-motion experience is a completely different, non-
+           overlay path per caller), so nothing here needs its own mascotAnimationEnabled gate —
+           but prefers-reduced-motion below still applies, since the user could have the in-app
+           toggle on despite the OS asking for reduced motion. */
+        .mage-spell-overlay { animation: mageSpellFadeIn 0.2s ease-out; }
+        @keyframes mageSpellFadeIn { from { opacity: 0; } to { opacity: 1; } }
+        /* Same specificity as .mage-spell-overlay above (both plain single classes) — wins by
            being declared later, since the component applies both classes together during the
            "fading" phase. */
-        .budget-spell-overlay-fading { animation: budgetSpellFadeOut 0.4s ease-in forwards; }
-        @keyframes budgetSpellFadeOut { from { opacity: 1; } to { opacity: 0; } }
+        .mage-spell-overlay-fading { animation: mageSpellFadeOut 0.4s ease-in forwards; }
+        @keyframes mageSpellFadeOut { from { opacity: 1; } to { opacity: 0; } }
 
         /* Loops for as long as the overlay is mounted (casting + message phases; keeps spinning
            underneath the fade-out too, which is invisible under it by the time it matters) —
-           unlike the old single 1.2s one-shot, "ร่ายมนต์" needs to visibly keep going while the
-           message bubble's own timer runs. */
-        .budget-spell-ring { animation: budgetSpellRingSpin 2.4s linear infinite; }
-        @keyframes budgetSpellRingSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+           "ร่ายมนต์" needs to visibly keep going while the message bubble's own timer runs.
+           .mage-spell-ring is now an <img> (mage-orb-ring.png, a crop of the real magic-circle
+           art in mascot-mage.png's hand — see that file's own comment), not a CSS conic-gradient
+           approximation — rotate() works identically on an img as it did on the old div. */
+        .mage-spell-ring { animation: mageSpellRingSpin 2.4s linear infinite; }
+        @keyframes mageSpellRingSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
-        .budget-spell-bubble { animation: budgetSpellBubblePop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
-        @keyframes budgetSpellBubblePop {
+        .mage-spell-bubble { animation: mageSpellBubblePop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+        @keyframes mageSpellBubblePop {
           0% { opacity: 0; transform: scale(0.5) translateY(10px); }
           100% { opacity: 1; transform: scale(1) translateY(0); }
         }
 
-        /* Sparkle burst (BudgetSpellOverlay.jsx renders 8 of these, one per --spark-angle) — a
+        /* Sparkle burst (MageSpellOverlay.jsx renders 8 of these, one per --spark-angle) — a
            radial fling-and-fade, CSS-only. rotate(var(--spark-angle)) then translateX() moves
            each dot outward along its own angle (a standard technique for a radial burst without
            needing 8 separate hand-written keyframes, one per direction). */
-        .budget-spell-sparkles { position: absolute; inset: 0; pointer-events: none; }
-        .budget-spell-spark {
+        .mage-spell-sparkles { position: absolute; inset: 0; pointer-events: none; }
+        .mage-spell-spark {
           position: absolute; top: 50%; left: 50%; width: 6px; height: 6px; border-radius: 50%;
           background: #FFD75E;
-          animation: budgetSpellSparkBurst 0.6s ease-out both;
+          animation: mageSpellSparkBurst 0.6s ease-out both;
         }
-        @keyframes budgetSpellSparkBurst {
+        @keyframes mageSpellSparkBurst {
           0% { transform: translate(-50%, -50%) rotate(var(--spark-angle)) translateX(0) scale(0.4); opacity: 1; }
           100% { transform: translate(-50%, -50%) rotate(var(--spark-angle)) translateX(46px) scale(1); opacity: 0; }
         }
@@ -417,11 +420,11 @@ export default function App() {
           .level-up-burst { animation: none; }
           .level-up-title { animation: none; }
           .level-up-char { animation: none; }
-          .budget-spell-overlay { animation: none; }
-          .budget-spell-overlay-fading { animation: none; opacity: 0; }
-          .budget-spell-ring { animation: none; }
-          .budget-spell-bubble { animation: none; }
-          .budget-spell-spark { animation: none; opacity: 0; }
+          .mage-spell-overlay { animation: none; }
+          .mage-spell-overlay-fading { animation: none; opacity: 0; }
+          .mage-spell-ring { animation: none; }
+          .mage-spell-bubble { animation: none; }
+          .mage-spell-spark { animation: none; opacity: 0; }
           .castle-star-twinkle { animation: none; }
           .castle-torch-flicker { animation: none; }
           .castle-banner-sway { animation: none; }

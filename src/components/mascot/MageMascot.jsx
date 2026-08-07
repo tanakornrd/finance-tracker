@@ -5,8 +5,10 @@ import { useKeepBubbleOnScreen } from "../../lib/useKeepBubbleOnScreen.js";
 import ModalPortal from "../ModalPortal.jsx";
 
 // Picked once per successful save, same reasoning as ArcherMascot's own CHEER_MESSAGES — a
-// stable message for the whole firing window instead of re-rolling on every re-render.
-const SCRIBE_MESSAGES = [
+// stable message for the whole firing window instead of re-rolling on every re-render. Exported
+// (2026-08-07) so Dashboard.jsx can pick from the same pool for MageSpellOverlay's message,
+// instead of keeping a second copy in sync by hand.
+export const SCRIBE_MESSAGES = [
   "จดไว้แล้ว! ✨",
   "บันทึกลงบัญชีเวทย์แล้วนะ",
   "เวทมนตร์จารึกเรียบร้อย!",
