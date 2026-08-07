@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { useTheme } from "../context/ThemeContext.jsx";
 import { useIsMobile } from "../lib/useKeepBubbleOnScreen.js";
 
@@ -34,10 +34,8 @@ const floorImg = new URL("../assets/backgrounds/castle_layer2_near.png", import.
 //     near the top/bottom).
 //  2. Star field (unchanged).
 //  3. layer1_far.png — the far wall (window, banners, torches baked into the art itself). Sits at
-//     the very top, same spot the old CSS wall band occupied. Scrolls away on a long scroll like
-//     before, but now (2026-08-08) at ~60% of the page's own scroll speed — see
-//     useParallaxOffset below — so it visibly lags behind instead of moving 1:1 with the content,
-//     which is what actually reads as "farther away" rather than just "a static image up top".
+//     the very top, same spot the old CSS wall band occupied — scrolls away with the page on a
+//     long scroll, same as before.
 //  4. layer2_near.png — pillars + floor, transparent in the middle. Mobile: `position: fixed` to
 //     the viewport's bottom edge (same idiom as BottomNav.jsx) so it stays in view framing the
 //     bottom of the screen the whole time you're on this page, not scroll away like the far wall
@@ -47,61 +45,9 @@ const floorImg = new URL("../assets/backgrounds/castle_layer2_near.png", import.
 // maxWidth: 900 on both art layers keeps them looking like a mobile-scaled castle band even on
 // wide desktop windows, instead of stretching to app-container's full (up to 1400px) width and
 // looking oversized/blurry.
-// How much the far wall lags behind the page's own scroll (2026-08-08, real parallax pass).
-// 0 = wall scrolls at the exact same speed as the page (no depth cue, today's default before this
-// change); 1 = wall never moves at all. 0.4 means the wall only travels 60% as far as the content
-// around it does — it's still clearly "in the page" (not fixed like the near floor layer), just
-// visibly slower, which is what actually reads as "farther away" rather than "glued to the
-// screen". Tuned by eye, not measured off anything.
-const PARALLAX_FACTOR = 0.4;
-// Scroll distance beyond which the wall stops lagging further behind — the wall image itself is
-// only a few hundred px tall, so by the time you've scrolled a full screen height past it, the
-// depth cue has already done its job; letting the offset keep growing on a very long page would
-// just leave the (long since off-screen) wall drifting to an increasingly odd position for no
-// visible benefit.
-const PARALLAX_MAX_SCROLL = 600;
-
-// Scroll-linked offset for the wall layer's parallax. Returns 0 (no movement) whenever `enabled`
-// is false, so callers don't need their own separate reduced-motion/toggle-off rendering branch —
-// the transform this feeds ends up a no-op and the wall just sits exactly where it always did.
-function useParallaxOffset(enabled) {
-  const [offset, setOffset] = useState(0);
-
-  useEffect(() => {
-    if (!enabled) {
-      setOffset(0);
-      return;
-    }
-    let raf = null;
-    function update() {
-      raf = null;
-      const y = Math.min(window.scrollY, PARALLAX_MAX_SCROLL);
-      setOffset(y * PARALLAX_FACTOR);
-    }
-    // rAF-throttled (not one setState per scroll event) — scroll fires far more often than the
-    // screen can actually repaint, same idiom App.jsx's own --app-vh effect avoids by only ever
-    // reading the latest value once per animation frame.
-    function onScroll() {
-      if (raf == null) raf = requestAnimationFrame(update);
-    }
-    window.addEventListener("scroll", onScroll, { passive: true });
-    update();
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-      if (raf != null) cancelAnimationFrame(raf);
-    };
-  }, [enabled]);
-
-  return offset;
-}
-
 export default function CastleBackground() {
-  const { theme, mascotAnimationEnabled } = useTheme();
+  const { theme } = useTheme();
   const isMobile = useIsMobile();
-  // Gated on the same toggle/prefers-reduced-motion default every other themed animation in this
-  // app already uses (ThemeContext.jsx) — a moving background on scroll is exactly the kind of
-  // motion that toggle exists to let people turn off, not a new setting of its own.
-  const parallaxOffset = useParallaxOffset(mascotAnimationEnabled);
   if (theme !== "arcade") return null;
 
   return (
@@ -156,16 +102,11 @@ export default function CastleBackground() {
         }}
       />
 
-      {/* 3. Far wall art — translateY(parallaxOffset) makes it lag behind the page's own scroll
-          (see useParallaxOffset above); translateX(-50%) (centering) stays constant regardless. */}
+      {/* 3. Far wall art */}
       <img
         src={wallImg}
         alt=""
-        style={{
-          position: "absolute", top: 0, left: "50%",
-          transform: `translate(-50%, ${parallaxOffset}px)`,
-          width: "100%", maxWidth: 900, height: "auto", display: "block",
-        }}
+        style={{ position: "absolute", top: 0, left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: 900, height: "auto", display: "block" }}
       />
 
       {/* 4. Near pillars/floor art. Mobile: `position: fixed` to the viewport bottom (not the
