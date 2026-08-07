@@ -1,5 +1,6 @@
 import React from "react";
 import { useTheme } from "../context/ThemeContext.jsx";
+import { useIsMobile } from "../lib/useKeepBubbleOnScreen.js";
 
 const wallImg = new URL("../assets/backgrounds/castle_layer1_far.png", import.meta.url).href;
 const floorImg = new URL("../assets/backgrounds/castle_layer2_near.png", import.meta.url).href;
@@ -31,6 +32,7 @@ const floorImg = new URL("../assets/backgrounds/castle_layer2_near.png", import.
 // looking oversized/blurry.
 export default function CastleBackground() {
   const { theme } = useTheme();
+  const isMobile = useIsMobile();
   if (theme !== "arcade") return null;
 
   return (
@@ -64,11 +66,24 @@ export default function CastleBackground() {
         style={{ position: "absolute", top: 0, left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: 900, height: "auto", display: "block" }}
       />
 
-      {/* 4. Near pillars/floor art — fixed to the viewport bottom, not the scrollable page. */}
+      {/* 4. Near pillars/floor art. Mobile: `position: fixed` to the viewport bottom (not the
+          scrollable page) — there's no sidebar there, app-container is essentially the whole
+          screen width, so viewport-centering lines up with the content underneath it.
+          Desktop (2026-08-08 fix): `fixed` centers on the FULL viewport width, which doesn't
+          account for .app-sidebar's 260px — that pushed this layer left, off center under the
+          actual content column and onto the sidebar's own icons/text instead. Desktop switches
+          to `absolute, bottom: 0` instead, which sizes/centers against app-container (this
+          element's own containing block, same as the wall layer above) and scrolls with the page
+          like every other layer here — an acceptable trade (desktop pages are also far less
+          often as tall/scrolly as the mobile one-column layout gets). */}
       <img
         src={floorImg}
         alt=""
-        style={{ position: "fixed", bottom: 0, left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: 900, height: "auto", display: "block" }}
+        style={{
+          position: isMobile ? "fixed" : "absolute",
+          bottom: 0, left: "50%", transform: "translateX(-50%)",
+          width: "100%", maxWidth: 900, height: "auto", display: "block",
+        }}
       />
 
       {/* 5. Dark overlay — the actual contrast guarantee. Everything above this exists only to
