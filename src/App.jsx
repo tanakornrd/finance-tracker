@@ -429,6 +429,27 @@ export default function App() {
            not a desktop-layout change, just a correctness fix that only ever mattered on mobile. */
         html, body { background: var(--color-primarySoft); }
 
+        /* Mobile-only "everything's a bit bigger" pass (2026-08-07 feedback) — CSS zoom, not
+           transform:scale, and on <body> (not just .app-container) deliberately:
+           - zoom triggers a real layout recalculation at the larger size, so tap targets grow
+             along with the visuals instead of just LOOKING bigger while the actual hit area
+             stays the original (smaller) size the way a pure visual transform would.
+           - transform on an ancestor also turns it into the containing block for any
+             position:fixed descendant, which would silently break BottomNav.jsx/the FABs'
+             fixed positioning (they'd start being fixed relative to that ancestor instead of the
+             viewport). zoom does neither — fixed elements keep behaving exactly as before, just
+             rendered at the larger scale like everything else.
+           - <body>, not .app-container, so this reaches EVERYTHING uniformly in one place —
+             including BottomNav/the FABs (position:fixed, but still DOM descendants of body) and
+             every modal (ModalPortal.jsx renders straight into document.body, so they're body's
+             own children too) — not just the scrollable content column.
+           1.17 ≈ the "~15-20% bigger" the user asked for. Gated to the mobile range only (same
+           breakpoint as everywhere else in this file) — desktop is completely untouched, this
+           selector doesn't even match there. */
+        @media (max-width: 1279px) {
+          body { zoom: 1.17; }
+        }
+
         /* --- Desktop shell (added 2026-08-06) ---
            Everything above/below this block is untouched from the mobile-only layout; this is
            purely additive so ripping it back out later restores mobile-only exactly. */
