@@ -25,7 +25,7 @@ export default function BottomNav() {
                     a separate positioned layer behind the icon, not a background on the tab
                     itself, so it doesn't also stretch behind the label text underneath. */}
                 <span style={{ ...styles.iconWrap, ...(isActive ? styles.iconWrapActive : {}) }}>
-                  <Icon size={20} color={isActive ? "var(--color-primary)" : "var(--color-inkMuted)"} />
+                  <Icon size={24} color={isActive ? "var(--color-primary)" : "var(--color-inkMuted)"} />
                 </span>
                 <span style={{ ...styles.label, color: isActive ? "var(--color-primary)" : "var(--color-inkMuted)" }}>{label}</span>
               </>
@@ -55,12 +55,16 @@ const styles = {
     flexDirection: "column",
     alignItems: "center",
     gap: 2,
-    padding: "8px 2px 7px",
+    padding: "9px 2px 8px",
     textDecoration: "none",
   },
+  // icon/label sizes bumped 2026-08-07 (feedback: too small/fiddly to tap) — icon 20->24,
+  // iconWrap grown to match, label 10->12. Only ever rendered on mobile (".bottom-nav" is
+  // display:none at the desktop breakpoint), so no separate desktop-size override is needed —
+  // these values can never apply there regardless.
   iconWrap: {
     display: "flex", alignItems: "center", justifyContent: "center",
-    width: 34, height: 22, borderRadius: 999,
+    width: 40, height: 26, borderRadius: 999,
     marginBottom: 1,
   },
   iconWrapActive: {
@@ -69,7 +73,7 @@ const styles = {
     background: "color-mix(in srgb, var(--color-primary) 16%, transparent)",
   },
   label: {
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: 600,
   },
 };

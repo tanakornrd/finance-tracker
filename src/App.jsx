@@ -544,7 +544,15 @@ export default function App() {
            document root — and paints behind .app-shell's own opaque background fill instead,
            making the castle backdrop (and anything else using a negative z-index here) invisible
            entirely rather than "behind the cards" as intended. */
-        .app-container { width: 100%; max-width: 480px; margin: 0 auto; padding: 24px 18px 84px; position: relative; z-index: 0; }
+        /* padding-top: calc(24px + env(safe-area-inset-top)) (2026-08-07, mobile only — see the
+           desktop override further down, which stays a plain 32px with no safe-area term since
+           desktop browsers have no notch) — pairs with index.html's viewport-fit=cover: that
+           meta tag lets the page extend its BACKGROUND under the status bar/notch, and this
+           padding is what keeps the real content (page title, cards) starting safely below it
+           instead of getting hidden behind it. CastleBackground.jsx (position:absolute; inset:0
+           relative to this same .app-container) automatically extends into that padding too —
+           no separate fix needed there, it was always sized off this container's own box. */
+        .app-container { width: 100%; max-width: 480px; margin: 0 auto; padding: calc(24px + env(safe-area-inset-top)) 18px 84px; position: relative; z-index: 0; }
         /* Floating "glass pill" bottom nav (2026-08-07, mobile only, all themes) — was a
            full-width bar flush with the screen edges/bottom; now floats clear of every edge,
            fully rounded, translucent + blurred. left/right (not a centered fixed width) is what
@@ -561,7 +569,9 @@ export default function App() {
            primary mobile target here). */
         .bottom-nav {
           display: flex;
-          position: fixed; left: 16px; right: 16px; bottom: max(14px, env(safe-area-inset-bottom));
+          /* bottom raised from 14px (2026-08-07 feedback: sat too low/close to the edge) —
+             max() still keeps it clear of the home-indicator area on notched phones either way. */
+          position: fixed; left: 16px; right: 16px; bottom: max(26px, calc(env(safe-area-inset-bottom) + 14px));
           margin: 0 auto; max-width: 480px;
           justify-content: center;
           border-radius: 999px;

@@ -2,7 +2,13 @@
 <html lang="th">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- viewport-fit=cover (2026-08-07): lets the page render under the notch/status-bar safe
+         area instead of leaving that strip to the OS's own default background — needed for the
+         installed PWA (standalone display) to look "full screen" the way a native app does.
+         .app-container's own padding-top (App.jsx) adds env(safe-area-inset-top) on top of this
+         so real content still starts safely below the notch; only the page BACKGROUND extends
+         all the way up. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <!-- Default (passbook theme's --color-primarySoft, src/theme/themes.js) — ThemeContext.jsx
          overwrites this to match the active theme as soon as React mounts, same value it also
          sets on <html>/<body> via CSS. Static fallback here covers the brief window before that
@@ -22,7 +28,11 @@
          same effect manifest.json's display:"standalone" has on Android — iOS doesn't read
          display from the manifest for this, only these meta tags. -->
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <!-- black-translucent (not "default"): with viewport-fit=cover above, the page now renders
+         underneath the status bar — this makes that bar transparent so the page's own themed
+         background shows through it directly, instead of iOS painting an opaque white bar over
+         a page designed mostly around dark themes. -->
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="สมุดบัญชี" />
 
     <title>สมุดบัญชีของฉัน</title>
