@@ -8,6 +8,7 @@ import { EXPENSE_CATS } from "../../shared/categories.js";
 import { card, sectionHead, textBtn } from "../components/sharedStyles.js";
 import AddBudgetSheet from "../components/AddBudgetSheet.jsx";
 import BudgetMageCard from "../components/BudgetMageCard.jsx";
+import BudgetSpellOverlay from "../components/mascot/BudgetSpellOverlay.jsx";
 import SlimeScanModal from "../components/SlimeScanModal.jsx";
 import SlimeEnemy from "../components/mascot/SlimeEnemy.jsx";
 import { resolveMonthTransition, computeSlimeRatio, computeCategorySlimeRatios } from "../lib/slimeStatus.js";
@@ -28,6 +29,10 @@ export default function Budgets() {
   const { budgets, loading: refLoading, refetch, settings } = useReferenceData();
   const [showAdd, setShowAdd] = useState(false);
   const [showScan, setShowScan] = useState(false);
+  // BudgetSpellOverlay trigger — only this page's own "ตั้งงบประมาณ" form (below), not the
+  // quick-add version embedded in SafeToSpendCard on Dashboard.jsx, per the RPG interactions
+  // follow-up request scoping this to the Budgets page specifically.
+  const [showSpell, setShowSpell] = useState(false);
   const [err, setErr] = useState("");
   const [monthTx, setMonthTx] = useState([]);
   const [txLoading, setTxLoading] = useState(true);
@@ -213,8 +218,16 @@ export default function Budgets() {
       <AddBudgetSheet
         open={showAdd}
         onClose={() => setShowAdd(false)}
-        onSaved={async () => { await refetch(); setShowAdd(false); }}
+        onSaved={async () => {
+          // The save itself (createBudget, inside AddBudgetSheet) has already fully completed by
+          // the time onSaved runs — this only decides what happens visually afterward, never
+          // delays or blocks the actual write.
+          await refetch();
+          setShowAdd(false);
+          setShowSpell(true);
+        }}
       />
+      {showSpell && <BudgetSpellOverlay onClose={() => setShowSpell(false)} />}
       <SlimeScanModal
         open={showScan}
         onClose={() => setShowScan(false)}

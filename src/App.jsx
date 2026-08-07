@@ -343,6 +343,24 @@ export default function App() {
           50% { transform: translateY(-14px); }
         }
 
+        /* BudgetSpellOverlay.jsx (RPG party interactions follow-up, 2026-08-07) — a brief flash
+           on a successful budget save, not a rare milestone, so this is deliberately a single
+           1.2s spin-and-fade rather than level-up's looping multi-second celebration. Overlay's
+           own fade-in is unconditional (same as .level-up-overlay above — a plain UI transition,
+           not "mascot animation" the toggle is meant to cover) but still respects
+           prefers-reduced-motion below; the ring's spin is the part gated by
+           mascotAnimationEnabled in the component. */
+        .budget-spell-overlay { animation: budgetSpellFadeIn 0.2s ease-out; }
+        @keyframes budgetSpellFadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .budget-spell-circle { animation: budgetSpellSpin 1.2s ease-out; }
+        @keyframes budgetSpellSpin {
+          0% { opacity: 0; transform: scale(0.7) rotate(0deg); }
+          20% { opacity: 1; transform: scale(1) rotate(60deg); }
+          75% { opacity: 1; transform: scale(1) rotate(300deg); }
+          100% { opacity: 0; transform: scale(1.1) rotate(380deg); }
+        }
+
         /* CastleBackground.jsx ambient decoration — not gated by the mascotAnimationEnabled
            toggle (that's specifically the mascot on/off switch), but still respects
            prefers-reduced-motion below like every other animation here. */
@@ -373,6 +391,8 @@ export default function App() {
           .level-up-burst { animation: none; }
           .level-up-title { animation: none; }
           .level-up-char { animation: none; }
+          .budget-spell-overlay { animation: none; }
+          .budget-spell-circle { animation: none; }
           .castle-star-twinkle { animation: none; }
           .castle-torch-flicker { animation: none; }
           .castle-banner-sway { animation: none; }
