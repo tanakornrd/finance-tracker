@@ -550,6 +550,27 @@ export default function App() {
           #root { zoom: var(--mobile-zoom-factor); }
         }
 
+        /* Bottom sheet -> centered floating card on mobile too (2026-08-08, trying per user
+           request after seeing the desktop centered-modal override below and liking the look).
+           Exact same trick as that desktop override: align-self overrides just this flex child's
+           own vertical position within overlay's alignItems:"flex-end" container, no changes
+           needed to any of the 13 modal call sites or to overlay's own inline style. Deliberately
+           does NOT touch maxHeight (still sharedStyles.js's calc(var(--app-vh)*0.85) default,
+           kept keyboard-aware) or the existing slideUp animation (rising up from below into its
+           now-centered resting spot reads fine, same as it already does on desktop). width is
+           set explicitly (not just a margin) so it doesn't fight the flex item's own 100%-width
+           default and overflow past the edges. Easy revert if this doesn't feel right on a real
+           device: delete this block, sharedStyles.js's un-overridden defaults are the original
+           bottom sheet exactly as it was before. */
+        @media (max-width: 1279px) {
+          .sheet {
+            align-self: center;
+            width: calc(100% - 24px);
+            border-radius: 20px;
+            border-bottom: 1px solid var(--color-border);
+          }
+        }
+
         /* --- Desktop shell (added 2026-08-06) ---
            Everything above/below this block is untouched from the mobile-only layout; this is
            purely additive so ripping it back out later restores mobile-only exactly. */
