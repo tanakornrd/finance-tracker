@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { createPortal } from "react-dom";
 
 // Renders its children into document.body instead of wherever it's mounted in the React tree.
@@ -20,6 +21,50 @@ import { createPortal } from "react-dom";
 // Portaling the modal to document.body sidesteps the whole problem: it's no longer a descendant
 // of app-container at all, so its z-index:50 is compared at the true top level, where it
 // legitimately outranks both.
+//
+// Body scroll lock (2026-08-08): while ANY modal is mounted, the page behind it is frozen in
+// place — position:fixed on <body> itself at its current scroll offset, not just
+// overflow:hidden (overflow:hidden alone still lets iOS Safari's own "scroll the focused input
+// into view" behavior nudge the underlying document when a text field inside the modal is
+// focused, since that behavior operates on the real document scroll position, not on what's
+// visually on top of it). Real-device symptom this fixes: focusing an input in the modal on iOS
+// caused the DASHBOARD page behind it to visibly shift/show through the modal — the modal itself
+// was never broken, the page underneath it was moving. A module-level counter (not a plain
+// boolean) makes this safe if more than one ModalPortal is ever mounted at once (nesting isn't
+// currently used anywhere in this app, but this way a future one doesn't silently unlock the
+// page early when the inner one closes while the outer one is still open).
+let lockCount = 0;
+let savedScrollY = 0;
+
+function lockBodyScroll() {
+  if (lockCount === 0) {
+    savedScrollY = window.scrollY;
+    document.body.style.position = "fixed";
+    document.body.style.top = `-${savedScrollY}px`;
+    document.body.style.left = "0";
+    document.body.style.right = "0";
+    document.body.style.overflow = "hidden";
+  }
+  lockCount += 1;
+}
+
+function unlockBodyScroll() {
+  lockCount = Math.max(0, lockCount - 1);
+  if (lockCount === 0) {
+    document.body.style.position = "";
+    document.body.style.top = "";
+    document.body.style.left = "";
+    document.body.style.right = "";
+    document.body.style.overflow = "";
+    window.scrollTo(0, savedScrollY);
+  }
+}
+
 export default function ModalPortal({ children }) {
+  useEffect(() => {
+    lockBodyScroll();
+    return unlockBodyScroll;
+  }, []);
+
   return createPortal(children, document.body);
 }

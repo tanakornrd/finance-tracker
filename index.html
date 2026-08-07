@@ -8,19 +8,7 @@
          .app-container's own padding-top (App.jsx) adds env(safe-area-inset-top) on top of this
          so real content still starts safely below the notch; only the page BACKGROUND extends
          all the way up. -->
-    <!-- maximum-scale=1, user-scalable=no (2026-08-08) — blocks pinch/double-tap zoom
-         everywhere in the app, not just on form fields. Added specifically to stop a real,
-         reproducible bug: focusing a text input inside a bottom-sheet modal on real iOS Safari
-         caused the whole page to scroll/zoom sideways, cutting off the right edge of the
-         layout. Every input already has fontSize:16+ (the usual trigger for Safari's own
-         auto-zoom-on-focus), but the bug persisted anyway on a real device even after ruling
-         out font-size and the mobile CSS-zoom feature's own DOM structure as the cause — this
-         is the blunt "stop Safari from zooming the page AT ALL, for any reason" fix instead of
-         a more targeted one we couldn't pin down without real-device debugging tools. Trade-off
-         (accepted, user's own call): visitors can no longer pinch-zoom the page manually either,
-         which normally matters for low-vision accessibility — mitigated somewhat by the app's
-         own mobile text already running larger than default via the CSS zoom feature. -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <!-- Default (passbook theme's --color-primarySoft, src/theme/themes.js) — ThemeContext.jsx
          overwrites this to match the active theme as soon as React mounts, same value it also
          sets on <html>/<body> via CSS. Static fallback here covers the brief window before that
