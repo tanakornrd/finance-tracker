@@ -1,6 +1,6 @@
 {
-  "name": "สมุดบัญชีของฉัน",
-  "short_name": "สมุดบัญชี",
+  "name": "CoinCrew",
+  "short_name": "CoinCrew",
   "description": "แอปบันทึกรายรับ-รายจ่ายส่วนตัว",
   "start_url": "/",
   "scope": "/",
