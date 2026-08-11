@@ -181,6 +181,28 @@ export default function Dashboard() {
   const expenseCents = monthTx.filter((t) => t.kind === "expense").reduce((s, t) => s + t.amountCents, 0);
   const transferredCents = monthTx.filter((t) => t.kind === "repay").reduce((s, t) => s + t.amountCents, 0);
 
+  // Split for SafeToSpendCard: it needs "spent before today" separately from "spent today" so it
+  // can hold today's allowance fixed all day and only subtract today's own spending from it,
+  // instead of re-blending today's spend into the whole month's average every render (see that
+  // component's own comment on why — this was the "ใช้ได้อีกวันนี้ยังไม่ค่อย practical" bug).
+  const todayISO = toISODate(new Date());
+  const expenseCentsToday = monthTx
+    .filter((t) => t.kind === "expense" && t.date === todayISO)
+    .reduce((s, t) => s + t.amountCents, 0);
+  const expenseCentsBeforeToday = expenseCents - expenseCentsToday;
+
+  // Per-category breakdown for SafeToSpendCard's "สัดส่วน" list — same shape/logic as
+  // Budgets.jsx's own spentByCategory (expense-only, current calendar month), computed here too
+  // since Dashboard already has monthTx loaded and this card lives on the Dashboard, not that page.
+  const spentByCategory = useMemo(() => {
+    const map = {};
+    for (const t of monthTx) {
+      if (t.kind !== "expense") continue;
+      map[t.category] = (map[t.category] || 0) + t.amountCents;
+    }
+    return map;
+  }, [monthTx]);
+
   // monthTx is sorted newest-first and Array#sort is stable, so same-date items stay adjacent —
   // a single pass is enough to bucket them into day groups without re-sorting.
   const dayGroups = useMemo(() => {
@@ -487,7 +509,9 @@ export default function Dashboard() {
         <WeeklyInsightCard />
         <SafeToSpendCard
           isCurrentMonth={isCurrentMonth}
-          expenseCentsSoFar={expenseCents}
+          expenseCentsBeforeToday={expenseCentsBeforeToday}
+          expenseCentsToday={expenseCentsToday}
+          spentByCategory={spentByCategory}
           mageFiring={mageFiring}
           // Mage's click shortcut (RPG party interactions, part 2) — opens the exact same
           // amount-entry modal the "+" FAB does, reusing this same setShowForm state rather

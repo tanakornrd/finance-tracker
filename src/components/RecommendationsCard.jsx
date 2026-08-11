@@ -20,8 +20,12 @@ function categoryExpenseTotals(transactions, mKey) {
   return map;
 }
 
-// Longest run of consecutive days, ending today, where the "safe to spend today"
-// figure (remaining budget divided by days left in the month) is negative.
+// Longest run of consecutive days, ending today, where the "safe to spend today" figure went
+// negative. Mirrors SafeToSpendCard.jsx's own formula: each day's quota is the budget left
+// *before that day's spending* split across the days remaining (that day included), then that
+// day's own spending is subtracted from just that one day's quota — not re-blended into the
+// whole month's running average — so this streak agrees with what the card actually showed on
+// each of those days.
 function negativeSafeToSpendStreak(transactions, budgetTotalCents, year, month, today) {
   const dim = daysInMonth(year, month);
   const dayExpense = new Array(dim + 1).fill(0);
@@ -30,13 +34,14 @@ function negativeSafeToSpendStreak(transactions, budgetTotalCents, year, month, 
     const [ty, tm, td] = t.date.split("-").map(Number);
     if (ty === year && tm - 1 === month) dayExpense[td] += t.amountCents;
   }
-  let cumulative = 0;
+  let cumulativeBefore = 0;
   let streak = 0;
   for (let d = 1; d <= today; d++) {
-    cumulative += dayExpense[d];
     const daysRemaining = dim - d + 1;
-    const perDay = (budgetTotalCents - cumulative) / daysRemaining;
-    streak = perDay < 0 ? streak + 1 : 0;
+    const quota = (budgetTotalCents - cumulativeBefore) / daysRemaining;
+    const remainingToday = quota - dayExpense[d];
+    streak = remainingToday < 0 ? streak + 1 : 0;
+    cumulativeBefore += dayExpense[d];
   }
   return streak;
 }
