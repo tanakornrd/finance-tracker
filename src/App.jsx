@@ -536,12 +536,14 @@ export default function App() {
            wide (an unbounded real balance, not a fixed-width label), so on a narrow phone with a
            long number it's possible for the two to overlap; z-index makes sure the number wins
            that overlap and stays fully readable rather than the mascot covering digits. */
-        .warrior-mount { position: absolute; bottom: 6px; right: -16px; z-index: 0; }
+        .warrior-mount { position: absolute; bottom: 6px; right: -10px; z-index: 0; }
+        /* Fourth pass (2026-08-11) — ป้อ's feedback after the bottom-anchor fix: still needs to
+           come in toward the left a bit (right offset less negative = less overlap). */
         @media (max-width: 1279px) {
-          .warrior-mount { right: -36px; }
+          .warrior-mount { right: -22px; }
         }
         @media (min-width: 1280px) {
-          .warrior-mount { right: -28px; }
+          .warrior-mount { right: -16px; }
         }
 
         /* WarriorMascot.jsx's own <img> size: clamp() shrinks it with the viewport so it stays
