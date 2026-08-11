@@ -260,23 +260,49 @@ export default function App() {
           .archer-img { width: 90px; height: 90px; }
         }
 
-        /* SafeToSpendCard.jsx's ".safe-to-spend-header" — no position/sizing rules anymore
-           (2026-08-11): it's a plain centered flex row now (text + Mage as one pair, set inline
-           in the component since it's arcade-only), so it just sizes itself to its content like
-           any other flow element. Used to need position:relative + a hand-tuned min-height here
-           when Mage was absolutely positioned in a corner instead — see the component's own
-           comment for why that approach was replaced. Class kept only as a styling hook (the
-           component doesn't reference it beyond the className itself).
+        /* SafeToSpendCard.jsx's ".safe-to-spend-header" — no position/sizing rules needed beyond
+           the safety-net z-index the component sets inline; it's plain-flow text again (2026-08-11,
+           "ให้มาสคอตล้นออกนอกกรอบการ์ดได้" — reverted the same day's earlier "centered flex pair"
+           version once overflowing the card became the actual goal, see the component's own
+           comment). Class kept only as a styling hook.
 
            SafeToSpendCard.jsx's own MageMascot mount — sized bigger than the budget page's mage
            via a descendant override of ".mage-img" scoped to this mount specifically — NOT a
            change to ".mage-img" itself, which stays exactly as-is for BudgetMageCard.jsx (kept
-           where it was, unchanged, per instruction). No position rule needed here either now
-           (plain flex item, not a corner overlay). */
-        .scribe-mage-mount .mage-img { width: clamp(108px, 30vw, 180px); height: clamp(108px, 30vw, 180px); }
+           where it was, unchanged, per instruction). Bumped up again (2026-08-11, second pass —
+           per ป้อ's own annotated mockup, he reads noticeably bigger there, closer to Warrior's
+           own scale, than the first overflow pass here left him). */
+        .scribe-mage-mount .mage-img { width: clamp(130px, 36vw, 210px); height: clamp(130px, 36vw, 210px); }
         @media (min-width: 1280px) {
-          .scribe-mage-mount .mage-img { width: 240px; height: 240px; }
+          .scribe-mage-mount .mage-img { width: 270px; height: 270px; }
         }
+
+        /* ".scribe-mage-mount" itself: absolutely positioned in the card's bottom-right corner
+           (2026-08-11, "ให้มาสคอตล้นออกนอกกรอบการ์ดได้"), same idiom as Dashboard.jsx's own
+           ".warrior-mount" — negative right/bottom let him spill past the card's own edges
+           instead of being confined inside it. No explicit z-index (sits at the default level,
+           below the header text's zIndex:1 and the category list's own zIndex:1 — see
+           SafeToSpendCard.jsx's own comments on both), and well below the "+" FAB's zIndex:41
+           (App.jsx's ".dashboard-fab"), so neither the numbers nor the FAB can ever end up
+           visually covered by him regardless of how far he overlaps.
+           Second pass (2026-08-11) — the first pass's -10px/-14px read as barely any overlap at
+           all against ป้อ's annotated mockup, where his cloak/leg clearly cross both the card's
+           right edge AND its bottom edge (down into the "+" FAB's own space). Pushed out several
+           times further to actually match that. Still a best-effort read of a mockup, not a
+           pixel-measured value — nudge again if it's still off once it's live. */
+        .scribe-mage-mount { position: absolute; right: -34px; bottom: -46px; }
+        @media (min-width: 1280px) {
+          .scribe-mage-mount { right: -46px; bottom: -60px; }
+        }
+
+        /* ".safe-to-spend-card" overflow — same split as ".passbook-card" below: hidden by
+           default (clips to the card's own rounded corners, matching every theme's prior look),
+           visible only for arcade (the only theme that ever mounts Mage in a corner that needs to
+           spill past it). Themed by [data-theme] rather than a width breakpoint since — unlike
+           the net-worth card's Warrior — this overlap is meant to show at every screen size, not
+           just desktop. */
+        .safe-to-spend-card { overflow: hidden; }
+        [data-theme="arcade"] .safe-to-spend-card { overflow: visible; }
 
         /* SlimeEnemy.jsx (Budgets.jsx): idle is a squish-wobble (fitting for a slime) instead
            of the other mascots' bob/float — a one-shot "poof" plays instead when "defeated" is
@@ -499,35 +525,35 @@ export default function App() {
         }
 
         /* Dashboard.jsx's net-worth card mascot mount: standing beside the net-worth number,
-           full opacity, at every width — not a background layer. right:4px + top:42%
-           (translateY(-50%) to center on that point) lands it in the blank space to the right
-           of the number at both breakpoints, since the card's text content is identical (same
-           DOM/CSS) at every width, just narrower. z-index:0 is deliberately BELOW the numbers
-           content div's own zIndex:1 (Dashboard.jsx) as a safety net — the net-worth figure can
-           render arbitrarily wide (an unbounded real balance, not a fixed-width label), so on a
-           narrow phone with a long number it's possible for the two to overlap; z-index makes
-           sure the number wins that overlap and stays fully readable rather than the mascot
-           covering digits. */
-        .warrior-mount { position: absolute; top: 42%; transform: translateY(-50%); right: 4px; z-index: 0; }
-        /* Mobile-only (2026-08-07 feedback): moved up from the base 42% so his feet/standing
-           ground line up with the bottom edge of the "สินทรัพย์ ... หนี้สิน" line above the
-           divider, instead of hanging down into that divider's own row. First pass (20%) went
-           too far up — 33% measured directly off the user's annotated screenshot (pixel-measured
-           card top/height and his feet position at 20% to back out where the target line actually
-           falls). Desktop below has its own separate override now (2026-08-11) — this one only
-           matches below the desktop breakpoint. */
+           full opacity, at every width — not a background layer. right:-10px (was 4px, see the
+           2026-08-11 "ล้นออกนอกกรอบการ์ด" note below) + top:42% (translateY(-50%) to center on
+           that point) lands it in the blank space to the right of the number at both breakpoints,
+           since the card's text content is identical (same DOM/CSS) at every width, just
+           narrower. z-index:0 is deliberately BELOW the numbers content div's own zIndex:1
+           (Dashboard.jsx) as a safety net — the net-worth figure can render arbitrarily wide (an
+           unbounded real balance, not a fixed-width label), so on a narrow phone with a long
+           number it's possible for the two to overlap; z-index makes sure the number wins that
+           overlap and stays fully readable rather than the mascot covering digits. */
+        .warrior-mount { position: absolute; top: 42%; transform: translateY(-50%); right: -16px; z-index: 0; }
+        /* Mobile-only: moved up from the base 42% so his feet/standing ground line up near the
+           bottom edge of the "สินทรัพย์ ... หนี้สิน" line above the divider (2026-08-07 feedback,
+           33% pixel-measured off the user's annotated screenshot), and right nudged further
+           negative (2026-08-11, "ให้มาสคอตล้นออกนอกกรอบการ์ดได้" — a hand-annotated mockup showing
+           his shield/cape crossing the card's own right border on mobile too, not just desktop)
+           now that ".passbook-card" below is overflow:visible at every width, not desktop-only.
+           Second pass (2026-08-11) — -22px still read as too subtle against the mockup, pushed
+           further out. Still a best-effort read, not pixel-measured — nudge again if needed. */
         @media (max-width: 1279px) {
-          .warrior-mount { top: 33%; }
+          .warrior-mount { top: 33%; right: -36px; }
         }
         /* Desktop-only (2026-08-11, per a hand-annotated mockup: move the mascot down toward the
            card's bottom edge instead of floating centered beside the number). bottom-anchored
            instead of the base rule's top:42% — top:auto/transform:none cancel that rule's values
            outright rather than trying to combine with it. His feet land near the card's bottom
            edge; the rest of him (now 300px tall, see ".warrior-img") stands up out of the card's
-           own top, which ".passbook-card"'s overflow:visible (desktop-only, below) already
-           exists to allow. */
+           own top, which ".passbook-card"'s overflow:visible already exists to allow. */
         @media (min-width: 1280px) {
-          .warrior-mount { top: auto; bottom: 6px; transform: none; }
+          .warrior-mount { top: auto; bottom: 6px; transform: none; right: -28px; }
         }
 
         /* WarriorMascot.jsx's own <img> size: clamp() shrinks it with the viewport so it stays
@@ -561,15 +587,13 @@ export default function App() {
           [data-theme="arcade"] .networth-stats-divider { display: none; }
         }
 
-        /* Base: clips the card's own perforation strip + (at mobile widths) the mascot to its
-           rounded corners, same as before this mascot ever existed. Desktop switches to visible
-           specifically so the now much taller mascot (see ".warrior-img" above) can stand above/
-           below the card's own edge instead of being cut off — nothing else in this card relies
-           on the clip at that width. */
-        .passbook-card { overflow: hidden; }
-        @media (min-width: 1280px) {
-          .passbook-card { overflow: visible; }
-        }
+        /* overflow:visible at every width now (2026-08-11, "ให้มาสคอตล้นออกนอกกรอบการ์ดได้" —
+           was desktop-only before, mobile stayed "hidden" and clipped the mascot to the card's
+           rounded corners same as the perforation strip). Nothing else in this card actually
+           needs the clip at mobile widths (the perforation strip is a thin dotted line well
+           inside the card's own bounds, not something that ever bled past the edge), so this is
+           safe to lift everywhere rather than just past the desktop breakpoint. */
+        .passbook-card { overflow: visible; }
 
         /* html/body themselves (not just .app-shell below) — otherwise they keep the browser's
            default white, which shows at the edges on mobile during bounce-scroll/rubber-band

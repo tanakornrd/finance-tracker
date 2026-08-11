@@ -22,7 +22,12 @@ import PositionPortal from "../PositionPortal.jsx";
 // swaps the bubble to a reminder/praise line for ~1.5s (picked from `hasEntryToday`, also from
 // Dashboard.jsx — its own separate "does today have an entry" check, same idea as
 // NoEntryTodayBanner.jsx's own independent fetch), then reverts to `message` on its own.
-export default function WarriorMascot({ message, hasEntryToday }) {
+//
+// src: optional (2026-08-11, "สุ่มท่า Warrior") — Dashboard.jsx picks one pose from
+// mascotPoses.js's WARRIOR_POSES once per mount and passes its URL down here. Defaults to the
+// original guard-pose art so this component still renders something sane if a future caller
+// forgets to pass it.
+export default function WarriorMascot({ message, hasEntryToday, src }) {
   const { theme, mascotAnimationEnabled, soundEnabled } = useTheme();
   const [slashing, setSlashing] = useState(false);
   const [clickMessage, setClickMessage] = useState(null);
@@ -80,14 +85,19 @@ export default function WarriorMascot({ message, hasEntryToday }) {
     >
       {shownMessage && <SpeechBubble text={shownMessage} anchorRef={anchorRef} />}
       <img
-        src={new URL("../../assets/mascot-warrior.png", import.meta.url).href}
+        src={src || new URL("../../assets/mascot-warrior.png", import.meta.url).href}
         alt=""
         // Sizing itself lives in the ".warrior-img" CSS class (App.jsx), not inline here — it's
         // a clamp() that shrinks with the viewport on mobile then doubles in size again past the
         // desktop breakpoint, and only an external stylesheet rule can be overridden by a media
         // query; an inline style always wins over one regardless of specificity.
         className="warrior-img"
-        style={{ display: "block", imageRendering: "pixelated" }}
+        // objectFit:"contain" (2026-08-11, "สุ่มท่า Warrior") — the pose pool's source images have
+        // different canvas aspect ratios/crops (see mascotPoses.js), unlike the single fixed
+        // mascot-warrior.png this box was originally sized around. Without this, a pose whose
+        // canvas isn't square would stretch to fill the (roughly square) box instead of keeping
+        // its own proportions.
+        style={{ display: "block", imageRendering: "pixelated", objectFit: "contain" }}
       />
     </button>
   );

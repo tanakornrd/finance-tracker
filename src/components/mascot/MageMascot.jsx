@@ -46,7 +46,12 @@ export const SCRIBE_MESSAGES = [
 // reduced-motion/toggle-off fallback (see Budgets.jsx) uses this to force the exact same
 // "บันทึกไว้แล้วนะ!" line the full-screen BudgetSpellOverlay shows in its animated version,
 // instead of a random SCRIBE_MESSAGES pick. Every other caller omits it and keeps the random pick.
-export default function MageMascot({ message, firing, firingText, floatingBubble, onClick }) {
+//
+// src: optional (2026-08-11, "สุ่มท่า Mage") — SafeToSpendCard.jsx passes down whichever pose
+// Dashboard.jsx randomly picked from mascotPoses.js's MAGE_POSES for that mount. Defaults to the
+// original staff-standing art, so BudgetMageCard.jsx/TransactionDetail.jsx (neither passes this)
+// keep rendering exactly the pose they always have.
+export default function MageMascot({ message, firing, firingText, floatingBubble, onClick, src }) {
   const { theme, mascotAnimationEnabled, soundEnabled } = useTheme();
   const [firedMessage, setFiredMessage] = useState(null);
   const [flashing, setFlashing] = useState(false);
@@ -108,13 +113,16 @@ export default function MageMascot({ message, firing, firingText, floatingBubble
             of magic just before the modal opens"), not just the orb's own small area. */}
         {flashing && <div className="mage-click-flash" onAnimationEnd={() => setFlashing(false)} />}
         <img
-          src={new URL("../../assets/mascot-mage.png", import.meta.url).href}
+          src={src || new URL("../../assets/mascot-mage.png", import.meta.url).href}
           alt=""
           // Sizing lives in the ".mage-img" CSS class (App.jsx) — same reasoning as
           // WarriorMascot's own img: a clamp() an inline style could still override, but only a
           // stylesheet rule can be swapped per breakpoint by a media query.
           className="mage-img"
-          style={{ display: "block", imageRendering: "pixelated" }}
+          // objectFit:"contain" (2026-08-11, "สุ่มท่า Mage") — same reasoning as WarriorMascot's
+          // own <img>: the pose pool's source canvases (mascotPoses.js) aren't all the same aspect
+          // ratio as the original mascot-mage.png this box was sized around.
+          style={{ display: "block", imageRendering: "pixelated", objectFit: "contain" }}
         />
       </div>
     </>

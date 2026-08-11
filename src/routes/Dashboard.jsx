@@ -22,6 +22,7 @@ import MonthPickerSheet from "../components/MonthPickerSheet.jsx";
 import NoEntryTodayBanner from "../components/NoEntryTodayBanner.jsx";
 import WarriorMascot from "../components/mascot/WarriorMascot.jsx";
 import MageSpellOverlay from "../components/mascot/MageSpellOverlay.jsx";
+import { WARRIOR_POSES, MAGE_POSES } from "../lib/mascotPoses.js";
 import { SCRIBE_MESSAGES } from "../components/mascot/MageMascot.jsx";
 import { computeWeeklyInsight } from "../lib/weeklyInsight.js";
 import { computeFestivalReminder } from "../lib/festivalReminder.js";
@@ -65,6 +66,14 @@ export default function Dashboard() {
   // Card press feedback (2026-08-07) — the net-worth card gets its own instance (not shared with
   // the transaction rows below, which each need their own independent pressed state per row).
   const netWorthPress = useCardPress();
+  // สุ่มท่า Warrior/Mage (2026-08-11) — picked exactly once per Dashboard mount, not re-rolled on
+  // every re-render: useState's lazy initializer (the `() => ...` form) only ever runs on the
+  // component's first render, same trick used elsewhere in this file (e.g. `cursor` above isn't
+  // this pattern since `new Date()` is cheap, but the idea is standard React). Reloading the page
+  // (a real remount) is the only way to get a new roll. See mascotPoses.js for the pose pools
+  // themselves and why they're arrays (easy to extend with more poses later).
+  const [warriorPose] = useState(() => WARRIOR_POSES[Math.floor(Math.random() * WARRIOR_POSES.length)]);
+  const [magePose] = useState(() => MAGE_POSES[Math.floor(Math.random() * MAGE_POSES.length)]);
   const [saving, setSaving] = useState(false);
   const [saveErr, setSaveErr] = useState(false);
   const [errDetail, setErrDetail] = useState("");
@@ -461,7 +470,7 @@ export default function Dashboard() {
             regardless of z-index. See ".warrior-mount"/".warrior-img" in App.jsx for the actual
             per-breakpoint size/position. */}
         <div className="warrior-mount">
-          <WarriorMascot message={festivalReminder || weeklyInsight.message} hasEntryToday={hasEntryToday} />
+          <WarriorMascot message={festivalReminder || weeklyInsight.message} hasEntryToday={hasEntryToday} src={warriorPose} />
         </div>
         {/* pointerEvents:"none" — this div is plain display text, nothing inside it is ever
             clickable, but its own box (a block spanning the full card width) sat ABOVE
@@ -523,6 +532,7 @@ export default function Dashboard() {
           // amount-entry modal the "+" FAB does, reusing this same setShowForm state rather
           // than a separate form/modal.
           onMageClick={() => setShowForm(true)}
+          mageSrc={magePose}
         />
         <MonthComparisonBar
           thisMonthExpenseCents={expenseCents}

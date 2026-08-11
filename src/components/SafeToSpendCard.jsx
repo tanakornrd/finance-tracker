@@ -33,7 +33,7 @@ const COLOR_NORMAL = "var(--color-primary)";
 const COLOR_WARN = "var(--color-accent)";
 const COLOR_OVER = "var(--color-danger)";
 
-export default function SafeToSpendCard({ isCurrentMonth, expenseCentsBeforeToday, expenseCentsToday, spentByCategory, mageFiring, onMageClick }) {
+export default function SafeToSpendCard({ isCurrentMonth, expenseCentsBeforeToday, expenseCentsToday, spentByCategory, mageFiring, onMageClick, mageSrc }) {
   const { theme } = useTheme();
   const { budgets: allBudgets, refetch } = useReferenceData();
   // `allBudgets` mixes category budgets and festival budgets now (2026-08-08, ชุด 4.1 — see
@@ -131,7 +131,11 @@ export default function SafeToSpendCard({ isCurrentMonth, expenseCentsBeforeToda
       })
       .sort((a, b) => b.pct - a.pct);
     categoryBreakdown = (
-      <div style={{ marginTop: 14, paddingTop: 12, borderTop: "1px solid var(--color-divider)" }}>
+      // position:relative + zIndex:1 (2026-08-11) — same safety net as the header text above:
+      // Mage's corner mount has no explicit z-index of its own, so on a card with a lot of
+      // category rows (tall enough for his corner overlap to reach down into this list) this
+      // keeps the list's own text/bars painting on top of him instead of underneath.
+      <div style={{ marginTop: 14, paddingTop: 12, borderTop: "1px solid var(--color-divider)", position: "relative", zIndex: 1 }}>
         {rows.map((r) => (
           <div key={r.id} style={{ marginBottom: 10 }}>
             <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, marginBottom: 3 }}>
@@ -155,26 +159,29 @@ export default function SafeToSpendCard({ isCurrentMonth, expenseCentsBeforeToda
   }
 
   return (
-    <div style={{ ...card, marginBottom: 16, position: "relative", overflow: "hidden" }} className="safe-to-spend-card">
-      {/* Header block — text + Mage as one centered pair (2026-08-11, per a hand-annotated
-          mockup: "ย้ายข้อความ...ไปไว้ตรงกลางคู่กับ mage"). Used to be text pinned left with Mage
-          absolutely positioned in the corner (a leftover from before the category list below
-          existed, when the whole card was short enough that a corner mount never had room to
-          drift into anything) — now a plain centered flex row, arcade-only (every other theme
-          never renders Mage at all, per MageMascot's own theme check, so centering the text
-          there too would just look like an unexplained alignment change with nothing beside it).
-          Being normal flow now (not position:absolute) also means this row sizes itself to fit
-          Mage automatically — no more hand-tuned min-height to keep in sync with his box size. */}
-      <div
-        className="safe-to-spend-header"
-        style={theme === "arcade" ? { display: "flex", alignItems: "center", justifyContent: "center", gap: 16 } : undefined}
-      >
-        <div>{body}</div>
-        {/* MageMascot mount — arcade-only (MageMascot itself renders null off-theme, so this div
-            is harmless dead weight on every other theme, same as WarriorMascot's own mount). */}
-        <div className="scribe-mage-mount">
-          <MageMascot firing={mageFiring} firingText="จดไว้แล้ว! ✨" onClick={onMageClick} />
-        </div>
+    // overflow moved to the ".safe-to-spend-card" CSS class (App.jsx) instead of inline here —
+    // same reasoning as Dashboard.jsx's own ".passbook-card": arcade needs "visible" so Mage can
+    // stand taller than the card and spill past its corner, every other theme (which never
+    // renders Mage at all) keeps "hidden" same as before.
+    <div style={{ ...card, marginBottom: 16, position: "relative" }} className="safe-to-spend-card">
+      {/* Header block (2026-08-11, "ให้มาสคอตล้นออกนอกกรอบการ์ดได้") — back to text pinned in
+          normal flow + Mage absolutely positioned in the corner, undoing the same day's earlier
+          "centered flex pair" version (see git history) now that overflowing the card is the
+          actual goal: a flex sibling can't spill past its own row's edges the way an
+          absolutely-positioned corner mount (same idiom as Dashboard.jsx's ".warrior-mount") can.
+          zIndex:1 here is a safety net exactly like Dashboard.jsx's own numbers wrapper — Mage's
+          mount below has no explicit z-index (so it paints at the default stacking level), and
+          this keeps the "ใช้ได้อีกวันนี้" figure/text readable even if a very long message ever
+          made the two boxes overlap. */}
+      <div className="safe-to-spend-header" style={theme === "arcade" ? { position: "relative", zIndex: 1 } : undefined}>
+        {body}
+      </div>
+      {/* MageMascot mount — arcade-only (MageMascot itself renders null off-theme, so this div
+          is harmless dead weight on every other theme, same as WarriorMascot's own mount).
+          Positioned/sized in App.jsx's ".scribe-mage-mount" CSS, same split as every other mascot
+          mount in this app (only a stylesheet class can differ per breakpoint). */}
+      <div className="scribe-mage-mount">
+        <MageMascot firing={mageFiring} firingText="จดไว้แล้ว! ✨" onClick={onMageClick} src={mageSrc} />
       </div>
       {categoryBreakdown}
       <AddBudgetSheet
