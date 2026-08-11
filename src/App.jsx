@@ -243,13 +243,21 @@ export default function App() {
            not an inline style: only a stylesheet rule can be overridden by a media query. This
            card is self-contained (BudgetMageCard.jsx), so unlike the warrior it never has to
            stay clear of someone else's numbers — just enough room to grow a bit on desktop.
-           1.5× across the board (2026-08-11, "ขยาย Warrior/Mage ทั้งคู่ 1.5 เท่า") — every
-           number below (this rule and its two scoped overrides, plus ".warrior-img" and
-           ".safe-to-spend-header"'s min-height) scaled by the same 1.5 factor together, so the
-           buffer/proportion relationships between them hold exactly as before, just bigger. */
-        .mage-img { width: clamp(96px, 27vw, 150px); height: clamp(96px, 27vw, 150px); }
+           Rescaled down (2026-08-11, "สุ่มท่า Mage" cleanup) — mascot-mage.png itself got
+           tightly re-cropped that same pass (its own transparent margin trimmed down, see
+           mascotPoses.js's own comment and the file's own history), so it now renders BIGGER at
+           any given box size than it used to (its character used to fill ~66% of its own canvas;
+           now ~93%). Shrunk this box by that same ratio (~0.71×) so the on-screen size here
+           stays the same as before the re-crop — this class isn't part of today's actual
+           request (Dashboard's own two mounts are, via ".warrior-img"/".scribe-mage-mount
+           .mage-img" below), it just has to move in lockstep with the shared source file or
+           TransactionDetail.jsx's mage would visibly shrink for no reason anyone asked for.
+           width now driven by the image's own aspect ratio (auto) instead of forced square —
+           object-fit:contain on the <img> (MageMascot.jsx) no longer has anything to "contain"
+           against once only height is constrained, but is harmless left in place. */
+        .mage-img { height: clamp(68px, 19vw, 107px); width: auto; }
         @media (min-width: 1280px) {
-          .mage-img { width: 210px; height: 210px; }
+          .mage-img { height: 150px; }
         }
 
         /* ArcherMascot.jsx's own <img> size — deliberately smaller than the warrior/mage: this
@@ -269,32 +277,35 @@ export default function App() {
            SafeToSpendCard.jsx's own MageMascot mount — sized bigger than the budget page's mage
            via a descendant override of ".mage-img" scoped to this mount specifically — NOT a
            change to ".mage-img" itself, which stays exactly as-is for BudgetMageCard.jsx (kept
-           where it was, unchanged, per instruction). Bumped up again (2026-08-11, second pass —
-           per ป้อ's own annotated mockup, he reads noticeably bigger there, closer to Warrior's
-           own scale, than the first overflow pass here left him). */
-        .scribe-mage-mount .mage-img { width: clamp(130px, 36vw, 210px); height: clamp(130px, 36vw, 210px); }
+           where it was, unchanged, per instruction).
+           Fourth pass (2026-08-11) — the first three passes were all guessed off a downscaled
+           thumbnail read of ป้อ's own reference mockup; this pass instead pixel-measured the two
+           actual reference images at full 1206×2144 resolution (both poses — standing-calm and
+           portal-ring — share the same size/position in his mockup, only the art differs) and
+           reverse-engineered the numbers from that. Also now height-only + width:auto (matches
+           ".mage-img"'s own 2026-08-11 rescale above) since mage/*.png's poses aren't all the
+           same aspect ratio (see mascotPoses.js) — a fixed square box with object-fit:contain
+           made a tall pose and a wide pose (e.g. the portal-ring art, wider due to its own glow
+           ring) render at visibly different heights for the same box; matching height directly
+           keeps every pose the same apparent size regardless of its own canvas shape. */
+        .scribe-mage-mount .mage-img { height: clamp(78px, 21vw, 118px); width: auto; }
         @media (min-width: 1280px) {
-          .scribe-mage-mount .mage-img { width: 270px; height: 270px; }
+          .scribe-mage-mount .mage-img { height: 150px; }
         }
 
-        /* ".scribe-mage-mount" itself: absolutely positioned in the card's bottom-right corner
-           (2026-08-11, "ให้มาสคอตล้นออกนอกกรอบการ์ดได้"), same idiom as Dashboard.jsx's own
-           ".warrior-mount" — negative right/bottom let him spill past the card's own edges
-           instead of being confined inside it. No explicit z-index (sits at the default level,
-           below the header text's zIndex:1 and the category list's own zIndex:1 — see
-           SafeToSpendCard.jsx's own comments on both), and well below the "+" FAB's zIndex:41
-           (App.jsx's ".dashboard-fab"), so neither the numbers nor the FAB can ever end up
-           visually covered by him regardless of how far he overlaps.
-           Third pass (2026-08-11) — after fixing the mount's containing block (moved inside
-           ".safe-to-spend-header", see SafeToSpendCard.jsx's own comment — it used to anchor to
-           the whole card and could drop below several budget rows entirely), ป้อ's feedback was
-           he now sits too far right; pulled the right offset in a bit (was -34px/-46px mobile,
-           -46px/-60px desktop). Still a best-effort read of a mockup, not pixel-measured — nudge
-           again if it's still off. */
-        .scribe-mage-mount { position: absolute; right: -14px; bottom: -46px; }
-        @media (min-width: 1280px) {
-          .scribe-mage-mount { right: -22px; bottom: -60px; }
-        }
+        /* ".scribe-mage-mount" itself: positioned within ".safe-to-spend-header" (its containing
+           block — see SafeToSpendCard.jsx's own comment on why it's nested there and not the
+           whole card). No explicit z-index (sits at the default level, below the header text's
+           zIndex:1 and the category list's own zIndex:1 — see SafeToSpendCard.jsx's own comments
+           on both), and well below the "+" FAB's zIndex:41 (App.jsx's ".dashboard-fab").
+           Fourth pass (2026-08-11) — same pixel-measurement pass as the size rule above. The
+           previous three passes all pushed him out with a large negative right/bottom assuming
+           the reference showed him spilling dramatically past the card's own edge — at full
+           resolution he actually stays INSIDE the card in both reference poses (it's the
+           separately-floating "+" FAB, not Mage himself, that overlaps the corner). top/right
+           here place him relative to the header box the same way the reference places him
+           relative to the number block, instead of anchoring off the card's far corner. */
+        .scribe-mage-mount { position: absolute; top: 14%; right: 8px; }
 
         /* ".safe-to-spend-card" overflow — same split as ".passbook-card" below: hidden by
            default (clips to the card's own rounded corners, matching every theme's prior look),
@@ -380,10 +391,14 @@ export default function App() {
            override, SafeToSpendCard.jsx's ".scribe-mage-mount") via a descendant override
            scoped to this mount specifically, same idiom as ".scribe-mage-mount .mage-img"
            above. Used to match ".slime-img-party" exactly; no longer does since this rule alone
-           was scaled 1.5× — see that rule's own comment for why. */
-        .budget-mage-mount .mage-img { width: clamp(135px, 33vw, 195px); height: clamp(135px, 33vw, 195px); }
+           was scaled 1.5× — see that rule's own comment for why.
+           Rescaled down (2026-08-11, ~0.71×) for the same reason as the base ".mage-img" rule
+           above — mascot-mage.png's own transparent margin got trimmed tighter that same pass,
+           so this box has to shrink correspondingly to keep this page's on-screen mage size
+           unchanged (not something ป้อ asked to touch today). height-only + width:auto too. */
+        .budget-mage-mount .mage-img { height: clamp(96px, 24vw, 139px); width: auto; }
         @media (min-width: 1280px) {
-          .budget-mage-mount .mage-img { width: 285px; height: 285px; }
+          .budget-mage-mount .mage-img { height: 203px; }
         }
 
         /* PartyLevelUpOverlay.jsx (RPG party interactions, part 5) — the "big" celebration,
@@ -526,45 +541,37 @@ export default function App() {
         }
 
         /* Dashboard.jsx's net-worth card mascot mount: standing beside the net-worth number,
-           full opacity, at every width — not a background layer. Third pass (2026-08-11) — was
-           top:42%/translateY(-50%) (vertically centered) then top:33% on mobile, but ป้อ's own
-           annotated mockup has him standing with his feet near the card's BOTTOM edge on mobile
-           too, same as desktop already did — switched mobile to the same bottom-anchored idiom
-           instead of a top percentage, rather than continuing to guess at a top% that lines his
-           feet up correctly. z-index:0 is deliberately BELOW the numbers content div's own
-           zIndex:1 (Dashboard.jsx) as a safety net — the net-worth figure can render arbitrarily
-           wide (an unbounded real balance, not a fixed-width label), so on a narrow phone with a
-           long number it's possible for the two to overlap; z-index makes sure the number wins
-           that overlap and stays fully readable rather than the mascot covering digits. */
-        .warrior-mount { position: absolute; bottom: 6px; right: -10px; z-index: 0; }
-        /* Fourth pass (2026-08-11) — ป้อ's feedback after the bottom-anchor fix: still needs to
-           come in toward the left a bit (right offset less negative = less overlap). */
-        @media (max-width: 1279px) {
-          .warrior-mount { right: -22px; }
-        }
-        @media (min-width: 1280px) {
-          .warrior-mount { right: -16px; }
-        }
+           full opacity, at every width — not a background layer.
+           Fourth pass (2026-08-11) — the previous three passes (top:42% centered, then top:33%,
+           then a bottom-anchor) were all guessed off a downscaled thumbnail read of ป้อ's own
+           reference mockup. This pass instead pixel-measured the actual reference image at full
+           1206×2144 resolution: his own top edge sits at ~43.5% down the card, and his right edge
+           (shield tip) stops ~14px shy of the card's own right edge — he does NOT cross it in the
+           reference (that was a misread of the downscaled thumbnail; it's the separately-floating
+           "+" FAB, not him, that overlaps a card's corner in the mockup). top-anchored (not
+           centered/bottom-anchored) so the box's own top edge — which sits right at his hairline
+           now that mascot-warrior.png is tightly cropped, see ".warrior-img" below — lines up
+           directly with that measured 43.5% point.
+           z-index:0 is deliberately BELOW the numbers content div's own zIndex:1 (Dashboard.jsx)
+           as a safety net — the net-worth figure can render arbitrarily wide (an unbounded real
+           balance, not a fixed-width label), so on a narrow phone with a long number it's
+           possible for the two to overlap; z-index makes sure the number wins that overlap and
+           stays fully readable rather than the mascot covering digits. */
+        .warrior-mount { position: absolute; top: 43%; right: 14px; z-index: 0; }
 
-        /* WarriorMascot.jsx's own <img> size: clamp() shrinks it with the viewport so it stays
-           clear of the number on narrow phones, but with a 90px floor (not smaller — a too-tiny
-           guard reads as an accident, not a mascot) and landing on 140px once there's a bit more
-           room. Desktop is bigger still (see the min-width:1280px override below) — that's
-           taller than this card's own height, which is why ".passbook-card" below switches
-           overflow to visible at that same breakpoint, letting the mascot stand taller than the
-           card instead of being clipped to it. Kept as a class (not inline on the <img>) so the
-           desktop media query can win — an inline style always beats an external stylesheet rule
-           of any specificity unless that rule uses !important, which this file deliberately
-           avoids. */
-        /* 1.5× (2026-08-11, "ขยาย Warrior/Mage ทั้งคู่ 1.5 เท่า") — see ".mage-img"'s own
-           comment above for the scaling approach. Re-verified against the same overlap risk the
-           200px note below originally called out (reaching into the speech bubble/label text) —
-           still clear at 300px with the current mascot-warrior.png crop (right-biased within its
-           own canvas, see that file's own 2026-08-11 provenance note), but if that art is ever
-           swapped again this is the number to re-check first. */
-        .warrior-img { width: clamp(135px, 39vw, 210px); height: clamp(135px, 39vw, 210px); }
+        /* WarriorMascot.jsx's own <img> size. Fourth pass (2026-08-11, same pixel-measurement
+           pass as the mount rule above) — also height-only + width:auto now (matches ".mage-img"'s
+           own 2026-08-11 rescale) since the pose pool (mascotPoses.js) isn't all the same aspect
+           ratio; matching height directly keeps every pose the same apparent size regardless of
+           its own canvas shape, instead of a fixed square box object-fit:contain-ing each one
+           differently. Values themselves are smaller than the previous pass's because
+           mascot-warrior.png got tightly re-cropped that same pass too (its character used to
+           fill only ~55% of its own canvas, mostly blank space; now ~93%) — for the SAME
+           measured on-screen size, a much tighter crop needs a smaller box. 90px floor on mobile
+           (not smaller — a too-tiny guard reads as an accident, not a mascot). */
+        .warrior-img { height: clamp(90px, 24vw, 135px); width: auto; }
         @media (min-width: 1280px) {
-          .warrior-img { width: 300px; height: 300px; }
+          .warrior-img { height: 180px; }
         }
 
         /* Dashboard.jsx's net-worth card stats row (รายรับ/รายจ่าย/โอน-ชำระ เดือนนี้) — arcade's
