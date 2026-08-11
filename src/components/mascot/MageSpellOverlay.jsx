@@ -132,7 +132,18 @@ export default function MageSpellOverlay({ message, castingMs = 1800, messageMs 
         <img
           src={new URL("../../assets/mascot-mage.png", import.meta.url).href}
           alt=""
-          style={{ position: "relative", width: "50%", height: "50%", imageRendering: "pixelated" }}
+          style={{
+            position: "relative", width: "50%", height: "50%", imageRendering: "pixelated",
+            // Dark outline behind the sprite (2026-08-11, reported as "หัวขาด" — the mage's dark
+            // hair/hood was reading as missing, not actually cropped) — the new mage-orb-ring.png
+            // has bright rays crossing right at head height, and against those the character's
+            // own dark tones lost all contrast and visually vanished into the pattern. Stacking
+            // the same near-black drop-shadow 4x (each pass only adds a little opacity around the
+            // sprite's alpha edge; layering multiplies it up to a solid-looking outline) traces a
+            // dark silhouette around him regardless of how bright/busy whatever's behind him gets
+            // — same #1A1030 ink tone as every other pixel-box outline in this theme.
+            filter: "drop-shadow(0 0 2px #1A1030) drop-shadow(0 0 2px #1A1030) drop-shadow(0 0 4px #1A1030) drop-shadow(0 0 4px #1A1030)",
+          }}
         />
       </div>
     </div>
