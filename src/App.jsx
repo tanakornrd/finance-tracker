@@ -327,7 +327,12 @@ export default function App() {
            of how much decoration a given pose has above the head. Verified live by swapping the
            mounted <img> between the two most different poses (the confusion effect vs. the
            portal ring) at the same rule and confirming their feet landed at the same height. */
-        .scribe-mage-mount { position: absolute; bottom: -47px; right: 20px; }
+        /* Seventh pass (2026-08-11) — ป้อ's feedback: he should sit entirely ABOVE the
+           categoryBreakdown's "ที่พัก/บิล" divider/row, not overlapping down into it (the
+           worst-case pose — the confusion effect, which sits lowest of the pool per its own
+           crop — was still dipping a little past that line at -47px). Raised well clear of it,
+           verified live against that same worst-case pose before committing. */
+        .scribe-mage-mount { position: absolute; bottom: 5px; right: 20px; }
 
         /* ".safe-to-spend-card" overflow — same split as ".passbook-card" below: hidden by
            default (clips to the card's own rounded corners, matching every theme's prior look),
