@@ -242,10 +242,14 @@ export default function App() {
         /* MageMascot.jsx's own <img> size — see ".warrior-img" above for why this is a class,
            not an inline style: only a stylesheet rule can be overridden by a media query. This
            card is self-contained (BudgetMageCard.jsx), so unlike the warrior it never has to
-           stay clear of someone else's numbers — just enough room to grow a bit on desktop. */
-        .mage-img { width: clamp(64px, 18vw, 100px); height: clamp(64px, 18vw, 100px); }
+           stay clear of someone else's numbers — just enough room to grow a bit on desktop.
+           1.5× across the board (2026-08-11, "ขยาย Warrior/Mage ทั้งคู่ 1.5 เท่า") — every
+           number below (this rule and its two scoped overrides, plus ".warrior-img" and
+           ".safe-to-spend-header"'s min-height) scaled by the same 1.5 factor together, so the
+           buffer/proportion relationships between them hold exactly as before, just bigger. */
+        .mage-img { width: clamp(96px, 27vw, 150px); height: clamp(96px, 27vw, 150px); }
         @media (min-width: 1280px) {
-          .mage-img { width: 140px; height: 140px; }
+          .mage-img { width: 210px; height: 210px; }
         }
 
         /* ArcherMascot.jsx's own <img> size — deliberately smaller than the warrior/mage: this
@@ -264,9 +268,9 @@ export default function App() {
            even when the headline text itself is short (one line + a subtitle) — matches
            ".scribe-mage-mount .mage-img"'s own max sizes below, plus a little breathing room, at
            each breakpoint. */
-        .safe-to-spend-header { position: relative; min-height: clamp(84px, 24vw, 128px); }
+        .safe-to-spend-header { position: relative; min-height: clamp(126px, 36vw, 192px); }
         @media (min-width: 1280px) {
-          .safe-to-spend-header { min-height: 168px; }
+          .safe-to-spend-header { min-height: 252px; }
         }
 
         /* SafeToSpendCard.jsx's own MageMascot mount ("ใช้ได้อีกวันนี้" card, Dashboard.jsx) —
@@ -277,9 +281,9 @@ export default function App() {
            specifically — NOT a change to ".mage-img" itself, which stays exactly as-is for
            BudgetMageCard.jsx (kept where it was, unchanged, per instruction). */
         .scribe-mage-mount { position: absolute; top: 50%; right: 8px; transform: translateY(-50%); z-index: 0; }
-        .scribe-mage-mount .mage-img { width: clamp(72px, 20vw, 120px); height: clamp(72px, 20vw, 120px); }
+        .scribe-mage-mount .mage-img { width: clamp(108px, 30vw, 180px); height: clamp(108px, 30vw, 180px); }
         @media (min-width: 1280px) {
-          .scribe-mage-mount .mage-img { width: 160px; height: 160px; }
+          .scribe-mage-mount .mage-img { width: 240px; height: 240px; }
         }
 
         /* SlimeEnemy.jsx (Budgets.jsx): idle is a squish-wobble (fitting for a slime) instead
@@ -341,11 +345,12 @@ export default function App() {
         }
 
         /* "party" variant — one per budgeted category, staged inside BudgetMageCard.jsx
-           opposite MageMascot, like an enemy encounter. Deliberately the SAME max box as
-           ".budget-mage-mount .mage-img" below (not ".mage-img"'s own default size) —
-           SlimeEnemy.jsx's 0.5 baseline scale only reads as "half the mage's size" if both
-           share the same reserved box to begin with. Keep these two rules' width/height in sync
-           if either changes. */
+           opposite MageMascot, like an enemy encounter. Used to be the SAME max box as
+           ".budget-mage-mount .mage-img" below, so SlimeEnemy.jsx's 0.5 baseline scale read as
+           "half the mage's size" — deliberately NO LONGER kept in sync (2026-08-11): the mage
+           box grew 1.5× on its own ("ขยาย Warrior/Mage ทั้งคู่ 1.5 เท่า" — slime wasn't part of
+           that request, so it stays at its original size instead of growing to match). The
+           "half the mage's size" reading is now approximate rather than exact. */
         .slime-img-party { width: clamp(90px, 22vw, 130px); height: clamp(90px, 22vw, 130px); transform: scale(var(--slime-scale, 0.5)); transform-origin: center; transition: transform 0.6s ease; }
         @media (min-width: 1280px) {
           .slime-img-party { width: 190px; height: 190px; }
@@ -355,10 +360,11 @@ export default function App() {
            ".mage-img" size (used as-is on TransactionDetail.jsx and, via its own further
            override, SafeToSpendCard.jsx's ".scribe-mage-mount") via a descendant override
            scoped to this mount specifically, same idiom as ".scribe-mage-mount .mage-img"
-           above. Sized to match ".slime-img-party" exactly — see that rule's own comment. */
-        .budget-mage-mount .mage-img { width: clamp(90px, 22vw, 130px); height: clamp(90px, 22vw, 130px); }
+           above. Used to match ".slime-img-party" exactly; no longer does since this rule alone
+           was scaled 1.5× — see that rule's own comment for why. */
+        .budget-mage-mount .mage-img { width: clamp(135px, 33vw, 195px); height: clamp(135px, 33vw, 195px); }
         @media (min-width: 1280px) {
-          .budget-mage-mount .mage-img { width: 190px; height: 190px; }
+          .budget-mage-mount .mage-img { width: 285px; height: 285px; }
         }
 
         /* PartyLevelUpOverlay.jsx (RPG party interactions, part 5) — the "big" celebration,
@@ -532,12 +538,15 @@ export default function App() {
            desktop media query can win — an inline style always beats an external stylesheet rule
            of any specificity unless that rule uses !important, which this file deliberately
            avoids. */
-        .warrior-img { width: clamp(90px, 26vw, 140px); height: clamp(90px, 26vw, 140px); }
+        /* 1.5× (2026-08-11, "ขยาย Warrior/Mage ทั้งคู่ 1.5 เท่า") — see ".mage-img"'s own
+           comment above for the scaling approach. Re-verified against the same overlap risk the
+           200px note below originally called out (reaching into the speech bubble/label text) —
+           still clear at 300px with the current mascot-warrior.png crop (right-biased within its
+           own canvas, see that file's own 2026-08-11 provenance note), but if that art is ever
+           swapped again this is the number to re-check first. */
+        .warrior-img { width: clamp(135px, 39vw, 210px); height: clamp(135px, 39vw, 210px); }
         @media (min-width: 1280px) {
-          /* 200px, not the 260px tried first — that was tall enough to reach up into the speech
-             bubble/label text above it on real desktop widths. 200px is still a clear step up
-             from the pre-enlargement 130px without covering anything. */
-          .warrior-img { width: 200px; height: 200px; }
+          .warrior-img { width: 300px; height: 300px; }
         }
 
         /* Base: clips the card's own perforation strip + (at mobile widths) the mascot to its
