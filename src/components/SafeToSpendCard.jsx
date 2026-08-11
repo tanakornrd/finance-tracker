@@ -169,19 +169,27 @@ export default function SafeToSpendCard({ isCurrentMonth, expenseCentsBeforeToda
           "centered flex pair" version (see git history) now that overflowing the card is the
           actual goal: a flex sibling can't spill past its own row's edges the way an
           absolutely-positioned corner mount (same idiom as Dashboard.jsx's ".warrior-mount") can.
-          zIndex:1 here is a safety net exactly like Dashboard.jsx's own numbers wrapper — Mage's
-          mount below has no explicit z-index (so it paints at the default stacking level), and
-          this keeps the "ใช้ได้อีกวันนี้" figure/text readable even if a very long message ever
-          made the two boxes overlap. */}
+          zIndex:1 on the text itself is a safety net (matches Dashboard.jsx's own numbers
+          wrapper) keeping the "ใช้ได้อีกวันนี้" figure readable if a long message ever overlapped
+          Mage's corner.
+
+          Mage's mount is nested INSIDE this header now, not a sibling after it (2026-08-11,
+          second pass — a real bug the first version had: anchoring to ".safe-to-spend-card"
+          itself put him bottom-right of the WHOLE card, including everything categoryBreakdown
+          adds below. On a card with several budgeted categories, that pushed him down past all
+          those rows entirely — nowhere near the number he's supposed to stand beside, and easy
+          to scroll straight past without noticing he'd "disappeared"). Anchoring to the header
+          instead keeps him beside the number/figure at a fixed spot regardless of how many
+          category rows render underneath. */}
       <div className="safe-to-spend-header" style={theme === "arcade" ? { position: "relative", zIndex: 1 } : undefined}>
-        {body}
-      </div>
-      {/* MageMascot mount — arcade-only (MageMascot itself renders null off-theme, so this div
-          is harmless dead weight on every other theme, same as WarriorMascot's own mount).
-          Positioned/sized in App.jsx's ".scribe-mage-mount" CSS, same split as every other mascot
-          mount in this app (only a stylesheet class can differ per breakpoint). */}
-      <div className="scribe-mage-mount">
-        <MageMascot firing={mageFiring} firingText="จดไว้แล้ว! ✨" onClick={onMageClick} src={mageSrc} />
+        <div style={{ position: "relative", zIndex: 1 }}>{body}</div>
+        {/* MageMascot mount — arcade-only (MageMascot itself renders null off-theme, so this div
+            is harmless dead weight on every other theme, same as WarriorMascot's own mount).
+            Positioned/sized in App.jsx's ".scribe-mage-mount" CSS, same split as every other
+            mascot mount in this app (only a stylesheet class can differ per breakpoint). */}
+        <div className="scribe-mage-mount">
+          <MageMascot firing={mageFiring} firingText="จดไว้แล้ว! ✨" onClick={onMageClick} src={mageSrc} />
+        </div>
       </div>
       {categoryBreakdown}
       <AddBudgetSheet
