@@ -135,16 +135,18 @@ function SpeechBubble({ text, anchorRef }) {
               // zoomed box to begin with. See App.jsx's own comment on that rule for why.
             }
           : {
-              // top: 28% (not 50%, the sprite's own vertical center) is deliberate: the warrior
-              // image is taller than the card is, so centering the bubble on the whole 130px
-              // sprite pushed it up far enough to cover the label text above the numbers row.
-              // The head — where a speech bubble's tail should actually point — sits in roughly
-              // the top third of a standing sprite, so aiming there instead both looks right
-              // (tail meets the head, not the chest) and keeps the bubble low enough to clear
-              // the label above it.
-              top: "28%",
+              // Fixed px, not a percentage of the sprite's own height (2026-08-11 — was "28%"
+              // until the warrior mount moved to bottom-anchored + 300px tall, see
+              // ".warrior-mount"'s own 2026-08-11 comment in App.jsx). A percentage measures from
+              // the TOP of that now much-taller box, which sits well above the card itself once
+              // bottom-anchored — 28% of 300px landed the bubble down in the card's own text
+              // rows instead of up by his head where it belongs. A small fixed offset always
+              // lands near the head regardless of how tall the sprite box is, since his head is
+              // near the top of his own crop either way (see mascot-warrior.png's own provenance
+              // note on that crop).
+              top: 22,
               right: "100%",
-              transform: "translateY(-50%)",
+              transform: "translateY(0)",
               marginRight: 6,
               width: "clamp(120px, 32vw, 200px)",
             }),

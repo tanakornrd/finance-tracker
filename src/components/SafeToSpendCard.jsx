@@ -1,14 +1,17 @@
 import React, { useState } from "react";
 import { useReferenceData } from "../context/ReferenceDataContext.jsx";
+import { useTheme } from "../context/ThemeContext.jsx";
 import { centsToDisplay } from "../../shared/money.js";
 import { daysInMonth } from "../../shared/dates.js";
 import { card } from "./sharedStyles.js";
 import AddBudgetSheet from "./AddBudgetSheet.jsx";
 import MageMascot from "./mascot/MageMascot.jsx";
 
-// pointerEvents:"auto" overrides the body wrapper's own pointerEvents:"none" below (a child can
-// always re-enable pointer events an ancestor turned off) — this button is the one real
-// interactive element inside that wrapper and needs to stay clickable.
+// pointerEvents:"auto" is a no-op now (the header's text wrapper no longer sets
+// pointerEvents:"none" on an ancestor — that was only ever needed while Mage sat absolutely
+// positioned UNDER this same box, see the header's own 2026-08-11 comment on why that's gone).
+// Left in place since it's harmless and this button is exactly the element it would matter for
+// if that ever came back.
 const ctaBtn = { padding: "9px 16px", borderRadius: 10, border: "none", background: "var(--color-primary)", color: "var(--color-white)", fontWeight: 700, fontSize: 13, pointerEvents: "auto" };
 
 // expenseCentsBeforeToday / expenseCentsToday: the current month's expense total split at the
@@ -31,6 +34,7 @@ const COLOR_WARN = "var(--color-accent)";
 const COLOR_OVER = "var(--color-danger)";
 
 export default function SafeToSpendCard({ isCurrentMonth, expenseCentsBeforeToday, expenseCentsToday, spentByCategory, mageFiring, onMageClick }) {
+  const { theme } = useTheme();
   const { budgets: allBudgets, refetch } = useReferenceData();
   // `allBudgets` mixes category budgets and festival budgets now (2026-08-08, ชุด 4.1 — see
   // server/routes/budgets.js's own comment). This card's whole point is "today's slice of your
@@ -152,27 +156,22 @@ export default function SafeToSpendCard({ isCurrentMonth, expenseCentsBeforeToda
 
   return (
     <div style={{ ...card, marginBottom: 16, position: "relative", overflow: "hidden" }} className="safe-to-spend-card">
-      {/* Header block — its OWN position:relative box, not the whole (now much taller, since
-          categoryBreakdown below was added 2026-08-11) card. The mage mount's "top:50%" is
-          measured against whatever this div directly contains, so it stays anchored beside the
-          headline number/text no matter how long the category list below grows — before this
-          split, "top:50%" was relative to the WHOLE card, so it drifted down into the category
-          rows and covered their amounts/warnings once the list made the card tall (the reported
-          bug). ".safe-to-spend-header"'s own min-height (App.jsx) reserves enough room for the
-          mage's full size even when `body` itself is just one short line. */}
-      <div className="safe-to-spend-header">
-        {/* zIndex:1 so this text reliably paints above the mage mount below regardless of DOM
-            order — same safety-net idiom as Dashboard.jsx's net-worth numbers over WarriorMascot.
-            pointerEvents:"none" — same fix as that same net-worth div: this box spans the header's
-            full width, so it was silently swallowing every real click aimed at the mage wherever
-            the two boxes overlapped (see Dashboard.jsx's own comment on this exact bug). The one
-            real interactive element inside (the "+ ตั้งงบประมาณ" button, empty-budgets state)
-            re-enables itself via its own pointerEvents:"auto" (ctaBtn above). */}
-        <div style={{ position: "relative", zIndex: 1, pointerEvents: "none" }}>{body}</div>
+      {/* Header block — text + Mage as one centered pair (2026-08-11, per a hand-annotated
+          mockup: "ย้ายข้อความ...ไปไว้ตรงกลางคู่กับ mage"). Used to be text pinned left with Mage
+          absolutely positioned in the corner (a leftover from before the category list below
+          existed, when the whole card was short enough that a corner mount never had room to
+          drift into anything) — now a plain centered flex row, arcade-only (every other theme
+          never renders Mage at all, per MageMascot's own theme check, so centering the text
+          there too would just look like an unexplained alignment change with nothing beside it).
+          Being normal flow now (not position:absolute) also means this row sizes itself to fit
+          Mage automatically — no more hand-tuned min-height to keep in sync with his box size. */}
+      <div
+        className="safe-to-spend-header"
+        style={theme === "arcade" ? { display: "flex", alignItems: "center", justifyContent: "center", gap: 16 } : undefined}
+      >
+        <div>{body}</div>
         {/* MageMascot mount — arcade-only (MageMascot itself renders null off-theme, so this div
-            is harmless dead weight on every other theme, same as WarriorMascot's own mount).
-            Positioned like WarriorMascot's corner mount on the net-worth card: absolute, clear of
-            the left-aligned text above. */}
+            is harmless dead weight on every other theme, same as WarriorMascot's own mount). */}
         <div className="scribe-mage-mount">
           <MageMascot firing={mageFiring} firingText="จดไว้แล้ว! ✨" onClick={onMageClick} />
         </div>

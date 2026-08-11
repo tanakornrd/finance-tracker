@@ -480,7 +480,13 @@ export default function Dashboard() {
             สินทรัพย์ {centsToDisplay(totalAssetsCents)} · หนี้สิน {centsToDisplay(totalDebtCents)}
             {investedCents > 0 && <> · ลงทุน {centsToDisplay(investedCents)}</>}
           </div>
-          <div style={{ display: "flex", gap: 12 }}>
+          {/* .networth-stats-row/-divider: plain flex row on every theme except arcade's own
+              mobile width (2026-08-11, per a hand-annotated mockup — "ย้ายรายจ่ายเดือนนี้และ
+              โอน/ชำระเดือนนี้ไปไว้ด้านล่างของรายรับเดือนนี้") — that specific combination stacks
+              the 3 columns instead, freeing the row's right side for the now much taller/wider
+              mobile warrior mount. Scoped to arcade only (see App.jsx's own rule) so the other
+              themes' already-confirmed mobile layout doesn't change underneath them. */}
+          <div className="networth-stats-row" style={{ display: "flex", gap: 12 }}>
             {/* minWidth: 0 overrides flexbox's default min-width:auto, which otherwise keeps
                 each column at least as wide as its number's unbroken text — needed now that
                 the arcade theme's pixel number-font is wide enough to overflow a 1/3 column. */}
@@ -488,12 +494,12 @@ export default function Dashboard() {
               <div style={{ fontSize: 11, color: colors.inkMuted }}>รายรับเดือนนี้</div>
               <div className="num" style={{ fontSize: 17, color: colors.primary, fontWeight: 600 }}>+{centsToDisplay(incomeCents)}</div>
             </div>
-            <div style={{ width: 1, background: colors.border }} />
+            <div className="networth-stats-divider" style={{ width: 1, background: colors.border }} />
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontSize: 11, color: colors.inkMuted }}>รายจ่ายเดือนนี้</div>
               <div className="num" style={{ fontSize: 17, color: colors.danger, fontWeight: 600 }}>-{centsToDisplay(expenseCents)}</div>
             </div>
-            <div style={{ width: 1, background: colors.border }} />
+            <div className="networth-stats-divider" style={{ width: 1, background: colors.border }} />
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontSize: 11, color: colors.inkMuted }}>โอน/ชำระเดือนนี้</div>
               <div className="num" style={{ fontSize: 17, color: colors.ink, fontWeight: 600 }}>{centsToDisplay(transferredCents)}</div>

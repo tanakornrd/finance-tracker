@@ -260,27 +260,19 @@ export default function App() {
           .archer-img { width: 90px; height: 90px; }
         }
 
-        /* SafeToSpendCard.jsx's ".safe-to-spend-header" — the headline number/text block only,
-           NOT the whole card (2026-08-11 fix: the card grew a "สัดส่วนรายหมวด" category list
-           below the headline, and the mage mount used to center on the WHOLE card's height, so
-           on any month with a few budgeted categories it drifted down and covered a category
-           row's amount/warning text). min-height reserves room for the mage at its full size
-           even when the headline text itself is short (one line + a subtitle) — matches
-           ".scribe-mage-mount .mage-img"'s own max sizes below, plus a little breathing room, at
-           each breakpoint. */
-        .safe-to-spend-header { position: relative; min-height: clamp(126px, 36vw, 192px); }
-        @media (min-width: 1280px) {
-          .safe-to-spend-header { min-height: 252px; }
-        }
+        /* SafeToSpendCard.jsx's ".safe-to-spend-header" — no position/sizing rules anymore
+           (2026-08-11): it's a plain centered flex row now (text + Mage as one pair, set inline
+           in the component since it's arcade-only), so it just sizes itself to its content like
+           any other flow element. Used to need position:relative + a hand-tuned min-height here
+           when Mage was absolutely positioned in a corner instead — see the component's own
+           comment for why that approach was replaced. Class kept only as a styling hook (the
+           component doesn't reference it beyond the className itself).
 
-        /* SafeToSpendCard.jsx's own MageMascot mount ("ใช้ได้อีกวันนี้" card, Dashboard.jsx) —
-           position mirrors WarriorMascot's corner mount on the net-worth card (absolute,
-           vertically centered within ".safe-to-spend-header" above — NOT the whole card, see its
-           own comment — clear of this card's own left-aligned text). Sized bigger than the
-           budget page's mage via a descendant override of ".mage-img" scoped to this mount
-           specifically — NOT a change to ".mage-img" itself, which stays exactly as-is for
-           BudgetMageCard.jsx (kept where it was, unchanged, per instruction). */
-        .scribe-mage-mount { position: absolute; top: 50%; right: 8px; transform: translateY(-50%); z-index: 0; }
+           SafeToSpendCard.jsx's own MageMascot mount — sized bigger than the budget page's mage
+           via a descendant override of ".mage-img" scoped to this mount specifically — NOT a
+           change to ".mage-img" itself, which stays exactly as-is for BudgetMageCard.jsx (kept
+           where it was, unchanged, per instruction). No position rule needed here either now
+           (plain flex item, not a corner overlay). */
         .scribe-mage-mount .mage-img { width: clamp(108px, 30vw, 180px); height: clamp(108px, 30vw, 180px); }
         @media (min-width: 1280px) {
           .scribe-mage-mount .mage-img { width: 240px; height: 240px; }
@@ -522,10 +514,20 @@ export default function App() {
            divider, instead of hanging down into that divider's own row. First pass (20%) went
            too far up — 33% measured directly off the user's annotated screenshot (pixel-measured
            card top/height and his feet position at 20% to back out where the target line actually
-           falls). Desktop keeps the base 42% untouched — this only matches below the desktop
-           breakpoint. */
+           falls). Desktop below has its own separate override now (2026-08-11) — this one only
+           matches below the desktop breakpoint. */
         @media (max-width: 1279px) {
           .warrior-mount { top: 33%; }
+        }
+        /* Desktop-only (2026-08-11, per a hand-annotated mockup: move the mascot down toward the
+           card's bottom edge instead of floating centered beside the number). bottom-anchored
+           instead of the base rule's top:42% — top:auto/transform:none cancel that rule's values
+           outright rather than trying to combine with it. His feet land near the card's bottom
+           edge; the rest of him (now 300px tall, see ".warrior-img") stands up out of the card's
+           own top, which ".passbook-card"'s overflow:visible (desktop-only, below) already
+           exists to allow. */
+        @media (min-width: 1280px) {
+          .warrior-mount { top: auto; bottom: 6px; transform: none; }
         }
 
         /* WarriorMascot.jsx's own <img> size: clamp() shrinks it with the viewport so it stays
@@ -547,6 +549,16 @@ export default function App() {
         .warrior-img { width: clamp(135px, 39vw, 210px); height: clamp(135px, 39vw, 210px); }
         @media (min-width: 1280px) {
           .warrior-img { width: 300px; height: 300px; }
+        }
+
+        /* Dashboard.jsx's net-worth card stats row (รายรับ/รายจ่าย/โอน-ชำระ เดือนนี้) — arcade's
+           own mobile width only (2026-08-11, per a hand-annotated mockup): stack the 3 columns
+           instead of the plain 3-across flex row every other theme/width keeps, so the row's
+           right side is free for the mobile warrior mount instead of competing with it for the
+           same horizontal space. */
+        @media (max-width: 1279px) {
+          [data-theme="arcade"] .networth-stats-row { flex-direction: column; gap: 8px; }
+          [data-theme="arcade"] .networth-stats-divider { display: none; }
         }
 
         /* Base: clips the card's own perforation strip + (at mobile widths) the mascot to its
