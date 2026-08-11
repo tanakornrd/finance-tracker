@@ -288,7 +288,15 @@ export default function App() {
            made a tall pose and a wide pose (e.g. the portal-ring art, wider due to its own glow
            ring) render at visibly different heights for the same box; matching height directly
            keeps every pose the same apparent size regardless of its own canvas shape. */
-        .scribe-mage-mount .mage-img { height: clamp(78px, 21vw, 118px); width: auto; }
+        /* Fifth pass (2026-08-11) — the fourth pass's numbers were pixel-measured off the
+           reference correctly in RATIO terms, but landed ~20% too small on the actual deployed
+           mobile page: App.jsx's own mobile-only CSS zoom (1.17×, see that rule's own comment
+           further down) applies AFTER these clamp()s resolve, and the fourth pass didn't account
+           for it, so it under-shot. Verified LIVE this time — measured the deployed page's real
+           rendered (post-zoom) mage height ÷ card width, compared it against the same ratio
+           measured from ป้อ's reference image, and scaled these clamp() numbers up by that exact
+           gap (×1.20) until the two ratios matched (0.335 live vs 0.340 target). */
+        .scribe-mage-mount .mage-img { height: clamp(94px, 25vw, 142px); width: auto; }
         @media (min-width: 1280px) {
           .scribe-mage-mount .mage-img { height: 150px; }
         }
@@ -570,14 +578,18 @@ export default function App() {
           .warrior-mount { top: 20%; }
         }
 
-        /* WarriorMascot.jsx's own <img> size — see ".warrior-mount" above for the fifth-pass
-           context. height-only + width:auto (matches ".mage-img"'s own rescale) since the pose
-           pool (mascotPoses.js) isn't all the same aspect ratio; matching height directly keeps
-           every pose the same apparent size regardless of its own canvas shape. 90px floor on
-           mobile (not smaller — a too-tiny guard reads as an accident, not a mascot). Desktop's
-           100px (was 180px) is what actually fits inside its own ~194px-tall card at top:20%
-           without overflowing into the row below — see the mount rule's own comment. */
-        .warrior-img { height: clamp(90px, 24vw, 135px); width: auto; }
+        /* WarriorMascot.jsx's own <img> size — see ".warrior-mount" above for context.
+           height-only + width:auto (matches ".mage-img"'s own rescale) since the pose pool
+           (mascotPoses.js) isn't all the same aspect ratio; matching height directly keeps every
+           pose the same apparent size regardless of its own canvas shape.
+           Sixth pass (2026-08-11) — same "forgot the mobile CSS zoom" gap as
+           ".scribe-mage-mount .mage-img"'s own fifth-pass comment: measured live on the deployed
+           page (real rendered height ÷ card width) against the same ratio measured from ป้อ's
+           reference image, and scaled up (×1.22) until they matched (0.390 live vs 0.392
+           target). 110px floor on mobile (not smaller — a too-tiny guard reads as an accident,
+           not a mascot). Desktop's 100px is unrelated to this mobile-only zoom gap (desktop has
+           no such zoom rule) and is unchanged from the previous pass. */
+        .warrior-img { height: clamp(110px, 29vw, 165px); width: auto; }
         @media (min-width: 1280px) {
           .warrior-img { height: 100px; }
         }
