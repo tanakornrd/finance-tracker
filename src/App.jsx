@@ -285,14 +285,15 @@ export default function App() {
            SafeToSpendCard.jsx's own comments on both), and well below the "+" FAB's zIndex:41
            (App.jsx's ".dashboard-fab"), so neither the numbers nor the FAB can ever end up
            visually covered by him regardless of how far he overlaps.
-           Second pass (2026-08-11) — the first pass's -10px/-14px read as barely any overlap at
-           all against ป้อ's annotated mockup, where his cloak/leg clearly cross both the card's
-           right edge AND its bottom edge (down into the "+" FAB's own space). Pushed out several
-           times further to actually match that. Still a best-effort read of a mockup, not a
-           pixel-measured value — nudge again if it's still off once it's live. */
-        .scribe-mage-mount { position: absolute; right: -34px; bottom: -46px; }
+           Third pass (2026-08-11) — after fixing the mount's containing block (moved inside
+           ".safe-to-spend-header", see SafeToSpendCard.jsx's own comment — it used to anchor to
+           the whole card and could drop below several budget rows entirely), ป้อ's feedback was
+           he now sits too far right; pulled the right offset in a bit (was -34px/-46px mobile,
+           -46px/-60px desktop). Still a best-effort read of a mockup, not pixel-measured — nudge
+           again if it's still off. */
+        .scribe-mage-mount { position: absolute; right: -14px; bottom: -46px; }
         @media (min-width: 1280px) {
-          .scribe-mage-mount { right: -46px; bottom: -60px; }
+          .scribe-mage-mount { right: -22px; bottom: -60px; }
         }
 
         /* ".safe-to-spend-card" overflow — same split as ".passbook-card" below: hidden by
@@ -525,35 +526,22 @@ export default function App() {
         }
 
         /* Dashboard.jsx's net-worth card mascot mount: standing beside the net-worth number,
-           full opacity, at every width — not a background layer. right:-10px (was 4px, see the
-           2026-08-11 "ล้นออกนอกกรอบการ์ด" note below) + top:42% (translateY(-50%) to center on
-           that point) lands it in the blank space to the right of the number at both breakpoints,
-           since the card's text content is identical (same DOM/CSS) at every width, just
-           narrower. z-index:0 is deliberately BELOW the numbers content div's own zIndex:1
-           (Dashboard.jsx) as a safety net — the net-worth figure can render arbitrarily wide (an
-           unbounded real balance, not a fixed-width label), so on a narrow phone with a long
-           number it's possible for the two to overlap; z-index makes sure the number wins that
-           overlap and stays fully readable rather than the mascot covering digits. */
-        .warrior-mount { position: absolute; top: 42%; transform: translateY(-50%); right: -16px; z-index: 0; }
-        /* Mobile-only: moved up from the base 42% so his feet/standing ground line up near the
-           bottom edge of the "สินทรัพย์ ... หนี้สิน" line above the divider (2026-08-07 feedback,
-           33% pixel-measured off the user's annotated screenshot), and right nudged further
-           negative (2026-08-11, "ให้มาสคอตล้นออกนอกกรอบการ์ดได้" — a hand-annotated mockup showing
-           his shield/cape crossing the card's own right border on mobile too, not just desktop)
-           now that ".passbook-card" below is overflow:visible at every width, not desktop-only.
-           Second pass (2026-08-11) — -22px still read as too subtle against the mockup, pushed
-           further out. Still a best-effort read, not pixel-measured — nudge again if needed. */
+           full opacity, at every width — not a background layer. Third pass (2026-08-11) — was
+           top:42%/translateY(-50%) (vertically centered) then top:33% on mobile, but ป้อ's own
+           annotated mockup has him standing with his feet near the card's BOTTOM edge on mobile
+           too, same as desktop already did — switched mobile to the same bottom-anchored idiom
+           instead of a top percentage, rather than continuing to guess at a top% that lines his
+           feet up correctly. z-index:0 is deliberately BELOW the numbers content div's own
+           zIndex:1 (Dashboard.jsx) as a safety net — the net-worth figure can render arbitrarily
+           wide (an unbounded real balance, not a fixed-width label), so on a narrow phone with a
+           long number it's possible for the two to overlap; z-index makes sure the number wins
+           that overlap and stays fully readable rather than the mascot covering digits. */
+        .warrior-mount { position: absolute; bottom: 6px; right: -16px; z-index: 0; }
         @media (max-width: 1279px) {
-          .warrior-mount { top: 33%; right: -36px; }
+          .warrior-mount { right: -36px; }
         }
-        /* Desktop-only (2026-08-11, per a hand-annotated mockup: move the mascot down toward the
-           card's bottom edge instead of floating centered beside the number). bottom-anchored
-           instead of the base rule's top:42% — top:auto/transform:none cancel that rule's values
-           outright rather than trying to combine with it. His feet land near the card's bottom
-           edge; the rest of him (now 300px tall, see ".warrior-img") stands up out of the card's
-           own top, which ".passbook-card"'s overflow:visible already exists to allow. */
         @media (min-width: 1280px) {
-          .warrior-mount { top: auto; bottom: 6px; transform: none; right: -28px; }
+          .warrior-mount { right: -28px; }
         }
 
         /* WarriorMascot.jsx's own <img> size: clamp() shrinks it with the viewport so it stays
