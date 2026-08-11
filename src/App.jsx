@@ -314,10 +314,20 @@ export default function App() {
            here place him relative to the header box the same way the reference places him
            relative to the number block, instead of anchoring off the card's far corner.
            Fifth pass (2026-08-11) — ป้อ's feedback after the size fix: he still sat too low and
-           too far right. Tuned live on the deployed page (not another static-image guess) until
-           it read right: top 14%→4% (closer to the header's own top edge) and right 8px→20px
-           (pulled in from the edge). */
-        .scribe-mage-mount { position: absolute; top: 4%; right: 20px; }
+           too far right. Tuned live on the deployed page until it read right: top 14%→4%
+           (closer to the header's own top edge) and right 8px→20px (pulled in from the edge).
+           Sixth pass (2026-08-11) — top-anchoring turned out to be the actual bug, not just a
+           number to nudge: some poses (mascotPoses.js) have decoration — question marks, smoke,
+           a summon circle — floating ABOVE the character's own head, which the alpha-bbox crop
+           (mascotPoses.js's own normalize pass) counts as part of the image, pushing the
+           character noticeably lower in a couple of poses than others even at the identical
+           top:4%. bottom-anchoring instead is far more consistent across the whole pool — nearly
+           every pose has its feet right at the bottom of its own crop (that's "the ground" in a
+           standing/action pose), so a fixed bottom offset lines feet up the same way regardless
+           of how much decoration a given pose has above the head. Verified live by swapping the
+           mounted <img> between the two most different poses (the confusion effect vs. the
+           portal ring) at the same rule and confirming their feet landed at the same height. */
+        .scribe-mage-mount { position: absolute; bottom: -47px; right: 20px; }
 
         /* ".safe-to-spend-card" overflow — same split as ".passbook-card" below: hidden by
            default (clips to the card's own rounded corners, matching every theme's prior look),
