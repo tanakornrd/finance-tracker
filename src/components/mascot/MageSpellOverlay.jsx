@@ -16,9 +16,12 @@ import { playSound } from "../../lib/sound.js";
 // (a rarer action, ~3.7s total is fine) and Dashboard.jsx (fires on nearly every save, wants
 // ~1.5-1.8s) can each pick their own pace without a second copy of this component.
 //
-// The ring itself is mage-orb-ring.png — a crop of the actual magic-circle art already in
-// mascot-mage.png's hand (not a separate/new asset, not a CSS approximation like the first
-// version of this component used) — see that file's own note for the crop provenance.
+// The ring is mage-orb-ring.png (2026-08-11: swapped to a user-supplied magic-circle image;
+// originally a crop of mascot-mage.png's own held orb). The mage sprite here is
+// mascot-mage-casting.png — a SEPARATE asset from the plain mascot-mage.png every other mage
+// spot (BudgetMageCard.jsx, SafeToSpendCard.jsx, TransactionDetail.jsx) uses, by explicit
+// request (2026-08-11): this one full-screen "just saved" moment gets its own more dramatic
+// casting pose/effects, without changing how the mage looks anywhere else in the app.
 export default function MageSpellOverlay({ message, castingMs = 1800, messageMs = 1500, fadeMs = 400, onClose }) {
   const { theme, soundEnabled } = useTheme();
   const [phase, setPhase] = useState("casting");
@@ -130,7 +133,7 @@ export default function MageSpellOverlay({ message, castingMs = 1800, messageMs 
           }}
         />
         <img
-          src={new URL("../../assets/mascot-mage.png", import.meta.url).href}
+          src={new URL("../../assets/mascot-mage-casting.png", import.meta.url).href}
           alt=""
           style={{
             position: "relative", width: "50%", height: "50%", imageRendering: "pixelated",
