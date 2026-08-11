@@ -33,7 +33,7 @@ const COLOR_NORMAL = "var(--color-primary)";
 const COLOR_WARN = "var(--color-accent)";
 const COLOR_OVER = "var(--color-danger)";
 
-export default function SafeToSpendCard({ isCurrentMonth, expenseCentsBeforeToday, expenseCentsToday, spentByCategory, mageFiring, onMageClick, mageSrc }) {
+export default function SafeToSpendCard({ isCurrentMonth, expenseCentsBeforeToday, expenseCentsToday, spentByCategory, mageFiring, onMageClick, mageSrc, mageDx, mageDy, mageScale }) {
   const { theme } = useTheme();
   const { budgets: allBudgets, refetch } = useReferenceData();
   // `allBudgets` mixes category budgets and festival budgets now (2026-08-08, ชุด 4.1 — see
@@ -188,7 +188,7 @@ export default function SafeToSpendCard({ isCurrentMonth, expenseCentsBeforeToda
             Positioned/sized in App.jsx's ".scribe-mage-mount" CSS, same split as every other
             mascot mount in this app (only a stylesheet class can differ per breakpoint). */}
         <div className="scribe-mage-mount">
-          <MageMascot firing={mageFiring} firingText="จดไว้แล้ว! ✨" onClick={onMageClick} src={mageSrc} />
+          <MageMascot firing={mageFiring} firingText="จดไว้แล้ว! ✨" onClick={onMageClick} src={mageSrc} dx={mageDx} dy={mageDy} scale={mageScale} />
         </div>
       </div>
       {categoryBreakdown}

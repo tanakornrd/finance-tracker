@@ -51,7 +51,11 @@ export const SCRIBE_MESSAGES = [
 // Dashboard.jsx randomly picked from mascotPoses.js's MAGE_POSES for that mount. Defaults to the
 // original staff-standing art, so BudgetMageCard.jsx/TransactionDetail.jsx (neither passes this)
 // keep rendering exactly the pose they always have.
-export default function MageMascot({ message, firing, firingText, floatingBubble, onClick, src }) {
+// dx/dy/scale: optional per-pose fine-tune (2026-08-11, second pass — see mascotPoses.js's own
+// comment on why a single shared position/size doesn't work across every pose's own framing).
+// Applied as a transform on the <img> itself, on top of ".scribe-mage-mount"/".mage-img"'s shared
+// CSS position — only ever passed by SafeToSpendCard.jsx, same as `src`.
+export default function MageMascot({ message, firing, firingText, floatingBubble, onClick, src, dx = 0, dy = 0, scale = 1 }) {
   const { theme, mascotAnimationEnabled, soundEnabled } = useTheme();
   const [firedMessage, setFiredMessage] = useState(null);
   const [flashing, setFlashing] = useState(false);
@@ -122,7 +126,13 @@ export default function MageMascot({ message, firing, firingText, floatingBubble
           // objectFit:"contain" (2026-08-11, "สุ่มท่า Mage") — same reasoning as WarriorMascot's
           // own <img>: the pose pool's source canvases (mascotPoses.js) aren't all the same aspect
           // ratio as the original mascot-mage.png this box was sized around.
-          style={{ display: "block", imageRendering: "pixelated", objectFit: "contain" }}
+          // transform: per-pose dx/dy/scale correction (see this component's own prop comment) —
+          // transform-origin "bottom right" matches ".scribe-mage-mount"'s own bottom/right
+          // anchor, so scale grows from the same corner the mount itself is pinned to.
+          style={{
+            display: "block", imageRendering: "pixelated", objectFit: "contain",
+            transform: `translate(${dx}px, ${dy}px) scale(${scale})`, transformOrigin: "bottom right",
+          }}
         />
       </div>
     </>

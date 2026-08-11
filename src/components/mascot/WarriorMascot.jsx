@@ -27,7 +27,11 @@ import PositionPortal from "../PositionPortal.jsx";
 // mascotPoses.js's WARRIOR_POSES once per mount and passes its URL down here. Defaults to the
 // original guard-pose art so this component still renders something sane if a future caller
 // forgets to pass it.
-export default function WarriorMascot({ message, hasEntryToday, src }) {
+// dx/dy/scale: optional per-pose fine-tune (2026-08-11, second pass — see mascotPoses.js's own
+// comment on why a single shared position/size doesn't work across every pose's own framing).
+// Applied as a transform on the <img> itself, on TOP of ".warrior-mount"/".warrior-img"'s shared
+// CSS position — each pose nudges from that shared baseline instead of replacing it outright.
+export default function WarriorMascot({ message, hasEntryToday, src, dx = 0, dy = 0, scale = 1 }) {
   const { theme, mascotAnimationEnabled, soundEnabled } = useTheme();
   const [slashing, setSlashing] = useState(false);
   const [clickMessage, setClickMessage] = useState(null);
@@ -97,7 +101,13 @@ export default function WarriorMascot({ message, hasEntryToday, src }) {
         // mascot-warrior.png this box was originally sized around. Without this, a pose whose
         // canvas isn't square would stretch to fill the (roughly square) box instead of keeping
         // its own proportions.
-        style={{ display: "block", imageRendering: "pixelated", objectFit: "contain" }}
+        // transform: per-pose dx/dy/scale correction (see this component's own prop comment) —
+        // transform-origin "bottom right" matches ".warrior-mount"'s own bottom/right anchor, so
+        // scale grows from the same corner the mount itself is pinned to instead of drifting.
+        style={{
+          display: "block", imageRendering: "pixelated", objectFit: "contain",
+          transform: `translate(${dx}px, ${dy}px) scale(${scale})`, transformOrigin: "bottom right",
+        }}
       />
     </button>
   );

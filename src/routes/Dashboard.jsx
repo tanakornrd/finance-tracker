@@ -470,7 +470,7 @@ export default function Dashboard() {
             regardless of z-index. See ".warrior-mount"/".warrior-img" in App.jsx for the actual
             per-breakpoint size/position. */}
         <div className="warrior-mount">
-          <WarriorMascot message={festivalReminder || weeklyInsight.message} hasEntryToday={hasEntryToday} src={warriorPose} />
+          <WarriorMascot message={festivalReminder || weeklyInsight.message} hasEntryToday={hasEntryToday} src={warriorPose.src} dx={warriorPose.dx} dy={warriorPose.dy} scale={warriorPose.scale} />
         </div>
         {/* pointerEvents:"none" — this div is plain display text, nothing inside it is ever
             clickable, but its own box (a block spanning the full card width) sat ABOVE
@@ -532,7 +532,10 @@ export default function Dashboard() {
           // amount-entry modal the "+" FAB does, reusing this same setShowForm state rather
           // than a separate form/modal.
           onMageClick={() => setShowForm(true)}
-          mageSrc={magePose}
+          mageSrc={magePose.src}
+          mageDx={magePose.dx}
+          mageDy={magePose.dy}
+          mageScale={magePose.scale}
         />
         <MonthComparisonBar
           thisMonthExpenseCents={expenseCents}
