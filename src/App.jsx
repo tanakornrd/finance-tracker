@@ -312,8 +312,12 @@ export default function App() {
            resolution he actually stays INSIDE the card in both reference poses (it's the
            separately-floating "+" FAB, not Mage himself, that overlaps the corner). top/right
            here place him relative to the header box the same way the reference places him
-           relative to the number block, instead of anchoring off the card's far corner. */
-        .scribe-mage-mount { position: absolute; top: 14%; right: 8px; }
+           relative to the number block, instead of anchoring off the card's far corner.
+           Fifth pass (2026-08-11) — ป้อ's feedback after the size fix: he still sat too low and
+           too far right. Tuned live on the deployed page (not another static-image guess) until
+           it read right: top 14%→4% (closer to the header's own top edge) and right 8px→20px
+           (pulled in from the edge). */
+        .scribe-mage-mount { position: absolute; top: 4%; right: 20px; }
 
         /* ".safe-to-spend-card" overflow — same split as ".passbook-card" below: hidden by
            default (clips to the card's own rounded corners, matching every theme's prior look),
