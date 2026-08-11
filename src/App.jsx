@@ -556,22 +556,30 @@ export default function App() {
            as a safety net — the net-worth figure can render arbitrarily wide (an unbounded real
            balance, not a fixed-width label), so on a narrow phone with a long number it's
            possible for the two to overlap; z-index makes sure the number wins that overlap and
-           stays fully readable rather than the mascot covering digits. */
+           stays fully readable rather than the mascot covering digits.
+           Fifth pass (2026-08-11) — the fourth pass's numbers were pixel-measured correctly but
+           applied as ONE rule at every width, with no desktop override. Desktop's own
+           ".passbook-card" renders much SHORTER there (single-line stat row, ~194px tall vs
+           mobile's ~345px) — top:43% + a still-180px-tall image overflowed 69px past the card's
+           own bottom edge and visibly poked into the row of cards below it. Verified this whole
+           pass LIVE against the actual deployed page (both breakpoints, via browser devtools —
+           not another guess from a static image) before committing: desktop needed both a
+           smaller top% and a shorter image to actually fit inside its own much shorter card. */
         .warrior-mount { position: absolute; top: 43%; right: 14px; z-index: 0; }
+        @media (min-width: 1280px) {
+          .warrior-mount { top: 20%; }
+        }
 
-        /* WarriorMascot.jsx's own <img> size. Fourth pass (2026-08-11, same pixel-measurement
-           pass as the mount rule above) — also height-only + width:auto now (matches ".mage-img"'s
-           own 2026-08-11 rescale) since the pose pool (mascotPoses.js) isn't all the same aspect
-           ratio; matching height directly keeps every pose the same apparent size regardless of
-           its own canvas shape, instead of a fixed square box object-fit:contain-ing each one
-           differently. Values themselves are smaller than the previous pass's because
-           mascot-warrior.png got tightly re-cropped that same pass too (its character used to
-           fill only ~55% of its own canvas, mostly blank space; now ~93%) — for the SAME
-           measured on-screen size, a much tighter crop needs a smaller box. 90px floor on mobile
-           (not smaller — a too-tiny guard reads as an accident, not a mascot). */
+        /* WarriorMascot.jsx's own <img> size — see ".warrior-mount" above for the fifth-pass
+           context. height-only + width:auto (matches ".mage-img"'s own rescale) since the pose
+           pool (mascotPoses.js) isn't all the same aspect ratio; matching height directly keeps
+           every pose the same apparent size regardless of its own canvas shape. 90px floor on
+           mobile (not smaller — a too-tiny guard reads as an accident, not a mascot). Desktop's
+           100px (was 180px) is what actually fits inside its own ~194px-tall card at top:20%
+           without overflowing into the row below — see the mount rule's own comment. */
         .warrior-img { height: clamp(90px, 24vw, 135px); width: auto; }
         @media (min-width: 1280px) {
-          .warrior-img { height: 180px; }
+          .warrior-img { height: 100px; }
         }
 
         /* Dashboard.jsx's net-worth card stats row (รายรับ/รายจ่าย/โอน-ชำระ เดือนนี้) — arcade's
