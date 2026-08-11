@@ -331,8 +331,14 @@ export default function App() {
            categoryBreakdown's "ที่พัก/บิล" divider/row, not overlapping down into it (the
            worst-case pose — the confusion effect, which sits lowest of the pool per its own
            crop — was still dipping a little past that line at -47px). Raised well clear of it,
-           verified live against that same worst-case pose before committing. */
-        .scribe-mage-mount { position: absolute; bottom: 5px; right: 20px; }
+           verified live against that same worst-case pose before committing.
+           Eighth pass (2026-08-11) — ป้อ then sent a screenshot with a hand-drawn arrow marking
+           the exact gap he wants between Mage's feet and that divider line (measured off his
+           annotated image: ~60px of a 896px-wide screenshot, i.e. ~6.7% of viewport width) —
+           the 5px pass above had pulled him up further than that, more gap than he wanted.
+           Converted that measured gap to this viewport's own px scale and tuned live until the
+           feet-to-divider spacing matched his annotation. */
+        .scribe-mage-mount { position: absolute; bottom: -28px; right: 20px; }
 
         /* ".safe-to-spend-card" overflow — same split as ".passbook-card" below: hidden by
            default (clips to the card's own rounded corners, matching every theme's prior look),
