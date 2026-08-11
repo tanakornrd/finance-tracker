@@ -152,24 +152,32 @@ export default function SafeToSpendCard({ isCurrentMonth, expenseCentsBeforeToda
 
   return (
     <div style={{ ...card, marginBottom: 16, position: "relative", overflow: "hidden" }} className="safe-to-spend-card">
-      {/* zIndex:1 so this text reliably paints above the mage mount below regardless of DOM
-          order — same safety-net idiom as Dashboard.jsx's net-worth numbers over WarriorMascot.
-          pointerEvents:"none" — same fix as that same net-worth div: this box spans the full
-          card width, so it was silently swallowing every real click aimed at the mage wherever
-          the two boxes overlapped (see Dashboard.jsx's own comment on this exact bug). The one
-          real interactive element inside (the "+ ตั้งงบประมาณ" button, empty-budgets state)
-          re-enables itself via its own pointerEvents:"auto" (ctaBtn above). */}
-      <div style={{ position: "relative", zIndex: 1, pointerEvents: "none" }}>
-        {body}
-        {categoryBreakdown}
+      {/* Header block — its OWN position:relative box, not the whole (now much taller, since
+          categoryBreakdown below was added 2026-08-11) card. The mage mount's "top:50%" is
+          measured against whatever this div directly contains, so it stays anchored beside the
+          headline number/text no matter how long the category list below grows — before this
+          split, "top:50%" was relative to the WHOLE card, so it drifted down into the category
+          rows and covered their amounts/warnings once the list made the card tall (the reported
+          bug). ".safe-to-spend-header"'s own min-height (App.jsx) reserves enough room for the
+          mage's full size even when `body` itself is just one short line. */}
+      <div className="safe-to-spend-header">
+        {/* zIndex:1 so this text reliably paints above the mage mount below regardless of DOM
+            order — same safety-net idiom as Dashboard.jsx's net-worth numbers over WarriorMascot.
+            pointerEvents:"none" — same fix as that same net-worth div: this box spans the header's
+            full width, so it was silently swallowing every real click aimed at the mage wherever
+            the two boxes overlapped (see Dashboard.jsx's own comment on this exact bug). The one
+            real interactive element inside (the "+ ตั้งงบประมาณ" button, empty-budgets state)
+            re-enables itself via its own pointerEvents:"auto" (ctaBtn above). */}
+        <div style={{ position: "relative", zIndex: 1, pointerEvents: "none" }}>{body}</div>
+        {/* MageMascot mount — arcade-only (MageMascot itself renders null off-theme, so this div
+            is harmless dead weight on every other theme, same as WarriorMascot's own mount).
+            Positioned like WarriorMascot's corner mount on the net-worth card: absolute, clear of
+            the left-aligned text above. */}
+        <div className="scribe-mage-mount">
+          <MageMascot firing={mageFiring} firingText="จดไว้แล้ว! ✨" onClick={onMageClick} />
+        </div>
       </div>
-      {/* MageMascot mount — arcade-only (MageMascot itself renders null off-theme, so this div
-          is harmless dead weight on every other theme, same as WarriorMascot's own mount).
-          Positioned like WarriorMascot's corner mount on the net-worth card: absolute, clear of
-          the left-aligned text above. */}
-      <div className="scribe-mage-mount">
-        <MageMascot firing={mageFiring} firingText="จดไว้แล้ว! ✨" onClick={onMageClick} />
-      </div>
+      {categoryBreakdown}
       <AddBudgetSheet
         open={showSheet}
         onClose={() => setShowSheet(false)}

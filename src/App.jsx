@@ -256,10 +256,24 @@ export default function App() {
           .archer-img { width: 90px; height: 90px; }
         }
 
+        /* SafeToSpendCard.jsx's ".safe-to-spend-header" — the headline number/text block only,
+           NOT the whole card (2026-08-11 fix: the card grew a "สัดส่วนรายหมวด" category list
+           below the headline, and the mage mount used to center on the WHOLE card's height, so
+           on any month with a few budgeted categories it drifted down and covered a category
+           row's amount/warning text). min-height reserves room for the mage at its full size
+           even when the headline text itself is short (one line + a subtitle) — matches
+           ".scribe-mage-mount .mage-img"'s own max sizes below, plus a little breathing room, at
+           each breakpoint. */
+        .safe-to-spend-header { position: relative; min-height: clamp(84px, 24vw, 128px); }
+        @media (min-width: 1280px) {
+          .safe-to-spend-header { min-height: 168px; }
+        }
+
         /* SafeToSpendCard.jsx's own MageMascot mount ("ใช้ได้อีกวันนี้" card, Dashboard.jsx) —
            position mirrors WarriorMascot's corner mount on the net-worth card (absolute,
-           vertically centered, clear of this card's own left-aligned text). Sized bigger than
-           the budget page's mage via a descendant override of ".mage-img" scoped to this mount
+           vertically centered within ".safe-to-spend-header" above — NOT the whole card, see its
+           own comment — clear of this card's own left-aligned text). Sized bigger than the
+           budget page's mage via a descendant override of ".mage-img" scoped to this mount
            specifically — NOT a change to ".mage-img" itself, which stays exactly as-is for
            BudgetMageCard.jsx (kept where it was, unchanged, per instruction). */
         .scribe-mage-mount { position: absolute; top: 50%; right: 8px; transform: translateY(-50%); z-index: 0; }
